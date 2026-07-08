@@ -14,7 +14,7 @@ const navigasi = [
     <div class="mx-auto max-w-6xl px-6 py-16">
       <div class="grid gap-10 md:grid-cols-3">
         <div>
-          <p class="text-lg font-semibold tracking-tight">Sicakra</p>
+          <img src="/public/logo-sicakra.png" alt="Logo" class="h-13 w-auto" />
           <p class="mt-2 max-w-xs text-sm text-muted-foreground">
             Layanan internet cepat dan andal untuk rumah dan usaha kamu.
           </p>

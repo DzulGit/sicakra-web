@@ -17,8 +17,10 @@ const tautan = [
 
 <template>
   <header class="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-      <RouterLink to="/" class="text-lg font-semibold tracking-tight"> Sicakra </RouterLink>
+    <div class="mx-auto flex h-16 max-w-8xl items-center justify-between px-6">
+      <RouterLink to="/" class="text-lg font-semibold tracking-tight">
+        <img src="/public/logo-sicakra.png" alt="Logo" class="h-13 w-auto mt-[-10]" />
+      </RouterLink>
 
       <nav class="hidden items-center gap-8 md:flex">
         <RouterLink
