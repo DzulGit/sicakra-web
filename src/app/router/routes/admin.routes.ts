@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import HalamanPlaceholder from '@/components/feedback/HalamanPlaceholder.vue'
+import LoginAdminPage from '@/modules/auth/admin/pages/LoginAdminPage.vue'
 
 /**
  * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
@@ -9,8 +10,7 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/masuk',
     name: 'admin.masuk',
-    component: HalamanPlaceholder,
-    props: { judul: 'Login Admin' },
+    component: LoginAdminPage,
     meta: { layout: 'auth', judul: 'Masuk — Admin' },
   },
 

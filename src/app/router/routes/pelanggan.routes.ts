@@ -1,5 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import HalamanPlaceholder from '@/components/feedback/HalamanPlaceholder.vue'
+import LoginPelangganPage from '@/modules/auth/pelanggan/pages/LoginPelangganPage.vue'
+import BuatPasswordPage from '@/modules/auth/pelanggan/pages/BuatPasswordPage.vue'
 
 /**
  * Route Pelanggan — dibangun Fase 3 (auth) & Fase 9 (dashboard).
@@ -10,15 +12,13 @@ export const pelangganRoutes: RouteRecordRaw[] = [
   {
     path: '/pelanggan/masuk',
     name: 'pelanggan.masuk',
-    component: HalamanPlaceholder,
-    props: { judul: 'Login Pelanggan' },
+    component: LoginPelangganPage,
     meta: { layout: 'auth', judul: 'Masuk — Pelanggan' },
   },
   {
     path: '/pelanggan/buat-password',
     name: 'pelanggan.buat-password',
-    component: HalamanPlaceholder,
-    props: { judul: 'Buat Password' },
+    component: BuatPasswordPage,
     meta: {
       layout: 'auth',
       judul: 'Buat Password',
