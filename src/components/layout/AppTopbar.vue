@@ -1,0 +1,79 @@
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { Bell, LogOut, UserCircle } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth.store'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import AppBreadcrumb, { type BreadcrumbItem } from './AppBreadcrumb.vue'
+
+defineProps<{ breadcrumb: BreadcrumbItem[] }>()
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+function inisial(nama: string) {
+  return nama
+    .split(' ')
+    .map((kata) => kata[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
+
+function logout() {
+  // Endpoint logout (POST /admin/logout atau /pelanggan/logout) dipanggil
+  // di composable useAuth saat modul Authentication dibangun (Fase 3).
+  // Di sini cukup bersihkan sesi lokal dulu sebagai fondasi UI.
+  authStore.bersihkanSesi()
+  router.push(authStore.tipePengguna === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
+}
+</script>
+
+<template>
+  <header class="flex h-14 items-center justify-between border-b bg-background px-4">
+    <AppBreadcrumb :items="breadcrumb" />
+
+    <div class="flex items-center gap-2">
+      <Button variant="ghost" size="icon" aria-label="Notifikasi">
+        <Bell class="size-4" />
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <button type="button" class="flex items-center gap-2 rounded-md p-1 hover:bg-accent">
+            <Avatar class="size-8">
+              <AvatarFallback>{{ inisial(authStore.pengguna?.nama_lengkap ?? '?') }}</AvatarFallback>
+            </Avatar>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" class="w-56">
+          <DropdownMenuLabel>
+            <p class="truncate font-medium">{{ authStore.pengguna?.nama_lengkap }}</p>
+            <p class="truncate text-xs font-normal text-muted-foreground">
+              {{ authStore.peranAdmin ?? 'Pelanggan' }}
+            </p>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem v-if="authStore.tipePengguna === 'pelanggan'" as-child>
+            <RouterLink to="/pelanggan/profil">
+              <UserCircle class="size-4" />
+              Profil Saya
+            </RouterLink>
+          </DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" @click="logout">
+            <LogOut class="size-4" />
+            Keluar
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  </header>
+</template>

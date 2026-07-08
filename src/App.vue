@@ -3,23 +3,29 @@ import { useHead } from '@unhead/vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { Toaster } from 'vue-sonner'
+import LandingLayout from '@/components/layout/LandingLayout.vue'
+import AuthLayout from '@/components/layout/AuthLayout.vue'
+import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 
-/**
- * Layout pembungkus (Landing/Auth/Dashboard) menyusul di Fase 2 roadmap.
- * Untuk sekarang, App.vue cukup pasang <RouterView/> + judul halaman dinamis
- * + Toaster global, supaya seluruh mekanisme routing & provider bisa diverifikasi.
- */
 const route = useRoute()
 
 useHead({
   title: computed(() => route.meta.judul ?? 'Sicakra'),
-  meta: [
-    { name: 'description', content: 'Sicakra — Layanan internet oleh PT Aqrapana Jaya Mandiri' },
-  ],
+  meta: [{ name: 'description', content: 'Sicakra — Layanan internet oleh PT Aqrapana Jaya Mandiri' }],
 })
+
+const layoutPerRoute = {
+  landing: LandingLayout,
+  auth: AuthLayout,
+  dashboard: DashboardLayout,
+}
+
+const layoutAktif = computed(() => layoutPerRoute[route.meta.layout])
 </script>
 
 <template>
-  <RouterView />
+  <component :is="layoutAktif">
+    <RouterView />
+  </component>
   <Toaster richColors position="top-right" />
 </template>
