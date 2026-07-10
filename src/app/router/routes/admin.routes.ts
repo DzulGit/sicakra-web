@@ -1,6 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router'
-import HalamanPlaceholder from '@/components/feedback/HalamanPlaceholder.vue'
-import LoginAdminPage from '@/modules/auth/admin/pages/LoginAdminPage.vue'
+const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
+const LoginAdminPage = () => import('@/modules/auth/admin/pages/LoginAdminPage.vue')
+const PermohonanLayananListPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananListPage.vue')
+const PermohonanLayananDetailPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananDetailPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
@@ -18,8 +20,7 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/operasional/permohonan-layanan',
     name: 'admin.operasional.permohonan-layanan.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Daftar Permohonan Layanan' },
+    component: PermohonanLayananListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Permohonan Layanan',
@@ -31,8 +32,7 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/operasional/permohonan-layanan/:id',
     name: 'admin.operasional.permohonan-layanan.detail',
-    component: HalamanPlaceholder,
-    props: { judul: 'Detail Permohonan Layanan' },
+    component: PermohonanLayananDetailPage,
     meta: {
       layout: 'dashboard',
       judul: 'Detail Permohonan',

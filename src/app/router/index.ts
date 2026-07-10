@@ -4,8 +4,9 @@ import { landingRoutes } from './routes/landing.routes'
 import { adminRoutes } from './routes/admin.routes'
 import { pelangganRoutes } from './routes/pelanggan.routes'
 import { setupRouterGuards } from './guards'
-import HalamanPlaceholder from '@/components/feedback/HalamanPlaceholder.vue'
 import './types' // augmentasi RouteMeta
+
+const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
 
 const fallbackRoutes: RouteRecordRaw[] = [
   {

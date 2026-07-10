@@ -1,7 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
-import HalamanPlaceholder from '@/components/feedback/HalamanPlaceholder.vue'
-import LoginPelangganPage from '@/modules/auth/pelanggan/pages/LoginPelangganPage.vue'
-import BuatPasswordPage from '@/modules/auth/pelanggan/pages/BuatPasswordPage.vue'
+const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
+const LoginPelangganPage = () => import('@/modules/auth/pelanggan/pages/LoginPelangganPage.vue')
+const BuatPasswordPage = () => import('@/modules/auth/pelanggan/pages/BuatPasswordPage.vue')
 
 /**
  * Route Pelanggan — dibangun Fase 3 (auth) & Fase 9 (dashboard).
