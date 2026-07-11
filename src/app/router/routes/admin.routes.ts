@@ -3,6 +3,8 @@ const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholde
 const LoginAdminPage = () => import('@/modules/auth/admin/pages/LoginAdminPage.vue')
 const PermohonanLayananListPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananListPage.vue')
 const PermohonanLayananDetailPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananDetailPage.vue')
+const LaporanKendalaListPage = () => import('@/modules/laporan-kendala/pages/operasional/LaporanKendalaListPage.vue')
+const LaporanKendalaDetailPage = () => import('@/modules/laporan-kendala/pages/operasional/LaporanKendalaDetailPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
@@ -44,11 +46,22 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/operasional/laporan-kendala',
     name: 'admin.operasional.laporan-kendala.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Laporan Kendala (Operasional)' },
+    component: LaporanKendalaListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Laporan Kendala',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/laporan-kendala/:id',
+    name: 'admin.operasional.laporan-kendala.detail',
+    component: LaporanKendalaDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Laporan Kendala',
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional', 'super_admin'],
