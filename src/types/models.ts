@@ -79,3 +79,27 @@ export interface PermohonanLayanan {
   jadwal_survey?: JadwalSurvey[]
   jadwal_pemasangan?: JadwalPemasangan[]
 }
+
+export interface LayananInternetRingkas {
+  id: number
+  nomor_layanan: string
+  pelanggan?: Pelanggan
+}
+
+export interface LaporanKendala {
+  id: number
+  nomor_laporan: string
+  layanan_internet_id: number
+  kategori_kendala: string
+  deskripsi: string
+  status: 'menunggu' | 'diproses' | 'ditugaskan' | 'selesai' | 'ditutup'
+  // Backend nge-load relasi dengan nama yang sama dengan kolom FK-nya (ditugaskan_ke,
+  // ditutup_oleh) — jadi nilainya bisa angka ID mentah ATAU object Admin tergantung
+  // apakah controller eager-load relasinya. Frontend HARUS handle keduanya defensif.
+  ditugaskan_ke: number | AdminRingkas | null
+  hasil_penanganan: string | null
+  ditutup_oleh: number | AdminRingkas | null
+  created_at: string
+  updated_at: string
+  layanan_internet?: LayananInternetRingkas
+}
