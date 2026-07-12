@@ -11,6 +11,8 @@ const JadwalPemasanganListPage = () => import('@/modules/jadwal-pemasangan/pages
 const JadwalPemasanganDetailPage = () => import('@/modules/jadwal-pemasangan/pages/JadwalPemasanganDetailPage.vue')
 const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaListPage.vue')
 const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
+const TagihanListPage = () => import('@/modules/tagihan/pages/TagihanListPage.vue')
+const TagihanDetailPage = () => import('@/modules/tagihan/pages/TagihanDetailPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
@@ -152,11 +154,22 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/keuangan/tagihan',
     name: 'admin.keuangan.tagihan.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Tagihan (Keuangan)' },
+    component: TagihanListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Tagihan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['keuangan', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/keuangan/tagihan/:id',
+    name: 'admin.keuangan.tagihan.detail',
+    component: TagihanDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Tagihan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['keuangan', 'super_admin'],

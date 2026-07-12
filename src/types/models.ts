@@ -105,3 +105,40 @@ export interface LaporanKendala {
   updated_at: string
   layanan_internet?: LayananInternetRingkas
 }
+
+export interface Pembayaran {
+  id: number
+  tagihan_id: number
+  metode_pembayaran: string | null
+  jumlah_dibayar: string | null
+  referensi_xendit: string | null
+  status: 'pending' | 'berhasil' | 'gagal'
+  dibayar_pada: string | null
+  created_at: string
+}
+
+export interface Tagihan {
+  id: number
+  nomor_tagihan: string
+  layanan_internet_id: number
+  periode_bulan: number
+  periode_tahun: number
+  nama_paket_snapshot: string
+  kecepatan_snapshot_mbps: number
+  harga_snapshot: string
+  total_tagihan: string
+  tanggal_jatuh_tempo: string
+  status_pembayaran: 'belum_bayar' | 'sudah_bayar'
+  xendit_invoice_id: string | null
+  xendit_invoice_url: string | null
+  dibayar_pada: string | null
+  created_at: string
+  layanan_internet?: LayananInternetRingkas
+  pembayaran?: Pembayaran[]
+}
+
+export interface RingkasanOmzet {
+  periode_bulan: number
+  total_omzet: string
+  jumlah_tagihan: number
+}
