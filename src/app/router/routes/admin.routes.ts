@@ -5,6 +5,12 @@ const PermohonanLayananListPage = () => import('@/modules/permohonan-layanan/pag
 const PermohonanLayananDetailPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananDetailPage.vue')
 const LaporanKendalaListPage = () => import('@/modules/laporan-kendala/pages/operasional/LaporanKendalaListPage.vue')
 const LaporanKendalaDetailPage = () => import('@/modules/laporan-kendala/pages/operasional/LaporanKendalaDetailPage.vue')
+const JadwalSurveyListPage = () => import('@/modules/jadwal-survey/pages/JadwalSurveyListPage.vue')
+const JadwalSurveyDetailPage = () => import('@/modules/jadwal-survey/pages/JadwalSurveyDetailPage.vue')
+const JadwalPemasanganListPage = () => import('@/modules/jadwal-pemasangan/pages/JadwalPemasanganListPage.vue')
+const JadwalPemasanganDetailPage = () => import('@/modules/jadwal-pemasangan/pages/JadwalPemasanganDetailPage.vue')
+const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaListPage.vue')
+const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
@@ -72,8 +78,7 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/teknisi/jadwal-survey',
     name: 'admin.teknisi.jadwal-survey.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Jadwal Survey' },
+    component: JadwalSurveyListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Jadwal Survey',
@@ -83,10 +88,21 @@ export const adminRoutes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/admin/teknisi/jadwal-survey/:id',
+    name: 'admin.teknisi.jadwal-survey.detail',
+    component: JadwalSurveyDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Isi Hasil Survey',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['teknisi', 'super_admin'],
+    },
+  },
+  {
     path: '/admin/teknisi/jadwal-pemasangan',
     name: 'admin.teknisi.jadwal-pemasangan.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Jadwal Pemasangan' },
+    component: JadwalPemasanganListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Jadwal Pemasangan',
@@ -96,13 +112,36 @@ export const adminRoutes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/admin/teknisi/jadwal-pemasangan/:id',
+    name: 'admin.teknisi.jadwal-pemasangan.detail',
+    component: JadwalPemasanganDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Isi Hasil Pemasangan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['teknisi', 'super_admin'],
+    },
+  },
+  {
     path: '/admin/teknisi/laporan-kendala',
     name: 'admin.teknisi.laporan-kendala.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Laporan Kendala (Teknisi)' },
+    component: LaporanKendalaListPageTeknisi,
     meta: {
       layout: 'dashboard',
       judul: 'Laporan Kendala',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['teknisi', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/teknisi/laporan-kendala/:id',
+    name: 'admin.teknisi.laporan-kendala.detail',
+    component: LaporanKendalaDetailPageTeknisi,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Laporan Kendala',
       requiresAuth: true,
       guard: 'admin',
       peran: ['teknisi', 'super_admin'],
