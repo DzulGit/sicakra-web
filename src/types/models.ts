@@ -39,6 +39,7 @@ export interface JadwalSurvey {
   tanggal_survey: string
   hasil: 'berhasil' | 'kendala' | null
   catatan: string | null
+  permohonan_layanan?: PermohonanLayanan
 }
 
 export interface JadwalPemasangan {
@@ -48,6 +49,7 @@ export interface JadwalPemasangan {
   tanggal_pemasangan: string
   hasil: 'selesai' | 'ditunda' | null
   alasan_penundaan: string | null
+  permohonan_layanan?: PermohonanLayanan
 }
 
 export interface PermohonanLayanan {
