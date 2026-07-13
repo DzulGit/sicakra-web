@@ -142,3 +142,14 @@ export interface RingkasanOmzet {
   total_omzet: string
   jumlah_tagihan: number
 }
+
+export interface AdminLengkap {
+  id: number
+  nama_lengkap: string
+  email: string
+  peran: 'super_admin' | 'operasional' | 'teknisi' | 'keuangan'
+  status_aktif: boolean
+  dibuat_oleh: number | null
+  created_at: string
+  updated_at: string
+}
