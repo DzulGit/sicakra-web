@@ -1,5 +1,4 @@
 import type { RouteRecordRaw } from 'vue-router'
-const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
 const LoginAdminPage = () => import('@/modules/auth/admin/pages/LoginAdminPage.vue')
 const PermohonanLayananListPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananListPage.vue')
 const PermohonanLayananDetailPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananDetailPage.vue')
@@ -13,6 +12,9 @@ const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pa
 const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
 const TagihanListPage = () => import('@/modules/tagihan/pages/TagihanListPage.vue')
 const TagihanDetailPage = () => import('@/modules/tagihan/pages/TagihanDetailPage.vue')
+const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
+const AdminCreatePage = () => import('@/modules/admin-management/pages/AdminCreatePage.vue')
+const AdminEditPage = () => import('@/modules/admin-management/pages/AdminEditPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
@@ -180,11 +182,34 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/super-admin/admin',
     name: 'admin.super-admin.admin.index',
-    component: HalamanPlaceholder,
-    props: { judul: 'Kelola Akun Admin' },
+    component: AdminListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Kelola Admin',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['super_admin'],
+    },
+  },
+  {
+    path: '/admin/super-admin/admin/baru',
+    name: 'admin.super-admin.admin.create',
+    component: AdminCreatePage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Tambah Admin',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['super_admin'],
+    },
+  },
+  {
+    path: '/admin/super-admin/admin/:id/ubah',
+    name: 'admin.super-admin.admin.edit',
+    component: AdminEditPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Ubah Admin',
       requiresAuth: true,
       guard: 'admin',
       peran: ['super_admin'],
