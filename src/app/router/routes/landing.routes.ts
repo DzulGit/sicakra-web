@@ -1,5 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
-import HalamanPlaceholder from '@/components/feedback/HalamanPlaceholder.vue'
+const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
 
 /**
  * Route publik — Landing Page & Pendaftaran. Tidak butuh auth sama sekali.

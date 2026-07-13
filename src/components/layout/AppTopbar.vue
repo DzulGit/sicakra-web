@@ -2,6 +2,8 @@
 import { useRouter } from 'vue-router'
 import { Bell, LogOut, UserCircle } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
+import { useLogoutAdmin } from '@/modules/auth/admin/composables/useAdminAuth'
+import { useLogoutPelanggan } from '@/modules/auth/pelanggan/composables/usePelangganAuth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +20,8 @@ defineProps<{ breadcrumb: BreadcrumbItem[] }>()
 
 const authStore = useAuthStore()
 const router = useRouter()
+const { mutate: logoutAdmin } = useLogoutAdmin()
+const { mutate: logoutPelanggan } = useLogoutPelanggan()
 
 function inisial(nama: string) {
   return nama
@@ -29,11 +33,15 @@ function inisial(nama: string) {
 }
 
 function logout() {
-  // Endpoint logout (POST /admin/logout atau /pelanggan/logout) dipanggil
-  // di composable useAuth saat modul Authentication dibangun (Fase 3).
-  // Di sini cukup bersihkan sesi lokal dulu sebagai fondasi UI.
+  const tipe = authStore.tipePengguna
+  const mutasiLogout = tipe === 'pelanggan' ? logoutPelanggan : logoutAdmin
+
+  // Bersihkan sesi lokal & redirect SEGERA (jangan tunggu response server) —
+  // pengalaman logout harus terasa instan. Kalau call API gagal (mis. token
+  // sudah invalid duluan), tidak masalah, tujuan akhirnya sama: keluar.
+  mutasiLogout(undefined, { onSettled: () => {} })
   authStore.bersihkanSesi()
-  router.push(authStore.tipePengguna === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
+  router.push(tipe === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
 }
 </script>
 
