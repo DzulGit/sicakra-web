@@ -78,6 +78,11 @@ export const tipePaketEnum: EnumMap = {
   custom: { label: 'Custom', badgeVariant: 'outline' },
 }
 
+export const jenisPerubahanPaketEnum: EnumMap = {
+  upgrade: { label: 'Upgrade', badgeVariant: 'outline' },
+  downgrade: { label: 'Downgrade', badgeVariant: 'outline' },
+}
+
 export const peranAdminEnum: EnumMap = {
   super_admin: { label: 'Super Admin', badgeVariant: 'outline' },
   operasional: { label: 'Operasional', badgeVariant: 'outline' },
