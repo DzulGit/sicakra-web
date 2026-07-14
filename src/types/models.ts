@@ -153,3 +153,55 @@ export interface AdminLengkap {
   created_at: string
   updated_at: string
 }
+
+export interface Perangkat {
+  id: number
+  layanan_internet_id: number
+  serial_number: string
+  mac_address: string | null
+  merek: string
+  tipe: string
+  status: 'terpasang' | 'dilepas' | 'rusak'
+}
+
+export interface RiwayatPerubahanPaket {
+  id: number
+  layanan_internet_id: number
+  nama_paket_lama: string
+  kecepatan_lama_mbps: number
+  harga_lama: string
+  nama_paket_baru: string
+  kecepatan_baru_mbps: number
+  harga_baru: string
+  jenis_perubahan: 'upgrade' | 'downgrade'
+  tanggal_perubahan: string
+}
+
+export interface RiwayatRelokasi {
+  id: number
+  layanan_internet_id: number
+  alamat_lama: string
+  alamat_baru: string
+  tanggal_relokasi: string
+}
+
+export interface LayananInternetDetail {
+  id: number
+  nomor_layanan: string
+  pelanggan_id: number
+  paket_internet_id: number | null
+  tipe_paket: 'reguler' | 'custom'
+  nama_paket_custom: string | null
+  kecepatan_custom_mbps: number | null
+  harga_custom: string | null
+  alamat_pemasangan: string
+  rt: string
+  rw: string
+  kode_pos: string
+  status: 'aktif' | 'nonaktif'
+  tanggal_aktif: string
+  paket_internet?: PaketInternet
+  perangkat?: Perangkat[]
+  riwayat_perubahan_paket?: RiwayatPerubahanPaket[]
+  riwayat_relokasi?: RiwayatRelokasi[]
+}
