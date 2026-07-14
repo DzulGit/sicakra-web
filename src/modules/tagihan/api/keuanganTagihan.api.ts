@@ -18,3 +18,14 @@ export function getRingkasanOmzet(tahun: number) {
 
 // SENGAJA tidak ada create()/update() — TagihanPolicy backend melarang keduanya,
 // Keuangan bersifat read-only. Lihat docs/api/keuangan.md.
+
+// ----- Sisi Pelanggan (hanya tagihan dari layanan miliknya sendiri) -----
+const BASE_PELANGGAN = '/pelanggan/tagihan'
+
+export function getTagihanSayaList(params: Record<string, string>) {
+  return httpClient.get<PaginatedResponse<Tagihan>>(BASE_PELANGGAN, { params })
+}
+
+export function getTagihanSayaDetail(id: number | string) {
+  return httpClient.get<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}`)
+}
