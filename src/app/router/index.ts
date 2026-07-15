@@ -5,6 +5,8 @@ import { adminRoutes } from './routes/admin.routes'
 import { pelangganRoutes } from './routes/pelanggan.routes'
 import { setupRouterGuards } from './guards'
 import './types' // augmentasi RouteMeta
+import { Capacitor } from '@capacitor/core'
+
 
 const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
 
@@ -32,6 +34,16 @@ const router = createRouter({
     return { top: 0 }
   },
 })
+
+if (Capacitor.isNativePlatform()) {
+  router.beforeEach((to, _from, next) => {
+    if (!to.path.startsWith('/pelanggan')) {
+      next('/pelanggan/masuk')
+    } else {
+      next()
+    }
+  })
+}
 
 setupRouterGuards(router)
 
