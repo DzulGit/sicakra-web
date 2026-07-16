@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppSidebar from './AppSidebar.vue'
 import AppTopbar from './AppTopbar.vue'
+import SkipToContent from '@/components/feedback/SkipToContent.vue'
 import type { BreadcrumbItem } from './AppBreadcrumb.vue'
 
 /**
@@ -28,11 +29,12 @@ const breadcrumb = computed<BreadcrumbItem[]>(() => [
 </script>
 
 <template>
+  <SkipToContent />
   <div class="flex h-screen overflow-hidden">
     <AppSidebar />
     <div class="flex flex-1 flex-col overflow-hidden">
       <AppTopbar :breadcrumb="breadcrumb" />
-      <main class="flex-1 overflow-y-auto p-6">
+      <main id="konten-utama" class="flex-1 overflow-y-auto p-6">
         <slot />
       </main>
     </div>

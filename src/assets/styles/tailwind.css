@@ -41,6 +41,26 @@
   --warning-foreground: oklch(0.145 0 0);
   --info: oklch(0.546 0.245 262.881);
   --info-foreground: oklch(0.985 0 0);
+
+  /*
+   * Token KHUSUS Landing Page (Fase 10) — sengaja terpisah dari --primary dkk
+   * di atas supaya desain marketing bisa lebih ekspresif tanpa mengganggu UI
+   * kit dashboard yang sudah dipakai luas. Rasionalisasi lengkap ada di
+   * docs/frontend/design-system/landing.md.
+   *
+   * --landing-signal (amber) terinspirasi lampu indikator status pada
+   * router/ONT — "menyala = terhubung". Dipakai SANGAT terbatas: CTA utama,
+   * dot indikator, underline hover. Bukan warna dekoratif biasa.
+   */
+  --landing-ink: #10201d;
+  --landing-mist: #eef2ef;
+  --landing-paper: #ffffff;
+  --landing-teal: #0f6f68;
+  --landing-teal-deep: #0a4b47;
+  --landing-signal: #e7a93e;
+
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-landing-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 .dark {
@@ -104,6 +124,16 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+
+  /* Landing Page — lihat catatan di :root */
+  --color-landing-ink: var(--landing-ink);
+  --color-landing-mist: var(--landing-mist);
+  --color-landing-paper: var(--landing-paper);
+  --color-landing-teal: var(--landing-teal);
+  --color-landing-teal-deep: var(--landing-teal-deep);
+  --color-landing-signal: var(--landing-signal);
+  --font-display: var(--font-display);
+  --font-landing-mono: var(--font-landing-mono);
 }
 
 @layer base {
@@ -112,5 +142,34 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /*
+   * Jaring pengaman focus-visible UNIVERSAL — supaya elemen interaktif custom
+   * (terutama <a>/RouterLink hasil styling manual di Landing Page yang tidak
+   * lewat komponen Button/Input shadcn-vue) tetap kelihatan jelas saat
+   * navigasi keyboard (Tab), meski lupa nambah class focus secara eksplisit
+   * di komponen tertentu. Komponen yang SUDAH punya focus-visible sendiri
+   * tidak terganggu — aturan ini menambah, bukan menimpa.
+   */
+  a:focus-visible,
+  button:focus-visible,
+  [role='button']:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Hormati preferensi pengguna yang mematikan animasi (vestibular disorder dkk) —
+   semua transisi/animasi (hover translate, scale gambar, dsb) langsung mati. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
