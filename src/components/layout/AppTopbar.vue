@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu' // <-- Pake jalur lokal lagi
 import AppBreadcrumb, { type BreadcrumbItem } from './AppBreadcrumb.vue'
 
 defineProps<{ breadcrumb: BreadcrumbItem[] }>()
