@@ -1,19 +1,34 @@
 import { z } from 'zod'
 
 // app/Http/Requests/Pendaftaran/SimpanPendaftaranRequest.php
+//
+// PENTING: pakai z.string({ required_error: '...' }).min(1, '...') — BUKAN
+// cuma z.string().min(1, '...'). Kalau field belum pernah disentuh user,
+// value-nya `undefined` (bukan ''), dan .min() TIDAK menangkap kasus itu —
+// Zod jatuh ke pesan default bahasa Inggris ("Required") sebelum .min()
+// sempat jalan. required_error menutup celah itu.
 export const daftarSchema = z
   .object({
-    nama_lengkap: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
-    nik: z.string().min(1, 'NIK wajib diisi').length(16, 'NIK harus 16 digit'),
-    nomor_hp: z.string().min(1, 'Nomor HP wajib diisi').max(20),
+    nama_lengkap: z.string({ required_error: 'Nama lengkap wajib diisi' }).min(1, 'Nama lengkap wajib diisi').max(255),
+    nik: z.string({ required_error: 'NIK wajib diisi' }).length(16, 'NIK harus 16 digit'),
+    nomor_hp: z.string({ required_error: 'Nomor HP wajib diisi' }).min(1, 'Nomor HP wajib diisi').max(20),
     email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
 
-    alamat_pemasangan: z.string().min(1, 'Alamat wajib diisi'),
-    rt: z.string().min(1, 'RT wajib diisi').max(3),
-    rw: z.string().min(1, 'RW wajib diisi').max(3),
-    kode_pos: z.string().min(1, 'Kode pos wajib diisi').max(5),
-    latitude: z.coerce.number().min(-90, 'Latitude tidak valid').max(90, 'Latitude tidak valid'),
-    longitude: z.coerce.number().min(-180, 'Longitude tidak valid').max(180, 'Longitude tidak valid'),
+    alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
+    rt: z.string({ required_error: 'RT wajib diisi' }).min(1, 'RT wajib diisi').max(3),
+    rw: z.string({ required_error: 'RW wajib diisi' }).min(1, 'RW wajib diisi').max(3),
+    kode_pos: z.string({ required_error: 'Kode pos wajib diisi' }).min(1, 'Kode pos wajib diisi').max(5),
+    // z.coerce.number() pada input kosong ('') akan jadi NaN SEBELUM .min/.max
+    // custom message sempat jalan — makanya perlu .refine() manual bukan cuma .min/.max
+    // buat mastiin pesan yang muncul selalu yang kita tulis, bukan default Zod.
+    latitude: z
+      .string({ required_error: 'Latitude wajib diisi' })
+      .min(1, 'Latitude wajib diisi')
+      .pipe(z.coerce.number().refine((n) => n >= -90 && n <= 90, 'Latitude tidak valid')),
+    longitude: z
+      .string({ required_error: 'Longitude wajib diisi' })
+      .min(1, 'Longitude wajib diisi')
+      .pipe(z.coerce.number().refine((n) => n >= -180 && n <= 180, 'Longitude tidak valid')),
 
     tipe_paket: z.enum(['reguler', 'custom'], { message: 'Pilih tipe paket' }),
     paket_internet_id: z.string().optional(),
