@@ -5,6 +5,8 @@ import AppSidebar from './AppSidebar.vue'
 import AppTopbar from './AppTopbar.vue'
 import SkipToContent from '@/components/feedback/SkipToContent.vue'
 import type { BreadcrumbItem } from './AppBreadcrumb.vue'
+import BottomNavigation from "./BottomNavigation.vue";
+import { usePlatform } from "@/composables/usePlatform";
 
 /**
  * Layout bersama Dashboard Admin & Pelanggan — satu komponen, menu beda
@@ -26,17 +28,25 @@ const breadcrumb = computed<BreadcrumbItem[]>(() => [
   { label: String(route.meta.judul ?? '') },
   ...(props.breadcrumbTambahan ?? []),
 ])
+
+const { isNative } = usePlatform();
+
 </script>
 
 <template>
   <SkipToContent />
   <div class="flex h-screen overflow-hidden">
-    <AppSidebar />
+    <AppSidebar v-if="!isNative" />
     <div class="flex flex-1 flex-col overflow-hidden">
       <AppTopbar :breadcrumb="breadcrumb" />
+<<<<<<< HEAD
       <main id="konten-utama" class="flex-1 overflow-y-auto p-6">
+=======
+      <main class="flex-1 overflow-y-auto p-6" :class="{'pb-32': isNative}">
+>>>>>>> android-dev
         <slot />
       </main>
     </div>
+    <BottomNavigation v-if="isNative" />
   </div>
 </template>

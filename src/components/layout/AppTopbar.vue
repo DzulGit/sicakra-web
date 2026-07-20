@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu' // <-- Pake jalur lokal lagi
 import AppBreadcrumb, { type BreadcrumbItem } from './AppBreadcrumb.vue'
+import { usePlatform } from '@/composables/usePlatform'
 
 defineProps<{ breadcrumb: BreadcrumbItem[] }>()
 
@@ -22,6 +23,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 const { mutate: logoutAdmin } = useLogoutAdmin()
 const { mutate: logoutPelanggan } = useLogoutPelanggan()
+const { isNative } = usePlatform()
 
 function inisial(nama: string) {
   return nama
@@ -43,6 +45,12 @@ function logout() {
   authStore.bersihkanSesi()
   router.push(tipe === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
 }
+
+function bukaProfil() {
+  if (isNative && authStore.tipePengguna === 'pelanggan') {
+    router.push('/pelanggan/profil')
+  }
+}
 </script>
 
 <template>
@@ -55,10 +63,12 @@ function logout() {
       </Button>
 
       <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <button type="button" class="flex items-center gap-2 rounded-md p-1 hover:bg-accent">
+        <DropdownMenuTrigger as-child :disabled="isNative && authStore.tipePengguna === 'pelanggan'">
+          <button type="button" class="flex items-center gap-2 rounded-md p-1 hover:bg-accent" @click="bukaProfil">
             <Avatar class="size-8">
-              <AvatarFallback>{{ inisial(authStore.pengguna?.nama_lengkap ?? '?') }}</AvatarFallback>
+              <AvatarFallback>{{
+                inisial(authStore.pengguna?.nama_lengkap ?? '?')
+              }}</AvatarFallback>
             </Avatar>
           </button>
         </DropdownMenuTrigger>
