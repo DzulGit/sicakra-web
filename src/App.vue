@@ -6,6 +6,9 @@ import { Toaster } from 'vue-sonner'
 import LandingLayout from '@/components/layout/LandingLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
+import SplashLoading from "@/components/loading/SplashLoading.vue";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { ref, onMounted } from "vue";
 
 const route = useRoute()
 
@@ -21,9 +24,24 @@ const layoutPerRoute = {
 }
 
 const layoutAktif = computed(() => layoutPerRoute[route.meta.layout])
+
+
+
+const loading = ref(true);
+onMounted(async () => {
+
+  // simulasi startup
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  await SplashScreen.hide();
+
+  loading.value = false;
+
+});
 </script>
 
 <template>
+  <SplashLoading v-if="loading" />
   <component :is="layoutAktif">
     <RouterView />
   </component>
