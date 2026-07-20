@@ -7,6 +7,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'http',
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     cleartext: true
   },
   plugins: {
@@ -19,6 +20,10 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
   }
+=======
+    cleartext: true,
+  },
+>>>>>>> Stashed changes
 =======
     cleartext: true,
   },
