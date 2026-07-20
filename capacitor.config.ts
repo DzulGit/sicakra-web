@@ -6,8 +6,13 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'http',
+<<<<<<< Updated upstream
     cleartext: true
   }
+=======
+    cleartext: true,
+  },
+>>>>>>> Stashed changes
 };
 
 export default config;
