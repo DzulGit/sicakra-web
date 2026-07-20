@@ -9,6 +9,7 @@ import { mapValidationErrors } from '@/lib/errors'
 import { useDaftar } from '@/modules/pendaftaran/composables/usePendaftaran'
 import { usePaketInternetList } from '@/modules/paket-internet/composables/usePaketInternet'
 import FileInputFoto from '@/modules/pendaftaran/components/FileInputFoto.vue'
+import LocationPicker from '@/modules/pendaftaran/components/PemilihanLokasi.vue'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,8 +36,6 @@ const [alamatPemasangan, alamatPemasanganAttrs] = defineField('alamat_pemasangan
 const [rt, rtAttrs] = defineField('rt')
 const [rw, rwAttrs] = defineField('rw')
 const [kodePos, kodePosAttrs] = defineField('kode_pos')
-const [latitude, latitudeAttrs] = defineField('latitude')
-const [longitude, longitudeAttrs] = defineField('longitude')
 const [tipePaket, tipePaketAttrs] = defineField('tipe_paket')
 const [paketInternetId, paketInternetIdAttrs] = defineField('paket_internet_id')
 const [namaPaketCustom, namaPaketCustomAttrs] = defineField('nama_paket_custom')
@@ -45,14 +44,16 @@ const [catatanCustom, catatanCustomAttrs] = defineField('catatan_custom')
 
 const fotoKtp = ref<File | null>(null)
 const fotoSelfieKtp = ref<File | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number } | null>(null)
 
-// PENTING: sinkronkan ke vee-validate SECARA REAKTIF (watch), BUKAN di dalam
-// handleSubmit callback — handleSubmit cuma jalan kalau validasi sudah lolos
-// LEBIH DULU, jadi kalau setFieldValue baru dipanggil di dalamnya, field
-// foto_ktp/foto_selfie_ktp akan selalu dianggap kosong saat validasi awal
-// (catch-22). Lihat catatan tim di riwayat perbaikan bug pendaftaran.
+// Pola sama kayak file upload: sinkron REAKTIF ke vee-validate, bukan cuma
+// pas submit — biar gak kejadian catch-22 yang sama kayak bug foto kemarin.
 watch(fotoKtp, (file) => setFieldValue('foto_ktp', file ?? undefined))
 watch(fotoSelfieKtp, (file) => setFieldValue('foto_selfie_ktp', file ?? undefined))
+watch(lokasiPeta, (lokasi) => {
+  setFieldValue('latitude', lokasi?.lat)
+  setFieldValue('longitude', lokasi?.lng)
+})
 
 const { mutate, isPending } = useDaftar()
 const nomorPermohonanBerhasil = ref<string | null>(null)
@@ -166,22 +167,8 @@ const onSubmit = handleSubmit((formValues) => {
                 <p v-if="errors.kode_pos" class="text-xs text-destructive">{{ errors.kode_pos }}</p>
               </div>
             </div>
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div class="space-y-2">
-                <Label for="latitude">Latitude</Label>
-                <Input id="latitude" v-model="latitude" v-bind="latitudeAttrs" placeholder="-6.200000" :aria-invalid="!!errors.latitude" />
-                <p v-if="errors.latitude" class="text-xs text-destructive">{{ errors.latitude }}</p>
-              </div>
-              <div class="space-y-2">
-                <Label for="longitude">Longitude</Label>
-                <Input id="longitude" v-model="longitude" v-bind="longitudeAttrs" placeholder="106.800000" :aria-invalid="!!errors.longitude" />
-                <p v-if="errors.longitude" class="text-xs text-destructive">{{ errors.longitude }}</p>
-              </div>
-            </div>
-            <p class="text-xs text-muted-foreground">
-              Buka Google Maps di lokasi pemasangan, tekan lama titik lokasi, lalu salin dua angka
-              koordinat yang muncul ke sini.
-            </p>
+            <LocationPicker v-model="lokasiPeta" />
+            <p v-if="errors.latitude" class="text-xs text-destructive">{{ errors.latitude }}</p>
           </fieldset>
 
           <!-- Paket -->
