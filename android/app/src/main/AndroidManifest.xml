@@ -8,9 +8,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
 
+=======
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        
+>>>>>>> Stashed changes
 =======
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
