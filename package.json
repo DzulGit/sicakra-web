@@ -13,6 +13,7 @@
   "dependencies": {
     "@capacitor/android": "^8.4.1",
     "@capacitor/core": "^8.4.1",
+    "@capacitor/splash-screen": "^8.0.2",
     "@tailwindcss/vite": "^4.3.2",
     "@tanstack/vue-query": "^5.101.2",
     "@tanstack/vue-table": "^8.21.3",
