@@ -18,17 +18,8 @@ export const daftarSchema = z
     rt: z.string({ required_error: 'RT wajib diisi' }).min(1, 'RT wajib diisi').max(3),
     rw: z.string({ required_error: 'RW wajib diisi' }).min(1, 'RW wajib diisi').max(3),
     kode_pos: z.string({ required_error: 'Kode pos wajib diisi' }).min(1, 'Kode pos wajib diisi').max(5),
-    // z.coerce.number() pada input kosong ('') akan jadi NaN SEBELUM .min/.max
-    // custom message sempat jalan — makanya perlu .refine() manual bukan cuma .min/.max
-    // buat mastiin pesan yang muncul selalu yang kita tulis, bukan default Zod.
-    latitude: z
-      .string({ required_error: 'Latitude wajib diisi' })
-      .min(1, 'Latitude wajib diisi')
-      .pipe(z.coerce.number().refine((n) => n >= -90 && n <= 90, 'Latitude tidak valid')),
-    longitude: z
-      .string({ required_error: 'Longitude wajib diisi' })
-      .min(1, 'Longitude wajib diisi')
-      .pipe(z.coerce.number().refine((n) => n >= -180 && n <= 180, 'Longitude tidak valid')),
+    latitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-90).max(90),
+    longitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-180).max(180),
 
     tipe_paket: z.enum(['reguler', 'custom'], { message: 'Pilih tipe paket' }),
     paket_internet_id: z.string().optional(),
