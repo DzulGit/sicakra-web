@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'http',
+<<<<<<< Updated upstream
     cleartext: true
   },
   plugins: {
@@ -18,6 +19,10 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
   }
+=======
+    cleartext: true,
+  },
+>>>>>>> Stashed changes
 };
 
 export default config;
