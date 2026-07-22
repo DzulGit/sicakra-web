@@ -5,17 +5,11 @@ import {
   getDaftarTeknisi,
   getPermohonanLayananDetail,
   getPermohonanLayananList,
-  jadwalkanPemasangan,
-  jadwalkanSurvey,
+  jadwalkanKerja,
   verifikasiPermohonan,
 } from '../api/permohonanLayanan.api'
-import type {
-  JadwalkanPemasanganForm,
-  JadwalkanSurveyForm,
-  VerifikasiPermohonanForm,
-} from '@/schemas/permohonan-layanan.schema'
+import type { JadwalkanKerjaForm, VerifikasiPermohonanForm } from '@/schemas/permohonan-layanan.schema'
 
-/** Baca filter aktif langsung dari query-string — satu-satunya sumber state list. */
 function useFilterParams() {
   const route = useRoute()
   return computed(() => {
@@ -47,7 +41,7 @@ export function useDaftarTeknisi() {
   return useQuery({
     queryKey: ['teknisi', 'daftar'],
     queryFn: () => getDaftarTeknisi().then((res) => res.data.data),
-    staleTime: 5 * 60 * 1000, // daftar teknisi jarang berubah, cache lebih lama dari default
+    staleTime: 5 * 60 * 1000,
   })
 }
 
@@ -68,20 +62,11 @@ export function useVerifikasiPermohonan() {
   })
 }
 
-export function useJadwalkanSurvey() {
+export function useJadwalkanKerja() {
   const invalidasi = useInvalidasiPermohonan()
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number | string; payload: JadwalkanSurveyForm }) =>
-      jadwalkanSurvey(id, payload),
-    onSuccess: (_, { id }) => invalidasi(id),
-  })
-}
-
-export function useJadwalkanPemasangan() {
-  const invalidasi = useInvalidasiPermohonan()
-  return useMutation({
-    mutationFn: ({ id, payload }: { id: number | string; payload: JadwalkanPemasanganForm }) =>
-      jadwalkanPemasangan(id, payload),
+    mutationFn: ({ id, payload }: { id: number | string; payload: JadwalkanKerjaForm }) =>
+      jadwalkanKerja(id, payload),
     onSuccess: (_, { id }) => invalidasi(id),
   })
 }

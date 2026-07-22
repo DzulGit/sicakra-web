@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import RiwayatStatusTimeline from '../components/RiwayatStatusTimeline.vue'
 import VerifikasiDialog from '../components/VerifikasiDialog.vue'
-import JadwalkanSurveyDialog from '../components/JadwalkanSurveyDialog.vue'
-import JadwalkanPemasanganDialog from '../components/JadwalkanPemasanganDialog.vue'
+import JadwalkanKerjaDialog from '../components/JadwalkanKerjaDialog.vue'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -18,8 +17,7 @@ const id = computed(() => route.params.id as string)
 const { data: permohonan, isLoading } = usePermohonanLayananDetail(id)
 
 const dialogVerifikasiTerbuka = ref(false)
-const dialogSurveyTerbuka = ref(false)
-const dialogPemasanganTerbuka = ref(false)
+const dialogJadwalkanTerbuka = ref(false)
 
 const bisaVerifikasi = computed(
   () =>
@@ -27,26 +25,16 @@ const bisaVerifikasi = computed(
     ['MENUNGGU_VERIFIKASI', 'PERLU_REVISI'].includes(permohonan.value.status),
 )
 
-// DITUNDA bisa berarti "resume survey" ATAU "resume pemasangan" —
-// dibedakan dari ada/tidaknya jadwal_pemasangan yang sudah pernah dibuat.
-const bisaJadwalkanSurvey = computed(() => {
-  if (!permohonan.value) return false
-  if (permohonan.value.status === 'DITERIMA') return true
-  return (
-    permohonan.value.status === 'DITUNDA' &&
-    (!permohonan.value.jadwal_pemasangan || permohonan.value.jadwal_pemasangan.length === 0)
-  )
-})
+// Satu tombol jadwalkan buat 2 kasus: penjadwalan awal (DITERIMA) atau
+// reschedule setelah ada kendala di kunjungan sebelumnya (DITUNDA).
+const bisaJadwalkanKerja = computed(
+  () =>
+    !!permohonan.value && ['DITERIMA', 'DITUNDA'].includes(permohonan.value.status),
+)
 
-const bisaJadwalkanPemasangan = computed(() => {
-  if (!permohonan.value) return false
-  if (permohonan.value.status === 'PEMASANGAN') return true
-  return (
-    permohonan.value.status === 'DITUNDA' &&
-    !!permohonan.value.jadwal_pemasangan &&
-    permohonan.value.jadwal_pemasangan.length > 0
-  )
-})
+const labelTombolJadwalkan = computed(() =>
+  permohonan.value?.status === 'DITUNDA' ? 'Jadwalkan Ulang' : 'Jadwalkan Kerja',
+)
 </script>
 
 <template>
@@ -94,7 +82,7 @@ const bisaJadwalkanPemasangan = computed(() => {
             <p>{{ permohonan.alasan_ditolak }}</p>
           </div>
           <div v-if="permohonan.alasan_ditunda" class="rounded-md bg-warning/10 p-3 text-sm">
-            <p class="font-medium">Alasan Ditunda</p>
+            <p class="font-medium">Kendala dari Kunjungan Sebelumnya</p>
             <p>{{ permohonan.alasan_ditunda }}</p>
           </div>
         </CardContent>
@@ -119,21 +107,10 @@ const bisaJadwalkanPemasangan = computed(() => {
           <Button v-if="bisaVerifikasi" class="w-full" @click="dialogVerifikasiTerbuka = true">
             Verifikasi
           </Button>
-          <Button v-if="bisaJadwalkanSurvey" class="w-full" variant="outline" @click="dialogSurveyTerbuka = true">
-            Jadwalkan Survey
+          <Button v-if="bisaJadwalkanKerja" class="w-full" variant="outline" @click="dialogJadwalkanTerbuka = true">
+            {{ labelTombolJadwalkan }}
           </Button>
-          <Button
-            v-if="bisaJadwalkanPemasangan"
-            class="w-full"
-            variant="outline"
-            @click="dialogPemasanganTerbuka = true"
-          >
-            Jadwalkan Pemasangan
-          </Button>
-          <p
-            v-if="!bisaVerifikasi && !bisaJadwalkanSurvey && !bisaJadwalkanPemasangan"
-            class="text-sm text-muted-foreground"
-          >
+          <p v-if="!bisaVerifikasi && !bisaJadwalkanKerja" class="text-sm text-muted-foreground">
             Tidak ada aksi Operasional yang tersedia untuk status ini.
           </p>
         </CardContent>
@@ -141,7 +118,6 @@ const bisaJadwalkanPemasangan = computed(() => {
     </div>
 
     <VerifikasiDialog v-model:open="dialogVerifikasiTerbuka" :permohonan-id="permohonan.id" />
-    <JadwalkanSurveyDialog v-model:open="dialogSurveyTerbuka" :permohonan-id="permohonan.id" />
-    <JadwalkanPemasanganDialog v-model:open="dialogPemasanganTerbuka" :permohonan-id="permohonan.id" />
+    <JadwalkanKerjaDialog v-model:open="dialogJadwalkanTerbuka" :permohonan-id="permohonan.id" />
   </div>
 </template>

@@ -1,11 +1,7 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
-import type { AdminRingkas, JadwalPemasangan, JadwalSurvey, PermohonanLayanan } from '@/types/models'
-import type {
-  JadwalkanPemasanganForm,
-  JadwalkanSurveyForm,
-  VerifikasiPermohonanForm,
-} from '@/schemas/permohonan-layanan.schema'
+import type { AdminRingkas, JadwalKerja, PermohonanLayanan } from '@/types/models'
+import type { JadwalkanKerjaForm, VerifikasiPermohonanForm } from '@/schemas/permohonan-layanan.schema'
 
 const BASE = '/admin/operasional/permohonan-layanan'
 
@@ -21,15 +17,11 @@ export function verifikasiPermohonan(id: number | string, payload: VerifikasiPer
   return httpClient.patch<ApiResponse<PermohonanLayanan>>(`${BASE}/${id}/verifikasi`, payload)
 }
 
-export function jadwalkanSurvey(id: number | string, payload: JadwalkanSurveyForm) {
-  return httpClient.post<ApiResponse<JadwalSurvey>>(`${BASE}/${id}/jadwalkan-survey`, payload)
+/** Satu endpoint gabungan — dipakai penjadwalan awal MAUPUN reschedule setelah kendala. */
+export function jadwalkanKerja(id: number | string, payload: JadwalkanKerjaForm) {
+  return httpClient.post<ApiResponse<JadwalKerja>>(`${BASE}/${id}/jadwalkan-kerja`, payload)
 }
 
-export function jadwalkanPemasangan(id: number | string, payload: JadwalkanPemasanganForm) {
-  return httpClient.post<ApiResponse<JadwalPemasangan>>(`${BASE}/${id}/jadwalkan-pemasangan`, payload)
-}
-
-/** Endpoint baru — lihat catatan gap backend di atas (perlu ditambahkan manual). */
 export function getDaftarTeknisi() {
   return httpClient.get<ApiResponse<AdminRingkas[]>>('/admin/operasional/teknisi')
 }

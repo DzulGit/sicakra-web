@@ -14,16 +14,11 @@ export const verifikasiPermohonanSchema = z
   })
 export type VerifikasiPermohonanForm = z.infer<typeof verifikasiPermohonanSchema>
 
-// app/Http/Requests/PermohonanLayanan/JadwalkanSurveyRequest.php
-export const jadwalkanSurveySchema = z.object({
-  admin_id: z.string().min(1, 'Pilih teknisi'),
-  tanggal_survey: z.string().min(1, 'Tanggal wajib diisi'),
+// app/Http/Requests/PermohonanLayanan/JadwalkanKerjaRequest.php
+// GABUNGAN survey+pemasangan — satu jadwal kunjungan, satu form.
+export const jadwalkanKerjaSchema = z.object({
+  tim_teknisi_id: z.string().optional(),
+  teknisi_ids: z.array(z.number()).min(1, 'Pilih minimal 1 teknisi'),
+  tanggal_kerja: z.string().min(1, 'Tanggal wajib diisi'),
 })
-export type JadwalkanSurveyForm = z.infer<typeof jadwalkanSurveySchema>
-
-// app/Http/Requests/PermohonanLayanan/JadwalkanPemasanganRequest.php
-export const jadwalkanPemasanganSchema = z.object({
-  admin_id: z.string().min(1, 'Pilih teknisi'),
-  tanggal_pemasangan: z.string().min(1, 'Tanggal wajib diisi'),
-})
-export type JadwalkanPemasanganForm = z.infer<typeof jadwalkanPemasanganSchema>
+export type JadwalkanKerjaForm = z.infer<typeof jadwalkanKerjaSchema>

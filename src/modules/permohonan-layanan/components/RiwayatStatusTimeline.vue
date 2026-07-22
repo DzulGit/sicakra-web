@@ -6,10 +6,7 @@ import type { RiwayatStatusPermohonan } from '@/types/models'
 defineProps<{ riwayat: RiwayatStatusPermohonan[] }>()
 
 function formatTanggal(iso: string) {
-  return new Date(iso).toLocaleString('id-ID', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  return new Date(iso).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
 }
 </script>
 
