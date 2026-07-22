@@ -14,10 +14,9 @@ const navigasi = [
     <div class="mx-auto max-w-6xl px-6 py-16">
       <div class="grid gap-10 md:grid-cols-3">
         <div>
-          <p class="font-display text-xl italic tracking-tight">Sicakra</p>
-          <p class="mt-3 max-w-xs text-sm text-landing-mist/60">
-            Internet fiber untuk rumah dan usaha — dipasang, dijaga, dan diperbaiki oleh tim yang
-            benar-benar datang ke lokasi kamu.
+          <img src="/public/logo-sicakra.png" alt="Logo" class="h-13 w-auto" />
+          <p class="mt-2 max-w-xs text-sm text-muted-foreground">
+            Layanan internet cepat dan andal untuk rumah dan usaha kamu.
           </p>
         </div>
 
