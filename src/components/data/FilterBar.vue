@@ -6,14 +6,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import type { FilterFieldConfig } from '@/types/filter'
 
-/**
- * Filter generik berbasis config, sinkron ke query-string. Nama `key` tiap
- * field HARUS sama persis dengan param yang dikenali QueryFilter backend
- * (lihat app/Filters/*.php) — kalau tidak sama, filter tidak akan berefek
- * (backend cuma mengabaikan param yang tidak dikenali, bukan error).
- */
 const props = defineProps<{ fields: FilterFieldConfig[] }>()
-
 const route = useRoute()
 const router = useRouter()
 
@@ -29,7 +22,7 @@ function setFilter(key: string, nilai: string | null) {
   }
   if (nilai) query[key] = nilai
   else delete query[key]
-  router.push({ query }) // reset ke halaman 1 tiap filter berubah (page sengaja tidak ikut dibawa)
+  router.push({ query })
 }
 
 function resetSemua() {
@@ -38,7 +31,6 @@ function resetSemua() {
 
 const adaFilterAktif = computed(() => props.fields.some((f) => !!nilaiFilter(f.key)))
 </script>
-
 <template>
   <div class="flex flex-wrap items-center gap-2">
     <Select
@@ -47,16 +39,11 @@ const adaFilterAktif = computed(() => props.fields.some((f) => !!nilaiFilter(f.k
       :model-value="nilaiFilter(field.key)"
       @update:model-value="(nilai) => setFilter(field.key, nilai as string)"
     >
-      <SelectTrigger class="w-44">
-        <SelectValue :placeholder="field.placeholder ?? field.label" />
-      </SelectTrigger>
+      <SelectTrigger class="w-44"><SelectValue :placeholder="field.placeholder ?? field.label" /></SelectTrigger>
       <SelectContent>
-        <SelectItem v-for="opt in field.options" :key="opt.value" :value="opt.value">
-          {{ opt.label }}
-        </SelectItem>
+        <SelectItem v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</SelectItem>
       </SelectContent>
     </Select>
-
     <Button v-if="adaFilterAktif" variant="ghost" size="sm" @click="resetSemua">
       <X class="size-4" />
       Reset Filter

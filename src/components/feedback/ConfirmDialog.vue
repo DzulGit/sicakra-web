@@ -1,19 +1,8 @@
 <script setup lang="ts">
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import type { ButtonVariants } from '@/components/ui/button'
 
-/**
- * Dialog konfirmasi generik untuk aksi state-changing (Tolak Permohonan,
- * Nonaktifkan Admin, dst). BUKAN untuk form panjang — lihat design-system.md.
- */
 withDefaults(
   defineProps<{
     open: boolean
@@ -24,20 +13,10 @@ withDefaults(
     variantKonfirmasi?: ButtonVariants['variant']
     loading?: boolean
   }>(),
-  {
-    labelKonfirmasi: 'Konfirmasi',
-    labelBatal: 'Batal',
-    variantKonfirmasi: 'default',
-    loading: false,
-  },
+  { labelKonfirmasi: 'Konfirmasi', labelBatal: 'Batal', variantKonfirmasi: 'default', loading: false },
 )
-
-const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'confirm'): void
-}>()
+const emit = defineEmits<{ (e: 'update:open', value: boolean): void; (e: 'confirm'): void }>()
 </script>
-
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
     <DialogContent>
@@ -46,9 +25,7 @@ const emit = defineEmits<{
         <DialogDescription v-if="deskripsi">{{ deskripsi }}</DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" :disabled="loading" @click="emit('update:open', false)">
-          {{ labelBatal }}
-        </Button>
+        <Button variant="outline" :disabled="loading" @click="emit('update:open', false)">{{ labelBatal }}</Button>
         <Button :variant="variantKonfirmasi" :disabled="loading" @click="emit('confirm')">
           {{ loading ? 'Memproses...' : labelKonfirmasi }}
         </Button>
