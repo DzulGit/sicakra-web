@@ -1,0 +1,1 @@
+import{c as e,s as t}from"./Label-C03CRDY7.js";var n=t({teknisi_id:e().min(1,`Pilih teknisi`)}),r=t({hasil_penanganan:e().min(1,`Hasil penanganan wajib diisi`)}),i=t({layanan_internet_id:e().min(1,`Pilih layanan`),kategori_kendala:e().min(1,`Kategori wajib diisi`),deskripsi:e().min(1,`Deskripsi wajib diisi`)});export{r as n,n as r,i as t};

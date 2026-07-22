@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, StorageSerializers } from '@vueuse/core'
 
 /**
  * Tipe pengguna yang login — cermin 2 model backend (Admin vs Pelanggan).
@@ -26,10 +26,12 @@ export interface SesiPengguna {
  */
 export const useAuthStore = defineStore('auth', () => {
   const token = useLocalStorage<string | null>('sicakra_token', null)
-  const pengguna = useLocalStorage<SesiPengguna | null>('sicakra_pengguna', null)
+  const pengguna = useLocalStorage<SesiPengguna | null>('sicakra_pengguna', null, {
+    serializer: StorageSerializers.object
+  })
 
   const sudahLogin = computed(() => !!token.value && !!pengguna.value)
-  const tipePengguna = computed<TipePengguna | null>(() => pengguna.value?.tipe ?? null)
+  const tipePengguna = computed<TipePengguna | null>(() => pengguna.value?.tipe ?? (pengguna.value as any)?.tipe_pengguna ?? null)
   const peranAdmin = computed<PeranAdmin | null>(() => pengguna.value?.peran ?? null)
   const wajibBuatPassword = computed(
     () => pengguna.value?.tipe === 'pelanggan' && pengguna.value.password_sudah_dibuat === false,

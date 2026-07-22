@@ -1,0 +1,1 @@
+import{F as e,R as t,h as n,ht as r,pt as i,y as a}from"./vue.runtime.esm-bundler-CRQXtaFo.js";import{g as o}from"./auth.store-4rriWN_g.js";var s=a({__name:`CardDescription`,props:{class:{}},setup(a){let s=a;return(a,c)=>(e(),n(`p`,{class:r(i(o)(`text-sm text-muted-foreground`,s.class))},[t(a.$slots,`default`)],2))}});export{s as t};

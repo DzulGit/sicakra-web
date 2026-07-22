@@ -12,7 +12,10 @@ import type { ApiErrorResponse } from '@/types/api'
 export const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api',
   headers: {
-    Accept: 'application/json',
+    Accept:
+    'application/json',
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': '69420'
   },
 })
 
