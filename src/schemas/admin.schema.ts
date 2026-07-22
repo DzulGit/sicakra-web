@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-// app/Http/Requests/SuperAdmin/SimpanAdminRequest.php
-// peran 'super_admin' SENGAJA tidak masuk pilihan — hanya boleh lewat seeder.
 export const simpanAdminSchema = z.object({
   nama_lengkap: z.string().min(1, 'Nama lengkap wajib diisi'),
   email: z.string().min(1, 'Email wajib diisi').email('Format email tidak valid'),
@@ -10,7 +8,6 @@ export const simpanAdminSchema = z.object({
 })
 export type SimpanAdminForm = z.infer<typeof simpanAdminSchema>
 
-// app/Http/Requests/SuperAdmin/UbahAdminRequest.php
 export const ubahAdminSchema = z.object({
   nama_lengkap: z.string().min(1, 'Nama lengkap wajib diisi'),
   email: z.string().min(1, 'Email wajib diisi').email('Format email tidak valid'),
