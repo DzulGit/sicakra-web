@@ -17,68 +17,41 @@ import { Skeleton } from '@/components/ui/skeleton'
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => route.params.id as string)
-
 const { data: admin, isLoading } = useAdminDetail(id)
-
-const { handleSubmit, errors, defineField, setErrors, setValues } = useForm({
-  validationSchema: toTypedSchema(ubahAdminSchema),
-})
+const { handleSubmit, errors, defineField, setErrors, setValues } = useForm({ validationSchema: toTypedSchema(ubahAdminSchema) })
 const [namaLengkap, namaLengkapAttrs] = defineField('nama_lengkap')
 const [email, emailAttrs] = defineField('email')
 const [peran, peranAttrs] = defineField('peran')
 
-watch(
-  admin,
-  (nilai) => {
-    if (!nilai) return
-    setValues({
-      nama_lengkap: nilai.nama_lengkap,
-      email: nilai.email,
-      peran: nilai.peran as 'operasional' | 'teknisi' | 'keuangan',
-    })
-  },
-  { immediate: true },
-)
+watch(admin, (nilai) => {
+  if (!nilai) return
+  setValues({ nama_lengkap: nilai.nama_lengkap, email: nilai.email, peran: nilai.peran as 'operasional' | 'teknisi' | 'keuangan' })
+}, { immediate: true })
 
 const { mutate, isPending } = useUbahAdmin()
-
 const onSubmit = handleSubmit((values) => {
-  mutate(
-    { id: id.value, payload: values },
-    {
-      onSuccess: () => {
-        toast.success('Data admin berhasil diperbarui.')
-        router.push('/admin/super-admin/admin')
-      },
-      onError: (error) => {
-        const fieldErrors = mapValidationErrors(error)
-        if (fieldErrors) setErrors(fieldErrors)
-        else toast.error('Terjadi kesalahan, coba lagi.')
-      },
+  mutate({ id: id.value, payload: values }, {
+    onSuccess: () => {
+      toast.success('Data admin berhasil diperbarui.')
+      router.push('/admin/super-admin/admin')
     },
-  )
+    onError: (error) => {
+      const fieldErrors = mapValidationErrors(error)
+      if (fieldErrors) setErrors(fieldErrors)
+      else toast.error('Terjadi kesalahan, coba lagi.')
+    },
+  })
 })
 </script>
-
 <template>
-  <div v-if="isLoading" class="max-w-lg space-y-4">
-    <Skeleton class="h-64 w-full" />
-  </div>
-
+  <div v-if="isLoading" class="max-w-lg space-y-4"><Skeleton class="h-64 w-full" /></div>
   <Card v-else class="max-w-lg">
-    <CardHeader>
-      <CardTitle>Ubah Admin</CardTitle>
-    </CardHeader>
+    <CardHeader><CardTitle>Ubah Admin</CardTitle></CardHeader>
     <CardContent>
       <form class="space-y-4" novalidate @submit="onSubmit">
         <div class="space-y-2">
           <Label for="nama_lengkap">Nama Lengkap</Label>
-          <Input
-            id="nama_lengkap"
-            v-model="namaLengkap"
-            v-bind="namaLengkapAttrs"
-            :aria-invalid="!!errors.nama_lengkap"
-          />
+          <Input id="nama_lengkap" v-model="namaLengkap" v-bind="namaLengkapAttrs" :aria-invalid="!!errors.nama_lengkap" />
           <p v-if="errors.nama_lengkap" class="text-xs text-destructive">{{ errors.nama_lengkap }}</p>
         </div>
         <div class="space-y-2">
@@ -98,9 +71,7 @@ const onSubmit = handleSubmit((values) => {
           </Select>
           <p v-if="errors.peran" class="text-xs text-destructive">{{ errors.peran }}</p>
         </div>
-        <Button type="submit" class="w-full" :disabled="isPending">
-          {{ isPending ? 'Menyimpan...' : 'Simpan Perubahan' }}
-        </Button>
+        <Button type="submit" class="w-full" :disabled="isPending">{{ isPending ? 'Menyimpan...' : 'Simpan Perubahan' }}</Button>
       </form>
     </CardContent>
   </Card>

@@ -13,15 +13,11 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 
 const router = useRouter()
-
-const { handleSubmit, errors, defineField, setErrors } = useForm({
-  validationSchema: toTypedSchema(simpanAdminSchema),
-})
+const { handleSubmit, errors, defineField, setErrors } = useForm({ validationSchema: toTypedSchema(simpanAdminSchema) })
 const [namaLengkap, namaLengkapAttrs] = defineField('nama_lengkap')
 const [email, emailAttrs] = defineField('email')
 const [password, passwordAttrs] = defineField('password')
 const [peran, peranAttrs] = defineField('peran')
-
 const { mutate, isPending } = useSimpanAdmin()
 
 const onSubmit = handleSubmit((values) => {
@@ -38,22 +34,14 @@ const onSubmit = handleSubmit((values) => {
   })
 })
 </script>
-
 <template>
   <Card class="max-w-lg">
-    <CardHeader>
-      <CardTitle>Tambah Admin</CardTitle>
-    </CardHeader>
+    <CardHeader><CardTitle>Tambah Admin</CardTitle></CardHeader>
     <CardContent>
       <form class="space-y-4" novalidate @submit="onSubmit">
         <div class="space-y-2">
           <Label for="nama_lengkap">Nama Lengkap</Label>
-          <Input
-            id="nama_lengkap"
-            v-model="namaLengkap"
-            v-bind="namaLengkapAttrs"
-            :aria-invalid="!!errors.nama_lengkap"
-          />
+          <Input id="nama_lengkap" v-model="namaLengkap" v-bind="namaLengkapAttrs" :aria-invalid="!!errors.nama_lengkap" />
           <p v-if="errors.nama_lengkap" class="text-xs text-destructive">{{ errors.nama_lengkap }}</p>
         </div>
         <div class="space-y-2">
@@ -63,14 +51,7 @@ const onSubmit = handleSubmit((values) => {
         </div>
         <div class="space-y-2">
           <Label for="password">Password</Label>
-          <Input
-            id="password"
-            v-model="password"
-            v-bind="passwordAttrs"
-            type="password"
-            placeholder="Minimal 8 karakter"
-            :aria-invalid="!!errors.password"
-          />
+          <Input id="password" v-model="password" v-bind="passwordAttrs" type="password" :aria-invalid="!!errors.password" />
           <p v-if="errors.password" class="text-xs text-destructive">{{ errors.password }}</p>
         </div>
         <div class="space-y-2">
@@ -84,13 +65,8 @@ const onSubmit = handleSubmit((values) => {
             </SelectContent>
           </Select>
           <p v-if="errors.peran" class="text-xs text-destructive">{{ errors.peran }}</p>
-          <p class="text-xs text-muted-foreground">
-            Super Admin tidak bisa dibuat dari sini — hanya lewat seeder saat setup awal server.
-          </p>
         </div>
-        <Button type="submit" class="w-full" :disabled="isPending">
-          {{ isPending ? 'Menyimpan...' : 'Simpan' }}
-        </Button>
+        <Button type="submit" class="w-full" :disabled="isPending">{{ isPending ? 'Menyimpan...' : 'Simpan' }}</Button>
       </form>
     </CardContent>
   </Card>
