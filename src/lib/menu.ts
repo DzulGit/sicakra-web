@@ -3,9 +3,9 @@ import {
   LayoutDashboard,
   FileText,
   Calendar,
-  Wrench,
   Receipt,
   Users,
+  UsersRound,
   Wifi,
   MessageSquareWarning,
   UserCircle,
@@ -19,7 +19,6 @@ export interface MenuItem {
 }
 
 export interface MenuGroup {
-  /** Kosongkan kalau grup tidak butuh judul (mis. menu pelanggan yang flat). */
   label?: string
   items: MenuItem[]
 }
@@ -30,14 +29,16 @@ const menuOperasional: MenuItem[] = [
 ]
 
 const menuTeknisi: MenuItem[] = [
-  { label: 'Jadwal Survey', to: '/admin/teknisi/jadwal-survey', icon: Calendar },
-  { label: 'Jadwal Pemasangan', to: '/admin/teknisi/jadwal-pemasangan', icon: Wrench },
+  { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar },
   { label: 'Laporan Kendala', to: '/admin/teknisi/laporan-kendala', icon: MessageSquareWarning },
 ]
 
 const menuKeuangan: MenuItem[] = [{ label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt }]
 
-const menuSuperAdmin: MenuItem[] = [{ label: 'Kelola Admin', to: '/admin/super-admin/admin', icon: Users }]
+const menuSuperAdmin: MenuItem[] = [
+  { label: 'Kelola Admin', to: '/admin/super-admin/admin', icon: Users },
+  { label: 'Tim Teknisi', to: '/admin/super-admin/tim-teknisi', icon: UsersRound },
+]
 
 const menuPelanggan: MenuItem[] = [
   { label: 'Dashboard', to: '/pelanggan/dashboard', icon: LayoutDashboard },
@@ -47,16 +48,6 @@ const menuPelanggan: MenuItem[] = [
   { label: 'Profil', to: '/pelanggan/profil', icon: UserCircle },
 ]
 
-/**
- * Sumber kebenaran TUNGGAL untuk isi sidebar. Komponen AppSidebar tidak
- * boleh hardcode menu — semua lewat fungsi ini, supaya nambah/hapus item
- * menu cukup ubah 1 file ini.
- *
- * Super Admin sengaja dapat SEMUA grup (mengikuti backend: middleware
- * `peran:operasional,super_admin` dst selalu menyertakan super_admin —
- * artinya Super Admin memang berhak akses semua area fungsional, bukan
- * cuma Kelola Admin).
- */
 export function getMenuGroups(tipe: TipePengguna | null, peran: PeranAdmin | null): MenuGroup[] {
   if (tipe === 'pelanggan') {
     return [{ items: menuPelanggan }]

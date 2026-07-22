@@ -20,9 +20,7 @@ export const statusPermohonanEnum: EnumMap = {
   DITERIMA: { label: 'Diterima', badgeVariant: 'info' },
   DITOLAK: { label: 'Ditolak', badgeVariant: 'destructive' },
   DIJADWALKAN: { label: 'Dijadwalkan', badgeVariant: 'info' },
-  SURVEY: { label: 'Survey', badgeVariant: 'info' },
-  PEMASANGAN: { label: 'Pemasangan', badgeVariant: 'info' },
-  DITUNDA: { label: 'Ditunda', badgeVariant: 'warning' },
+  DITUNDA: { label: 'Ditunda — Ada Kendala', badgeVariant: 'warning' },
   DIKONVERSI: { label: 'Aktif (Dikonversi)', badgeVariant: 'success' },
 }
 
@@ -50,14 +48,9 @@ export const statusTransaksiEnum: EnumMap = {
   gagal: { label: 'Gagal', badgeVariant: 'destructive' },
 }
 
-export const hasilSurveyEnum: EnumMap = {
-  berhasil: { label: 'Berhasil', badgeVariant: 'success' },
-  kendala: { label: 'Kendala', badgeVariant: 'warning' },
-}
-
-export const hasilPemasanganEnum: EnumMap = {
+export const hasilKerjaEnum: EnumMap = {
   selesai: { label: 'Selesai', badgeVariant: 'success' },
-  ditunda: { label: 'Ditunda', badgeVariant: 'warning' },
+  kendala: { label: 'Kendala', badgeVariant: 'warning' },
 }
 
 export const statusPerangkatEnum: EnumMap = {

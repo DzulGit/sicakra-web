@@ -32,26 +32,33 @@ export interface RiwayatStatusPermohonan {
   created_at: string
 }
 
-export interface JadwalSurvey {
+export interface TimTeknisi {
   id: number
-  permohonan_layanan_id: number
-  admin_id: number
-  tanggal_survey: string
-  hasil: 'berhasil' | 'kendala' | null
-  catatan: string | null
-  permohonan_layanan?: PermohonanLayanan
+  nama_tim: string
+  status_aktif: boolean
+  anggota?: AdminRingkas[]
 }
 
-export interface JadwalPemasangan {
-  id: number
-  permohonan_layanan_id: number
-  admin_id: number
-  tanggal_pemasangan: string
-  hasil: 'selesai' | 'ditunda' | null
-  alasan_penundaan: string | null
-  permohonan_layanan?: PermohonanLayanan
+export interface RingkasanAktivasi {
+  nomor_pelanggan: string | null
+  nama_pelanggan: string
+  nomor_layanan: string
+  nama_paket: string | null
+  kecepatan_mbps: number | null
+  status: string
 }
 
+export interface JadwalKerja {
+  id: number
+  permohonan_layanan_id: number
+  tim_teknisi_id: number | null
+  tanggal_kerja: string
+  hasil: 'selesai' | 'kendala' | null
+  catatan_kendala: string | null
+  permohonan_layanan?: PermohonanLayanan
+  teknisi?: AdminRingkas[]
+  tim_teknisi?: TimTeknisi
+}
 export interface PermohonanLayanan {
   id: number
   nomor_permohonan: string
@@ -78,8 +85,7 @@ export interface PermohonanLayanan {
   pelanggan?: Pelanggan
   paket_internet?: PaketInternet
   riwayat_status?: RiwayatStatusPermohonan[]
-  jadwal_survey?: JadwalSurvey[]
-  jadwal_pemasangan?: JadwalPemasangan[]
+  jadwal_kerja?: JadwalKerja[]
 }
 
 export interface LayananInternetRingkas {
