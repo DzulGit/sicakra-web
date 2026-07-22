@@ -28,7 +28,7 @@ const { mutate: login, isPending } = useLoginAdmin()
 const rutePerPeran: Record<string, string> = {
   super_admin: '/admin/super-admin/admin',
   operasional: '/admin/operasional/permohonan-layanan',
-  teknisi: '/admin/teknisi/jadwal-survey',
+  teknisi: '/admin/teknisi/jadwal-kerja',
   keuangan: '/admin/keuangan/tagihan',
 }
 
