@@ -4,21 +4,23 @@ const PermohonanLayananListPage = () => import('@/modules/permohonan-layanan/pag
 const PermohonanLayananDetailPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananDetailPage.vue')
 const LaporanKendalaListPage = () => import('@/modules/laporan-kendala/pages/operasional/LaporanKendalaListPage.vue')
 const LaporanKendalaDetailPage = () => import('@/modules/laporan-kendala/pages/operasional/LaporanKendalaDetailPage.vue')
-const JadwalSurveyListPage = () => import('@/modules/jadwal-survey/pages/JadwalSurveyListPage.vue')
-const JadwalSurveyDetailPage = () => import('@/modules/jadwal-survey/pages/JadwalSurveyDetailPage.vue')
-const JadwalPemasanganListPage = () => import('@/modules/jadwal-pemasangan/pages/JadwalPemasanganListPage.vue')
-const JadwalPemasanganDetailPage = () => import('@/modules/jadwal-pemasangan/pages/JadwalPemasanganDetailPage.vue')
+const JadwalKerjaListPage = () => import('@/modules/jadwal-kerja/pages/JadwalKerjaListPage.vue')
+const JadwalKerjaDetailPage = () => import('@/modules/jadwal-kerja/pages/JadwalKerjaDetailPage.vue')
 const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaListPage.vue')
 const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
-const TagihanListPage = () => import('@/modules/tagihan/pages/pelanggan/TagihanSayaListPage.vue')
-const TagihanDetailPage = () => import('@/modules/tagihan/pages/pelanggan/TagihanSayaDetailPage.vue')
+const TagihanListPage = () => import('@/modules/tagihan/pages/pelanggan/TagihanListPage.vue')
+const TagihanDetailPage = () => import('@/modules/tagihan/pages/pelanggan/TagihanDetailPage.vue')
 const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
 const AdminCreatePage = () => import('@/modules/admin-management/pages/AdminCreatePage.vue')
 const AdminEditPage = () => import('@/modules/admin-management/pages/AdminEditPage.vue')
+const TimTeknisiListPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiListPage.vue')
+const TimTeknisiCreatePage = () => import('@/modules/tim-teknisi/pages/TimTeknisiCreatePage.vue')
+const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiEditPage.vue')
 
 /**
- * Route Admin — dibangun Fase 3 (auth) & Fase 5-8 (Operasional/Teknisi/Keuangan/Super Admin).
- * Peran dibatasi lewat meta.peran, dicek oleh navigation guard (guards.ts).
+ * Route Admin — dibangun Fase 3 (auth), Fase 5-8 (Operasional/Teknisi/
+ * Keuangan/Super Admin). Direvisi Juli 2026: jadwal survey+pemasangan
+ * digabung jadi Jadwal Kerja, tambah Tim Teknisi (Super Admin).
  */
 export const adminRoutes: RouteRecordRaw[] = [
   {
@@ -80,48 +82,24 @@ export const adminRoutes: RouteRecordRaw[] = [
 
   // ----- Teknisi -----
   {
-    path: '/admin/teknisi/jadwal-survey',
-    name: 'admin.teknisi.jadwal-survey.index',
-    component: JadwalSurveyListPage,
+    path: '/admin/teknisi/jadwal-kerja',
+    name: 'admin.teknisi.jadwal-kerja.index',
+    component: JadwalKerjaListPage,
     meta: {
       layout: 'dashboard',
-      judul: 'Jadwal Survey',
+      judul: 'Jadwal Kerja',
       requiresAuth: true,
       guard: 'admin',
       peran: ['teknisi', 'super_admin'],
     },
   },
   {
-    path: '/admin/teknisi/jadwal-survey/:id',
-    name: 'admin.teknisi.jadwal-survey.detail',
-    component: JadwalSurveyDetailPage,
+    path: '/admin/teknisi/jadwal-kerja/:id',
+    name: 'admin.teknisi.jadwal-kerja.detail',
+    component: JadwalKerjaDetailPage,
     meta: {
       layout: 'dashboard',
-      judul: 'Isi Hasil Survey',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['teknisi', 'super_admin'],
-    },
-  },
-  {
-    path: '/admin/teknisi/jadwal-pemasangan',
-    name: 'admin.teknisi.jadwal-pemasangan.index',
-    component: JadwalPemasanganListPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Jadwal Pemasangan',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['teknisi', 'super_admin'],
-    },
-  },
-  {
-    path: '/admin/teknisi/jadwal-pemasangan/:id',
-    name: 'admin.teknisi.jadwal-pemasangan.detail',
-    component: JadwalPemasanganDetailPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Isi Hasil Pemasangan',
+      judul: 'Isi Hasil Kunjungan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['teknisi', 'super_admin'],
@@ -210,6 +188,42 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Ubah Admin',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['super_admin'],
+    },
+  },
+  {
+    path: '/admin/super-admin/tim-teknisi',
+    name: 'admin.super-admin.tim-teknisi.index',
+    component: TimTeknisiListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Tim Teknisi',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['super_admin'],
+    },
+  },
+  {
+    path: '/admin/super-admin/tim-teknisi/baru',
+    name: 'admin.super-admin.tim-teknisi.create',
+    component: TimTeknisiCreatePage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Tambah Tim Teknisi',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['super_admin'],
+    },
+  },
+  {
+    path: '/admin/super-admin/tim-teknisi/:id/ubah',
+    name: 'admin.super-admin.tim-teknisi.edit',
+    component: TimTeknisiEditPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Ubah Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
       peran: ['super_admin'],
