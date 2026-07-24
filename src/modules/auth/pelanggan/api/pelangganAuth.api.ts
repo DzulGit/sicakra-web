@@ -10,6 +10,9 @@ export interface PelangganData {
   id: number
   nama_lengkap: string
   nomor_pelanggan: string | null
+  // TODO: pastikan field ini benar dikirim backend dari kolom `password_sudah_dibuat`
+  // pada tabel pelanggan. Dipakai untuk munculkan popup opsional di dashboard.
+  password_sudah_dibuat?: boolean
 }
 
 interface LoginPertamaResponseData {
@@ -41,4 +44,11 @@ export function buatPasswordPelanggan(payload: BuatPasswordForm) {
 
 export function logoutPelanggan() {
   return httpClient.post('/pelanggan/logout')
+}
+
+// TODO: endpoint ini diasumsikan mengikuti pola umum Laravel Sanctum
+// ("data user yang sedang login"). Cross-check ke routes/api.php backend —
+// path, method, atau bentuk response bisa jadi berbeda.
+export function getProfilPelanggan() {
+  return httpClient.get<ApiResponse<PelangganData>>('/pelanggan/me')
 }

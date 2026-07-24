@@ -30,11 +30,10 @@ export function setupRouterGuards(router: Router) {
       }
     }
 
-    // 4. Pelanggan yang belum buat password dipaksa ke halaman buat-password,
-    //    KECUALI memang sedang menuju halaman itu sendiri (hindari redirect loop).
-    if (authStore.wajibBuatPassword && to.name !== 'pelanggan.buat-password') {
-      return { name: 'pelanggan.buat-password' }
-    }
+    // Catatan: pelanggan yang belum pernah ganti password TIDAK LAGI dipaksa
+    // ke halaman buat-password. Password default (= nomor pelanggan) sudah
+    // cukup untuk login; ganti password ditawarkan opsional lewat popup di
+    // dashboard (lihat DashboardPelangganPage.vue), bukan dipaksa di sini.
 
     return true
   })

@@ -21,7 +21,7 @@ export const pelangganRoutes: RouteRecordRaw[] = [
     path: '/pelanggan/masuk',
     name: 'pelanggan.masuk',
     component: LoginPelangganPage,
-    meta: { layout: 'auth', judul: 'Masuk — Pelanggan' },
+    meta: { layout: 'auth', judul: 'Masuk — Pelanggan', fullBleed: true },
   },
   {
     path: '/pelanggan/buat-password',
