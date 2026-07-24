@@ -9,6 +9,7 @@ const route = useRoute()
 // login pelanggan dengan panel dua kolom) set `meta.fullBleed = true` di
 // route-nya untuk lepas dari batasan max-w-sm ini.
 const fullBleed = computed(() => !!route.meta.fullBleed)
+
 </script>
 
 <template>

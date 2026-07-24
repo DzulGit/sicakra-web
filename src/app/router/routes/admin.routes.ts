@@ -27,7 +27,7 @@ export const adminRoutes: RouteRecordRaw[] = [
     path: '/admin/masuk',
     name: 'admin.masuk',
     component: LoginAdminPage,
-    meta: { layout: 'auth', judul: 'Masuk — Admin' },
+    meta: { layout: 'auth', judul: 'Masuk — Admin', fullBleed: true },
   },
 
   // ----- Operasional -----
