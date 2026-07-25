@@ -8,6 +8,7 @@ import {
   UsersRound,
   Wifi,
   MessageSquareWarning,
+  Globe,
   UserCircle,
   UserPlus,
   Contact,
@@ -29,6 +30,7 @@ const menuOperasional: MenuItem[] = [
   { label: 'Permohonan Layanan', to: '/admin/operasional/permohonan-layanan', icon: FileText },
   { label: 'Pendaftar Baru', to: '/admin/operasional/pendaftar-baru', icon: UserPlus },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
+  { label: 'Paket Internet', to: '/admin/operasional/paket-internet', icon: Globe },
   { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },
   { label: 'Tim Teknisi', to: '/admin/operasional/tim-teknisi', icon: UsersRound },
 ]

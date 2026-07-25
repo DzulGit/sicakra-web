@@ -19,6 +19,8 @@ const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiE
 const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListPage.vue')
 const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
 const PendaftarBaruListPage = () => import('@/modules/permohonan-layanan/pages/PendaftarBaruListPage.vue')
+const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
+const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth), Fase 5-8 (Operasional/Teknisi/
@@ -83,6 +85,42 @@ export const adminRoutes: RouteRecordRaw[] = [
     },
   },
 
+  {
+    path: '/admin/operasional/paket-internet',
+    name: 'admin.operasional.paket-internet.index',
+    component: PaketInternetListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Paket Internet',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/paket-internet/baru',
+    name: 'admin.operasional.paket-internet.create',
+    component: PaketInternetFormPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Tambah Paket Internet',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/paket-internet/:id/ubah',
+    name: 'admin.operasional.paket-internet.edit',
+    component: PaketInternetFormPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Ubah Paket Internet',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
   {
     path: '/admin/operasional/pendaftar-baru',
     name: 'admin.operasional.pendaftar-baru.index',

@@ -76,6 +76,11 @@ export const jenisPerubahanPaketEnum: EnumMap = {
   downgrade: { label: 'Downgrade', badgeVariant: 'outline' },
 }
 
+export const statusAktifEnum: EnumMap = {
+  true: { label: 'Aktif', badgeVariant: 'success' },
+  false: { label: 'Nonaktif', badgeVariant: 'secondary' },
+}
+
 export const peranAdminEnum: EnumMap = {
   super_admin: { label: 'Super Admin', badgeVariant: 'outline' },
   operasional: { label: 'Operasional', badgeVariant: 'outline' },
