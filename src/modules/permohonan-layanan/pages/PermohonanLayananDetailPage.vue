@@ -12,7 +12,7 @@ import VerifikasiDialog from '../components/VerifikasiDialog.vue'
 import JadwalkanKerjaDialog from '../components/JadwalkanKerjaDialog.vue'
 
 const route = useRoute()
-const id = computed(() => route.params.id as string)
+const id = computed(() => Number(route.params.id))
 
 const { data: permohonan, isLoading } = usePermohonanLayananDetail(id)
 
@@ -25,8 +25,6 @@ const bisaVerifikasi = computed(
     ['MENUNGGU_VERIFIKASI', 'PERLU_REVISI'].includes(permohonan.value.status),
 )
 
-// Satu tombol jadwalkan buat 2 kasus: penjadwalan awal (DITERIMA) atau
-// reschedule setelah ada kendala di kunjungan sebelumnya (DITUNDA).
 const bisaJadwalkanKerja = computed(
   () =>
     !!permohonan.value && ['DITERIMA', 'DITUNDA'].includes(permohonan.value.status),
@@ -35,6 +33,21 @@ const bisaJadwalkanKerja = computed(
 const labelTombolJadwalkan = computed(() =>
   permohonan.value?.status === 'DITUNDA' ? 'Jadwalkan Ulang' : 'Jadwalkan Kerja',
 )
+
+function formatTanggal(iso: string) {
+  return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
+}
+
+function bukaMaps(lat: string, lng: string) {
+  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank')
+}
+
+const jadwalTerdekat = computed(() => {
+  if (!permohonan.value?.jadwal_kerja?.length) return null
+  return [...permohonan.value.jadwal_kerja].sort(
+    (a, b) => new Date(a.tanggal_kerja).getTime() - new Date(b.tanggal_kerja).getTime(),
+  )[0]
+})
 </script>
 
 <template>
@@ -43,38 +56,74 @@ const labelTombolJadwalkan = computed(() =>
     <Skeleton class="h-40 w-full" />
   </div>
 
-  <div v-else-if="permohonan" class="grid gap-6 lg:grid-cols-3">
-    <div class="space-y-6 lg:col-span-2">
+  <div v-else-if="permohonan" class="grid gap-4 lg:grid-cols-3">
+    <div class="space-y-4 lg:col-span-2">
       <Card>
         <CardHeader class="flex-row items-center justify-between">
           <div>
             <CardTitle>{{ permohonan.nomor_permohonan }}</CardTitle>
-            <p class="text-sm text-muted-foreground">{{ permohonan.pelanggan?.nama_lengkap }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ permohonan.pelanggan?.nama_lengkap }} &middot; {{ permohonan.pelanggan?.nomor_hp }}
+            </p>
           </div>
           <StatusBadge :value="permohonan.status" :map="statusPermohonanEnum" />
         </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="grid grid-cols-2 gap-4 text-sm">
+        <CardContent class="space-y-3">
+          <div class="grid grid-cols-3 gap-x-6 gap-y-1.5 text-sm">
             <div>
-              <p class="text-muted-foreground">Jenis Permohonan</p>
+              <p class="text-xs text-muted-foreground">Jenis Permohonan</p>
               <StatusBadge :value="permohonan.jenis_permohonan" :map="jenisPermohonanEnum" />
             </div>
             <div>
-              <p class="text-muted-foreground">Tipe Paket</p>
+              <p class="text-xs text-muted-foreground">Tipe Paket</p>
               <StatusBadge :value="permohonan.tipe_paket" :map="tipePaketEnum" />
             </div>
-            <div class="col-span-2">
-              <p class="text-muted-foreground">Alamat Pemasangan</p>
-              <p>{{ permohonan.alamat_pemasangan }}, RT {{ permohonan.rt }}/RW {{ permohonan.rw }}, {{ permohonan.kode_pos }}</p>
+            <div>
+              <p class="text-xs text-muted-foreground">Tanggal Pengajuan</p>
+              <p>{{ formatTanggal(permohonan.created_at) }}</p>
             </div>
-            <div v-if="permohonan.paket_internet">
-              <p class="text-muted-foreground">Paket</p>
-              <p>{{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps)</p>
+            <div>
+              <p class="text-xs text-muted-foreground">No. Pelanggan</p>
+              <p>{{ permohonan.pelanggan?.nomor_pelanggan ?? '-' }}</p>
             </div>
-            <div v-else-if="permohonan.tipe_paket === 'custom'">
-              <p class="text-muted-foreground">Paket Custom</p>
-              <p>{{ permohonan.nama_paket_custom }} ({{ permohonan.kecepatan_custom_mbps }} Mbps)</p>
+            <div>
+              <p class="text-xs text-muted-foreground">Kontak</p>
+              <p>{{ permohonan.pelanggan?.nomor_hp }}</p>
             </div>
+            <div>
+              <p class="text-xs text-muted-foreground">Email</p>
+              <p>{{ permohonan.pelanggan?.email ?? '-' }}</p>
+            </div>
+            <div v-if="jadwalTerdekat">
+              <p class="text-xs text-muted-foreground">Jadwal Eksekusi</p>
+              <p>{{ formatTanggal(jadwalTerdekat.tanggal_kerja) }}</p>
+            </div>
+            <div v-if="permohonan.updated_at !== permohonan.created_at">
+              <p class="text-xs text-muted-foreground">Terakhir Diupdate</p>
+              <p>{{ formatTanggal(permohonan.updated_at) }}</p>
+            </div>
+          </div>
+
+          <div class="text-sm">
+            <p class="text-xs text-muted-foreground">Alamat Pemasangan</p>
+            <p>{{ permohonan.alamat_pemasangan }}, RT {{ permohonan.rt }}/RW {{ permohonan.rw }}, {{ permohonan.kode_pos }}</p>
+            <button
+              class="mt-0.5 text-xs text-primary hover:underline"
+              @click="bukaMaps(permohonan.latitude, permohonan.longitude)"
+            >
+              Buka di Google Maps
+            </button>
+          </div>
+
+          <div v-if="permohonan.paket_internet" class="text-sm">
+            <p class="text-xs text-muted-foreground">Paket Internet</p>
+            <p>{{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps) — Rp{{ Number(permohonan.paket_internet.harga).toLocaleString('id-ID') }}/bln</p>
+          </div>
+          <div v-else-if="permohonan.tipe_paket === 'custom'" class="space-y-0.5 text-sm">
+            <p class="text-xs text-muted-foreground">Paket Custom</p>
+            <p>{{ permohonan.nama_paket_custom }} ({{ permohonan.kecepatan_custom_mbps }} Mbps)</p>
+            <p v-if="permohonan.harga_custom">Rp{{ Number(permohonan.harga_custom).toLocaleString('id-ID') }}/bln</p>
+            <p v-if="permohonan.catatan_custom" class="text-muted-foreground">{{ permohonan.catatan_custom }}</p>
           </div>
 
           <div v-if="permohonan.alasan_ditolak" class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
@@ -111,7 +160,7 @@ const labelTombolJadwalkan = computed(() =>
             {{ labelTombolJadwalkan }}
           </Button>
           <p v-if="!bisaVerifikasi && !bisaJadwalkanKerja" class="text-sm text-muted-foreground">
-            Tidak ada aksi Operasional yang tersedia untuk status ini.
+            Tidak ada aksi yang tersedia.
           </p>
         </CardContent>
       </Card>
