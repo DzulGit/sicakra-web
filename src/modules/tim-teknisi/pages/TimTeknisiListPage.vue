@@ -30,7 +30,7 @@ const columns: ColumnDef<TimTeknisi, unknown>[] = [
     cell: ({ row }) =>
       h(
         Button,
-        { as: 'RouterLink', to: `/admin/super-admin/tim-teknisi/${row.original.id}/ubah`, variant: 'outline', size: 'sm' },
+        { as: 'RouterLink', to: `/admin/operasional/tim-teknisi/${row.original.id}/ubah`, variant: 'outline', size: 'sm' },
         () => 'Ubah',
       ),
   },
@@ -41,7 +41,7 @@ const columns: ColumnDef<TimTeknisi, unknown>[] = [
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Tim Teknisi</h1>
-      <Button as="RouterLink" to="/admin/super-admin/tim-teknisi/baru">Tambah Tim</Button>
+      <Button as="RouterLink" to="/admin/operasional/tim-teknisi/baru">Tambah Tim</Button>
     </div>
 
     <DataTable :columns="columns" :data="hasil?.data ?? []" :loading="isLoading" empty-judul="Belum ada tim teknisi" />

@@ -3,7 +3,7 @@ import type { ApiResponse, PaginatedResponse } from '@/types/api'
 import type { TimTeknisi } from '@/types/models'
 import type { SimpanTimTeknisiForm, UbahTimTeknisiForm } from '@/schemas/tim-teknisi.schema'
 
-const BASE = '/admin/super-admin/tim-teknisi'
+const BASE = '/admin/operasional/tim-teknisi'
 
 export function getTimTeknisiList() {
   return httpClient.get<PaginatedResponse<TimTeknisi>>(BASE)
@@ -23,5 +23,5 @@ export function ubahTimTeknisi(id: number | string, payload: UbahTimTeknisiForm)
 
 /** Dipakai dropdown Operasional saat Jadwalkan Kerja — hanya tim aktif. */
 export function getTimTeknisiAktif() {
-  return httpClient.get<ApiResponse<TimTeknisi[]>>('/admin/operasional/tim-teknisi')
+  return httpClient.get<ApiResponse<TimTeknisi[]>>('/admin/operasional/tim-teknisi/aktif')
 }
