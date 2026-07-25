@@ -30,7 +30,12 @@ const [hasilPenanganan, hasilPenangananAttrs] = defineField('hasil_penanganan')
 
 const { mutate, isPending } = useSelesaikanLaporan()
 
+const pelanggan = computed(() => laporan.value?.layanan_internet?.pelanggan)
 const bisaSelesaikan = computed(() => laporan.value?.status === 'ditugaskan')
+
+function formatTanggal(iso: string) {
+  return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
+}
 
 const onSubmit = handleSubmit((values) => {
   mutate(
@@ -53,24 +58,39 @@ const onSubmit = handleSubmit((values) => {
     <Skeleton class="h-40 w-full" />
   </div>
 
-  <div v-else-if="laporan" class="max-w-xl space-y-6">
+  <div v-else-if="laporan" class="mx-auto max-w-2xl space-y-4">
     <Card>
       <CardHeader class="flex-row items-center justify-between">
         <div>
           <CardTitle>{{ laporan.nomor_laporan }}</CardTitle>
           <p class="text-sm text-muted-foreground">
-            {{ laporan.layanan_internet?.pelanggan?.nama_lengkap }}
+            {{ pelanggan?.nama_lengkap }} &middot; {{ pelanggan?.nomor_hp }}
           </p>
         </div>
         <StatusBadge :value="laporan.status" :map="statusLaporanEnum" />
       </CardHeader>
       <CardContent class="space-y-3 text-sm">
-        <div>
-          <p class="text-muted-foreground">Kategori Kendala</p>
-          <p>{{ laporan.kategori_kendala }}</p>
+        <div class="grid grid-cols-3 gap-x-6 gap-y-1.5">
+          <div>
+            <p class="text-xs text-muted-foreground">Kategori Kendala</p>
+            <p>{{ laporan.kategori_kendala }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground">Tanggal Laporan</p>
+            <p>{{ formatTanggal(laporan.created_at) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground">Layanan</p>
+            <p>{{ laporan.layanan_internet?.nomor_layanan }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground">Kontak Pelanggan</p>
+            <p>{{ pelanggan?.nomor_hp }} {{ pelanggan?.email ? '· ' + pelanggan.email : '' }}</p>
+          </div>
         </div>
+
         <div>
-          <p class="text-muted-foreground">Deskripsi dari Pelanggan</p>
+          <p class="text-xs text-muted-foreground">Deskripsi Kendala</p>
           <p>{{ laporan.deskripsi }}</p>
         </div>
       </CardContent>

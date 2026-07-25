@@ -43,12 +43,16 @@ function handleTutup() {
   })
 }
 
-/** Nama admin yang ditugaskan — handle 2 kemungkinan bentuk data (lihat catatan di types/models.ts). */
 function namaAdmin(nilai: number | { nama_lengkap: string } | null): string | null {
   if (!nilai) return null
   return typeof nilai === 'object' ? nilai.nama_lengkap : `Admin #${nilai}`
 }
 
+function formatTanggal(iso: string) {
+  return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
+}
+
+const pelanggan = computed(() => laporan.value?.layanan_internet?.pelanggan)
 const bisaTerima = computed(() => laporan.value?.status === 'menunggu')
 const bisaTeruskan = computed(() => laporan.value?.status === 'diproses')
 const bisaTutup = computed(() =>
@@ -62,35 +66,56 @@ const bisaTutup = computed(() =>
     <Skeleton class="h-40 w-full" />
   </div>
 
-  <div v-else-if="laporan" class="grid gap-6 lg:grid-cols-3">
-    <div class="space-y-6 lg:col-span-2">
+  <div v-else-if="laporan" class="grid gap-4 lg:grid-cols-3">
+    <div class="space-y-4 lg:col-span-2">
       <Card>
         <CardHeader class="flex-row items-center justify-between">
           <div>
             <CardTitle>{{ laporan.nomor_laporan }}</CardTitle>
             <p class="text-sm text-muted-foreground">
-              {{ laporan.layanan_internet?.pelanggan?.nama_lengkap }} &middot;
+              {{ pelanggan?.nama_lengkap }} &middot; {{ pelanggan?.nomor_hp }} &middot;
               {{ laporan.layanan_internet?.nomor_layanan }}
             </p>
           </div>
           <StatusBadge :value="laporan.status" :map="statusLaporanEnum" />
         </CardHeader>
         <CardContent class="space-y-3 text-sm">
-          <div>
-            <p class="text-muted-foreground">Kategori Kendala</p>
-            <p>{{ laporan.kategori_kendala }}</p>
+          <div class="grid grid-cols-3 gap-x-6 gap-y-1.5">
+            <div>
+              <p class="text-xs text-muted-foreground">Kategori Kendala</p>
+              <p>{{ laporan.kategori_kendala }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">Tanggal Laporan</p>
+              <p>{{ formatTanggal(laporan.created_at) }}</p>
+            </div>
+            <div v-if="laporan.updated_at !== laporan.created_at">
+              <p class="text-xs text-muted-foreground">Terakhir Diupdate</p>
+              <p>{{ formatTanggal(laporan.updated_at) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">Kontak Pelanggan</p>
+              <p>{{ pelanggan?.nomor_hp }} {{ pelanggan?.email ? '· ' + pelanggan.email : '' }}</p>
+            </div>
+            <div v-if="namaAdmin(laporan.ditugaskan_ke)">
+              <p class="text-xs text-muted-foreground">Ditugaskan ke</p>
+              <p>{{ namaAdmin(laporan.ditugaskan_ke) }}</p>
+            </div>
+            <div v-if="namaAdmin(laporan.ditutup_oleh)">
+              <p class="text-xs text-muted-foreground">Ditutup oleh</p>
+              <p>{{ namaAdmin(laporan.ditutup_oleh) }}</p>
+            </div>
           </div>
-          <div>
-            <p class="text-muted-foreground">Deskripsi</p>
-            <p>{{ laporan.deskripsi }}</p>
-          </div>
-          <div v-if="namaAdmin(laporan.ditugaskan_ke)">
-            <p class="text-muted-foreground">Ditugaskan ke</p>
-            <p>{{ namaAdmin(laporan.ditugaskan_ke) }}</p>
-          </div>
-          <div v-if="laporan.hasil_penanganan">
-            <p class="text-muted-foreground">Hasil Penanganan (dari Teknisi)</p>
-            <p>{{ laporan.hasil_penanganan }}</p>
+
+          <div class="space-y-1.5">
+            <div>
+              <p class="text-xs text-muted-foreground">Deskripsi Kendala</p>
+              <p>{{ laporan.deskripsi }}</p>
+            </div>
+            <div v-if="laporan.hasil_penanganan">
+              <p class="text-xs text-muted-foreground">Hasil Penanganan (Teknisi)</p>
+              <p>{{ laporan.hasil_penanganan }}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -117,7 +142,7 @@ const bisaTutup = computed(() =>
             Tutup Laporan
           </Button>
           <p v-if="!bisaTerima && !bisaTeruskan && !bisaTutup" class="text-sm text-muted-foreground">
-            Tidak ada aksi Operasional yang tersedia untuk status ini.
+            Tidak ada aksi yang tersedia.
           </p>
         </CardContent>
       </Card>

@@ -4,12 +4,22 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { useLaporanKendalaListTeknisi } from '../../composables/useTeknisiLaporanKendala'
 import { statusLaporanEnum } from '@/lib/enums'
 import DataTable from '@/components/data/DataTable.vue'
+import FilterBar from '@/components/data/FilterBar.vue'
 import Pagination from '@/components/data/Pagination.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
+import type { FilterFieldConfig } from '@/types/filter'
 import type { LaporanKendala } from '@/types/models'
 
 const { data: hasil, isLoading } = useLaporanKendalaListTeknisi()
+
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'status',
+    label: 'Status',
+    options: Object.entries(statusLaporanEnum).map(([value, meta]) => ({ value, label: meta.label })),
+  },
+]
 
 const columns: ColumnDef<LaporanKendala, unknown>[] = [
   { accessorKey: 'nomor_laporan', header: 'Nomor Laporan' },
@@ -44,8 +54,14 @@ const columns: ColumnDef<LaporanKendala, unknown>[] = [
 
 <template>
   <div class="space-y-4">
-    <h1 class="text-xl font-semibold">Laporan Kendala</h1>
-    <p class="text-sm text-muted-foreground">Laporan yang ditugaskan ke kamu.</p>
+    <div class="flex items-center justify-between">
+      <h1 class="text-xl font-semibold">Laporan Kendala</h1>
+    </div>
+    <p class="text-sm text-muted-foreground">
+      Riwayat laporan kendala yang ditugaskan ke kamu — sudah selesai maupun masih dikerjakan.
+    </p>
+
+    <FilterBar :fields="filterFields" />
 
     <DataTable
       :columns="columns"

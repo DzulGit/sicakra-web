@@ -2,12 +2,27 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { useJadwalKerjaList } from '@/modules/jadwal-kerja/composables/useJadwalKerja'
+import { hasilKerjaEnum } from '@/lib/enums'
 import DataTable from '@/components/data/DataTable.vue'
+import FilterBar from '@/components/data/FilterBar.vue'
 import Pagination from '@/components/data/Pagination.vue'
+import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
+import type { FilterFieldConfig } from '@/types/filter'
 import type { JadwalKerja } from '@/types/models'
 
 const { data: hasil, isLoading } = useJadwalKerjaList()
+
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'hasil',
+    label: 'Status',
+    options: [
+      { value: 'belum', label: 'Baru' },
+      ...Object.entries(hasilKerjaEnum).map(([v, m]) => ({ value: v, label: m.label })),
+    ],
+  },
+]
 
 function formatTanggal(iso: string) {
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
@@ -35,6 +50,14 @@ const columns: ColumnDef<JadwalKerja, unknown>[] = [
     cell: ({ row }) => formatTanggal(row.original.tanggal_kerja),
   },
   {
+    id: 'hasil',
+    header: 'Hasil',
+    cell: ({ row }) => {
+      if (!row.original.hasil) return h('span', { class: 'text-muted-foreground' }, '—')
+      return h(StatusBadge, { value: row.original.hasil, map: hasilKerjaEnum })
+    },
+  },
+  {
     id: 'aksi',
     header: '',
     cell: ({ row }) =>
@@ -49,17 +72,20 @@ const columns: ColumnDef<JadwalKerja, unknown>[] = [
 
 <template>
   <div class="space-y-4">
-    <h1 class="text-xl font-semibold">Jadwal Kerja</h1>
+    <div class="flex items-center justify-between">
+      <h1 class="text-xl font-semibold">Jadwal Kerja</h1>
+    </div>
     <p class="text-sm text-muted-foreground">
-      Pekerjaan yang tim kamu tugaskan, belum diisi hasilnya. Semua anggota tim lihat data yang sama.
+      Riwayat pekerjaan tim kamu — sudah selesai maupun masih perlu dikerjakan.
     </p>
+
+    <FilterBar :fields="filterFields" />
 
     <DataTable
       :columns="columns"
       :data="hasil?.data ?? []"
       :loading="isLoading"
       empty-judul="Tidak ada jadwal kerja"
-      empty-deskripsi="Semua pekerjaan tim kamu sudah diisi hasilnya."
     />
 
     <Pagination v-if="hasil" :meta="hasil" />

@@ -8,7 +8,9 @@ export function useJadwalKerjaList() {
   const route = useRoute()
   const params = computed(() => {
     const p: Record<string, string> = {}
-    if (typeof route.query.page === 'string') p.page = route.query.page
+    for (const [key, value] of Object.entries(route.query)) {
+      if (typeof value === 'string') p[key] = value
+    }
     return p
   })
 
