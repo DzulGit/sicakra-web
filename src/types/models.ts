@@ -7,6 +7,13 @@ export interface Pelanggan {
   nik: string
   nomor_hp: string
   email: string | null
+  foto_ktp?: string | null
+  foto_selfie_ktp?: string | null
+  password_sudah_dibuat?: boolean
+  created_at?: string
+  updated_at?: string
+  layanan_internet?: LayananInternetDetail[]
+  permohonan_layanan?: PermohonanLayanan[]
 }
 
 export interface PaketInternet {

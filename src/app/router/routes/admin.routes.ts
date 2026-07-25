@@ -16,6 +16,9 @@ const AdminEditPage = () => import('@/modules/admin-management/pages/AdminEditPa
 const TimTeknisiListPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiListPage.vue')
 const TimTeknisiCreatePage = () => import('@/modules/tim-teknisi/pages/TimTeknisiCreatePage.vue')
 const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiEditPage.vue')
+const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListPage.vue')
+const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
+const PendaftarBaruListPage = () => import('@/modules/permohonan-layanan/pages/PendaftarBaruListPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth), Fase 5-8 (Operasional/Teknisi/
@@ -74,6 +77,43 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Detail Laporan Kendala',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+
+  {
+    path: '/admin/operasional/pendaftar-baru',
+    name: 'admin.operasional.pendaftar-baru.index',
+    component: PendaftarBaruListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Pendaftar Baru',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/pelanggan',
+    name: 'admin.operasional.pelanggan.index',
+    component: PelangganListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Pelanggan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/pelanggan/:id',
+    name: 'admin.operasional.pelanggan.detail',
+    component: PelangganDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Pelanggan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional', 'super_admin'],
@@ -194,39 +234,39 @@ export const adminRoutes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/admin/super-admin/tim-teknisi',
-    name: 'admin.super-admin.tim-teknisi.index',
+    path: '/admin/operasional/tim-teknisi',
+    name: 'admin.operasional.tim-teknisi.index',
     component: TimTeknisiListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['super_admin'],
+      peran: ['operasional', 'super_admin'],
     },
   },
   {
-    path: '/admin/super-admin/tim-teknisi/baru',
-    name: 'admin.super-admin.tim-teknisi.create',
+    path: '/admin/operasional/tim-teknisi/baru',
+    name: 'admin.operasional.tim-teknisi.create',
     component: TimTeknisiCreatePage,
     meta: {
       layout: 'dashboard',
       judul: 'Tambah Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['super_admin'],
+      peran: ['operasional', 'super_admin'],
     },
   },
   {
-    path: '/admin/super-admin/tim-teknisi/:id/ubah',
-    name: 'admin.super-admin.tim-teknisi.edit',
+    path: '/admin/operasional/tim-teknisi/:id/ubah',
+    name: 'admin.operasional.tim-teknisi.edit',
     component: TimTeknisiEditPage,
     meta: {
       layout: 'dashboard',
       judul: 'Ubah Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['super_admin'],
+      peran: ['operasional', 'super_admin'],
     },
   },
 ]

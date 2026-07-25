@@ -9,6 +9,8 @@ import {
   Wifi,
   MessageSquareWarning,
   UserCircle,
+  UserPlus,
+  Contact,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
 
@@ -25,7 +27,10 @@ export interface MenuGroup {
 
 const menuOperasional: MenuItem[] = [
   { label: 'Permohonan Layanan', to: '/admin/operasional/permohonan-layanan', icon: FileText },
+  { label: 'Pendaftar Baru', to: '/admin/operasional/pendaftar-baru', icon: UserPlus },
+  { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
   { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },
+  { label: 'Tim Teknisi', to: '/admin/operasional/tim-teknisi', icon: UsersRound },
 ]
 
 const menuTeknisi: MenuItem[] = [
@@ -37,7 +42,6 @@ const menuKeuangan: MenuItem[] = [{ label: 'Tagihan', to: '/admin/keuangan/tagih
 
 const menuSuperAdmin: MenuItem[] = [
   { label: 'Kelola Admin', to: '/admin/super-admin/admin', icon: Users },
-  { label: 'Tim Teknisi', to: '/admin/super-admin/tim-teknisi', icon: UsersRound },
 ]
 
 const menuPelanggan: MenuItem[] = [
@@ -55,12 +59,7 @@ export function getMenuGroups(tipe: TipePengguna | null, peran: PeranAdmin | nul
 
   if (tipe === 'admin') {
     if (peran === 'super_admin') {
-      return [
-        { label: 'Operasional', items: menuOperasional },
-        { label: 'Teknisi', items: menuTeknisi },
-        { label: 'Keuangan', items: menuKeuangan },
-        { label: 'Administrasi', items: menuSuperAdmin },
-      ]
+      return [{ label: 'Administrasi', items: menuSuperAdmin }]
     }
     if (peran === 'operasional') return [{ items: menuOperasional }]
     if (peran === 'teknisi') return [{ items: menuTeknisi }]

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.store'
 import AppSidebar from './AppSidebar.vue'
 import AppTopbar from './AppTopbar.vue'
 import SkipToContent from '@/components/feedback/SkipToContent.vue'
@@ -30,13 +31,16 @@ const breadcrumb = computed<BreadcrumbItem[]>(() => [
 ])
 
 const { isNative } = usePlatform();
+const authStore = useAuthStore();
+
+const tanpaSidebar = computed(() => authStore.peranAdmin === 'super_admin')
 
 </script>
 
 <template>
   <SkipToContent />
   <div class="flex h-screen overflow-hidden">
-    <AppSidebar v-if="!isNative" />
+    <AppSidebar v-if="!isNative && !tanpaSidebar" />
     <div class="flex flex-1 flex-col overflow-hidden">
       <AppTopbar :breadcrumb="breadcrumb" />
       <main class="flex-1 overflow-y-auto p-6" :class="{'pb-32': isNative}">
