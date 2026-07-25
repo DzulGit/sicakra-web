@@ -1,6 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
 const LoginPelangganPage = () => import('@/modules/auth/pelanggan/pages/LoginPelangganPage.vue')
-const BuatPasswordPage = () => import('@/modules/auth/pelanggan/pages/BuatPasswordPage.vue')
 const DashboardPelangganPage = () => import('@/modules/dashboard-pelanggan/pages/DashboardPelangganPage.vue')
 const LayananSayaListPage = () => import('@/modules/layanan-internet/pages/LayananSayaListPage.vue')
 const LayananSayaDetailPage = () => import('@/modules/layanan-internet/pages/LayananSayaDetailPage.vue')
@@ -13,8 +12,9 @@ const ProfilPage = () => import('@/modules/profil/pages/ProfilPage.vue')
 
 /**
  * Route Pelanggan — dibangun Fase 3 (auth) & Fase 9 (dashboard).
- * '/pelanggan/buat-password' SENGAJA requiresAuth tapi TIDAK di-guard
- * pastikan-password (justru ini tempat mengisinya) — lihat guards.ts.
+ * Ganti username/password dilakukan di halaman Profil (bukan halaman
+ * terpisah), ditawarkan lewat banner opsional di dashboard — lihat
+ * DashboardPelangganPage.vue & ProfilPage.vue.
  */
 export const pelangganRoutes: RouteRecordRaw[] = [
   {
@@ -22,17 +22,6 @@ export const pelangganRoutes: RouteRecordRaw[] = [
     name: 'pelanggan.masuk',
     component: LoginPelangganPage,
     meta: { layout: 'auth', judul: 'Masuk — Pelanggan', fullBleed: true },
-  },
-  {
-    path: '/pelanggan/buat-password',
-    name: 'pelanggan.buat-password',
-    component: BuatPasswordPage,
-    meta: {
-      layout: 'auth',
-      judul: 'Buat Password',
-      requiresAuth: true,
-      guard: 'pelanggan',
-    },
   },
   {
     path: '/pelanggan/dashboard',
