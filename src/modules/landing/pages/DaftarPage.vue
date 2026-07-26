@@ -60,7 +60,7 @@ const nomorPermohonanBerhasil = ref<string | null>(null)
 
 const onSubmit = handleSubmit((formValues) => {
   mutate(
-    { ...formValues, foto_ktp: fotoKtp.value as File, foto_selfie_ktp: fotoSelfieKtp.value as File },
+    { ...formValues, foto_ktp: fotoKtp.value as File, foto_selfie_ktp: fotoSelfieKtp.value ?? undefined },
     {
       onSuccess: ({ data }) => {
         nomorPermohonanBerhasil.value = data.data.nomor_permohonan
@@ -245,7 +245,7 @@ const onSubmit = handleSubmit((formValues) => {
             <FileInputFoto
               v-model="fotoSelfieKtp"
               label="Foto Selfie dengan KTP"
-              hint="Wajah dan KTP kamu harus sama-sama terlihat jelas."
+              hint="Opsional"
               :error="errors.foto_selfie_ktp"
             />
           </fieldset>

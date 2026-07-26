@@ -31,8 +31,9 @@ export const daftarSchema = z
       .instanceof(File, { message: 'Foto KTP wajib diunggah' })
       .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB'),
     foto_selfie_ktp: z
-      .instanceof(File, { message: 'Foto selfie dengan KTP wajib diunggah' })
-      .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB'),
+      .instanceof(File)
+      .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
+      .optional(),
   })
   .refine((data) => data.tipe_paket !== 'reguler' || !!data.paket_internet_id, {
     message: 'Pilih salah satu paket',

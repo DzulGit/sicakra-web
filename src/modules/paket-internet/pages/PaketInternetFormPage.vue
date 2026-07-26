@@ -26,7 +26,7 @@ const { data: paket, isLoading: isLoadingDetail } = modeEdit.value
 
 const schema = computed(() => (modeEdit.value ? ubahPaketInternetSchema : simpanPaketInternetSchema))
 
-const { handleSubmit, errors, defineField, setErrors, setValues } = useForm({
+const { handleSubmit, errors, defineField, setErrors, setValues, setFieldValue } = useForm({
   validationSchema: toTypedSchema(schema.value),
 })
 
@@ -53,7 +53,7 @@ watch(
 
 const { mutate: simpan, isPending: isPendingSimpan } = useSimpanPaketInternet()
 const { mutate: ubah, isPending: isPendingUbah } = useUbahPaketInternet()
-const isPending = computed(() => isPendingSimpan || isPendingUbah)
+const isPending = computed(() => isPendingSimpan.value || isPendingUbah.value)
 
 const onSubmit = handleSubmit((values) => {
   if (modeEdit.value) {
