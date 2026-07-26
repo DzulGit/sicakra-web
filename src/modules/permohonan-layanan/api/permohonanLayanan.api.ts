@@ -1,7 +1,7 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
 import type { AdminRingkas, JadwalKerja, PermohonanLayanan } from '@/types/models'
-import type { JadwalkanKerjaForm, VerifikasiPermohonanForm } from '@/schemas/permohonan-layanan.schema'
+import type { JadwalkanKerjaForm, VerifikasiDanJadwalkanForm, VerifikasiPermohonanForm } from '@/schemas/permohonan-layanan.schema'
 
 const BASE = '/admin/operasional/permohonan-layanan'
 
@@ -20,6 +20,14 @@ export function verifikasiPermohonan(id: number | string, payload: VerifikasiPer
 /** Satu endpoint gabungan — dipakai penjadwalan awal MAUPUN reschedule setelah kendala. */
 export function jadwalkanKerja(id: number | string, payload: JadwalkanKerjaForm) {
   return httpClient.post<ApiResponse<JadwalKerja>>(`${BASE}/${id}/jadwalkan-kerja`, payload)
+}
+
+/** Verifikasi + jadwalkan dalam satu langkah — khusus pemasangan_baru. */
+export function verifikasiDanJadwalkan(id: number | string, payload: VerifikasiDanJadwalkanForm) {
+  return httpClient.post<ApiResponse<{ permohonan: PermohonanLayanan; jadwal_kerja: JadwalKerja }>>(
+    `${BASE}/${id}/verifikasi-dan-jadwalkan`,
+    payload,
+  )
 }
 
 export function getDaftarTeknisi() {

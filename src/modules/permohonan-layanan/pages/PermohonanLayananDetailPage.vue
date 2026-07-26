@@ -7,9 +7,17 @@ import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import RiwayatStatusTimeline from '../components/RiwayatStatusTimeline.vue'
 import VerifikasiDialog from '../components/VerifikasiDialog.vue'
 import JadwalkanKerjaDialog from '../components/JadwalkanKerjaDialog.vue'
+import WhatsappVerifikasiFlow from '../components/WhatsappVerifikasiFlow.vue'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
@@ -18,11 +26,19 @@ const { data: permohonan, isLoading } = usePermohonanLayananDetail(id)
 
 const dialogVerifikasiTerbuka = ref(false)
 const dialogJadwalkanTerbuka = ref(false)
+const dialogWaTerbuka = ref(false)
 
 const bisaVerifikasi = computed(
   () =>
     !!permohonan.value &&
     ['MENUNGGU_VERIFIKASI', 'PERLU_REVISI'].includes(permohonan.value.status),
+)
+
+const bisaVerifikasiWa = computed(
+  () =>
+    !!permohonan.value &&
+    permohonan.value.jenis_permohonan === 'pemasangan_baru' &&
+    permohonan.value.status === 'MENUNGGU_VERIFIKASI',
 )
 
 const bisaJadwalkanKerja = computed(
@@ -153,13 +169,16 @@ const jadwalTerdekat = computed(() => {
           <CardTitle class="text-base">Aksi</CardTitle>
         </CardHeader>
         <CardContent class="space-y-2">
-          <Button v-if="bisaVerifikasi" class="w-full" @click="dialogVerifikasiTerbuka = true">
+          <Button v-if="bisaVerifikasiWa" class="w-full" @click="dialogWaTerbuka = true">
+            Verifikasi via WhatsApp
+          </Button>
+          <Button v-if="bisaVerifikasi && !bisaVerifikasiWa" class="w-full" @click="dialogVerifikasiTerbuka = true">
             Verifikasi
           </Button>
           <Button v-if="bisaJadwalkanKerja" class="w-full" variant="outline" @click="dialogJadwalkanTerbuka = true">
             {{ labelTombolJadwalkan }}
           </Button>
-          <p v-if="!bisaVerifikasi && !bisaJadwalkanKerja" class="text-sm text-muted-foreground">
+          <p v-if="!bisaVerifikasi && !bisaVerifikasiWa && !bisaJadwalkanKerja" class="text-sm text-muted-foreground">
             Tidak ada aksi yang tersedia.
           </p>
         </CardContent>
@@ -168,5 +187,17 @@ const jadwalTerdekat = computed(() => {
 
     <VerifikasiDialog v-model:open="dialogVerifikasiTerbuka" :permohonan-id="permohonan.id" />
     <JadwalkanKerjaDialog v-model:open="dialogJadwalkanTerbuka" :permohonan-id="permohonan.id" />
+
+    <Dialog :open="dialogWaTerbuka" @update:open="dialogWaTerbuka = $event">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Verifikasi via WhatsApp</DialogTitle>
+          <DialogDescription>
+            Hubungi pelanggan melalui WhatsApp untuk verifikasi data dan diskusi jadwal.
+          </DialogDescription>
+        </DialogHeader>
+        <WhatsappVerifikasiFlow :permohonan="permohonan" @close="dialogWaTerbuka = false" />
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
