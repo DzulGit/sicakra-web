@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { toast } from 'vue-sonner'
 import { useAdminList, useNonaktifkanAdmin } from '../composables/useSuperAdminAdmin'
 import { peranAdminEnum } from '@/lib/enums'
+import { useAuthStore } from '@/stores/auth.store'
 import DataTable from '@/components/data/DataTable.vue'
 import FilterBar from '@/components/data/FilterBar.vue'
 import Pagination from '@/components/data/Pagination.vue'
@@ -15,6 +16,7 @@ import type { FilterFieldConfig } from '@/types/filter'
 import type { AdminLengkap } from '@/types/models'
 
 const { data: hasil, isLoading } = useAdminList()
+const authStore = useAuthStore()
 const filterFields: FilterFieldConfig[] = [
   { key: 'peran', label: 'Peran', options: Object.entries(peranAdminEnum).map(([value, meta]) => ({ value, label: meta.label })) },
   { key: 'status_aktif', label: 'Status', options: [{ value: '1', label: 'Aktif' }, { value: '0', label: 'Nonaktif' }] },
@@ -35,7 +37,7 @@ const columns: ColumnDef<AdminLengkap, unknown>[] = [
   { accessorKey: 'status_aktif', header: 'Status', cell: ({ row }) => h(Badge, { variant: row.original.status_aktif ? 'success' : 'secondary' }, () => row.original.status_aktif ? 'Aktif' : 'Nonaktif') },
   { id: 'aksi', header: '', cell: ({ row }) => h('div', { class: 'flex justify-end gap-2' }, [
     h(Button, { as: 'RouterLink', to: `/admin/super-admin/admin/${row.original.id}/ubah`, variant: 'outline', size: 'sm' }, () => 'Ubah'),
-    row.original.status_aktif ? h(Button, { variant: 'destructive', size: 'sm', onClick: () => (adminDikonfirmasi.value = row.original) }, () => 'Nonaktifkan') : null,
+    row.original.status_aktif && row.original.id !== authStore.pengguna?.id ? h(Button, { variant: 'destructive', size: 'sm', onClick: () => (adminDikonfirmasi.value = row.original) }, () => 'Nonaktifkan') : null,
   ]) },
 ]
 </script>

@@ -74,7 +74,7 @@ const onSubmit = handleSubmit((values) => {
           Sicakra
         </span>
         <span class="mt-1 text-[11px] uppercase tracking-[0.22em] text-landing-mist/60">
-          by PT Aqrapana Daya Mandiri
+          PT Aqrapana Daya Mandiri
         </span>
       </RouterLink>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
@@ -11,22 +11,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => route.params.id as string)
 const { data: admin, isLoading } = useAdminDetail(id)
-const { handleSubmit, errors, defineField, setErrors, setValues } = useForm({ validationSchema: toTypedSchema(ubahAdminSchema) })
-const [namaLengkap, namaLengkapAttrs] = defineField('nama_lengkap')
+const { handleSubmit, errors, defineField, setErrors } = useForm({ validationSchema: toTypedSchema(ubahAdminSchema) })
 const [email, emailAttrs] = defineField('email')
-const [peran, peranAttrs] = defineField('peran')
-
-watch(admin, (nilai) => {
-  if (!nilai) return
-  setValues({ nama_lengkap: nilai.nama_lengkap, email: nilai.email, peran: nilai.peran as 'operasional' | 'teknisi' | 'keuangan' })
-}, { immediate: true })
+const [passwordLama, passwordLamaAttrs] = defineField('password_lama')
+const [passwordBaru, passwordBaruAttrs] = defineField('password_baru')
 
 const { mutate, isPending } = useUbahAdmin()
 const onSubmit = handleSubmit((values) => {
@@ -50,26 +44,19 @@ const onSubmit = handleSubmit((values) => {
     <CardContent>
       <form class="space-y-4" novalidate @submit="onSubmit">
         <div class="space-y-2">
-          <Label for="nama_lengkap">Nama Lengkap</Label>
-          <Input id="nama_lengkap" v-model="namaLengkap" v-bind="namaLengkapAttrs" :aria-invalid="!!errors.nama_lengkap" />
-          <p v-if="errors.nama_lengkap" class="text-xs text-destructive">{{ errors.nama_lengkap }}</p>
-        </div>
-        <div class="space-y-2">
           <Label for="email">Email</Label>
           <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
           <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
         </div>
         <div class="space-y-2">
-          <Label>Peran</Label>
-          <Select v-model="peran" v-bind="peranAttrs">
-            <SelectTrigger><SelectValue placeholder="Pilih peran" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="operasional">Operasional</SelectItem>
-              <SelectItem value="teknisi">Teknisi</SelectItem>
-              <SelectItem value="keuangan">Keuangan</SelectItem>
-            </SelectContent>
-          </Select>
-          <p v-if="errors.peran" class="text-xs text-destructive">{{ errors.peran }}</p>
+          <Label for="password_lama">Password Lama</Label>
+          <Input id="password_lama" v-model="passwordLama" v-bind="passwordLamaAttrs" type="password" placeholder="Diisi jika ingin ganti password" />
+          <p v-if="errors.password_lama" class="text-xs text-destructive">{{ errors.password_lama }}</p>
+        </div>
+        <div class="space-y-2">
+          <Label for="password_baru">Password Baru <span class="text-muted-foreground">(opsional)</span></Label>
+          <Input id="password_baru" v-model="passwordBaru" v-bind="passwordBaruAttrs" type="password" placeholder="Minimal 8 karakter" />
+          <p v-if="errors.password_baru" class="text-xs text-destructive">{{ errors.password_baru }}</p>
         </div>
         <Button type="submit" class="w-full" :disabled="isPending">{{ isPending ? 'Menyimpan...' : 'Simpan Perubahan' }}</Button>
       </form>
