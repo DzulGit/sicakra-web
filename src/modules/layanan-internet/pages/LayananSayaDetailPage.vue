@@ -24,7 +24,7 @@ function formatTanggal(iso: string) {
   <div v-else-if="layanan" class="max-w-2xl space-y-6">
     <Card>
       <CardHeader class="flex-row items-center justify-between">
-        <CardTitle>{{ layanan.nomor_layanan }}</CardTitle>
+        <CardTitle>{{ layanan.paket_internet?.nama_paket ?? layanan.nama_paket_custom }}</CardTitle>
         <StatusBadge :value="layanan.status" :map="statusLayananEnum" />
       </CardHeader>
       <CardContent class="grid grid-cols-2 gap-4 text-sm">
