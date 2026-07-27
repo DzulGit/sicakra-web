@@ -1,4 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
+const OperasionalOverviewPage = () => import('@/modules/dashboard-admin/pages/OperasionalOverviewPage.vue')
+const KeuanganOverviewPage = () => import('@/modules/dashboard-admin/pages/KeuanganOverviewPage.vue')
+const TeknisiOverviewPage = () => import('@/modules/dashboard-admin/pages/TeknisiOverviewPage.vue')
 const LoginAdminPage = () => import('@/modules/auth/admin/pages/LoginAdminPage.vue')
 const PermohonanLayananListPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananListPage.vue')
 const PermohonanLayananDetailPage = () => import('@/modules/permohonan-layanan/pages/PermohonanLayananDetailPage.vue')
@@ -33,6 +36,48 @@ export const adminRoutes: RouteRecordRaw[] = [
     name: 'admin.masuk',
     component: LoginAdminPage,
     meta: { layout: 'auth', judul: 'Masuk — Admin', fullBleed: true },
+  },
+
+  // ----- Operasional Overview -----
+  {
+    path: '/admin/operasional/overview',
+    name: 'admin.operasional.overview',
+    component: OperasionalOverviewPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Overview',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional'],
+    },
+  },
+
+  // ----- Keuangan Overview -----
+  {
+    path: '/admin/keuangan/overview',
+    name: 'admin.keuangan.overview',
+    component: KeuanganOverviewPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Overview',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['keuangan'],
+    },
+  },
+
+  // ----- Teknisi Overview -----
+  {
+    path: '/admin/teknisi/overview',
+    name: 'admin.teknisi.overview',
+    component: TeknisiOverviewPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Overview',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['teknisi'],
+    },
   },
 
   // ----- Operasional -----

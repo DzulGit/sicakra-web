@@ -27,6 +27,7 @@ export interface MenuGroup {
 }
 
 const menuOperasional: MenuItem[] = [
+  { label: 'Overview', to: '/admin/operasional/overview', icon: LayoutDashboard },
   { label: 'Permohonan Layanan', to: '/admin/operasional/permohonan-layanan', icon: FileText },
   { label: 'Pendaftar Baru', to: '/admin/operasional/pendaftar-baru', icon: UserPlus },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
@@ -36,11 +37,14 @@ const menuOperasional: MenuItem[] = [
 ]
 
 const menuTeknisi: MenuItem[] = [
+  { label: 'Overview', to: '/admin/teknisi/overview', icon: LayoutDashboard },
   { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar },
   { label: 'Laporan Kendala', to: '/admin/teknisi/laporan-kendala', icon: MessageSquareWarning },
 ]
 
-const menuKeuangan: MenuItem[] = [{ label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt }]
+const menuKeuangan: MenuItem[] = [
+  { label: 'Overview', to: '/admin/keuangan/overview', icon: LayoutDashboard },
+]
 
 const menuSuperAdmin: MenuItem[] = [
   { label: 'Kelola Admin', to: '/admin/super-admin/admin', icon: Users },
