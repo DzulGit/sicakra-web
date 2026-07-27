@@ -199,6 +199,125 @@ export interface RiwayatRelokasi {
   tanggal_relokasi: string
 }
 
+export interface DashboardStats {
+  total_pelanggan: number
+  pelanggan_aktif: number
+  permohonan_menunggu: number
+  teknisi_aktif: number
+  kendala_aktif: number
+  pemasangan_hari_ini: number
+}
+
+export interface DashboardTrendPoint {
+  bulan: string
+  jumlah: number
+}
+
+export interface DashboardStatusDist {
+  status: string
+  label: string
+  jumlah: number
+}
+
+export interface DashboardAktivitasTeknisi {
+  id: number
+  teknisi: string
+  aktivitas: string
+  waktu: string
+  status: string
+}
+
+export interface DashboardKesehatanSistem {
+  status_server: 'sehat' | 'peringatan' | 'kritis'
+  uptime: string
+  cpu_usage: number
+  memory_usage: number
+  response_time: string
+}
+
+export interface DashboardOperasionalStats {
+  permohonan_baru_hari_ini: number
+  menunggu_verifikasi: number
+  pemasangan_hari_ini: number
+  teknisi_aktif: number
+  kendala_aktif: number
+}
+
+export interface DashboardPembayaranRingkas {
+  id: number
+  nomor_tagihan: string
+  pelanggan: string
+  jumlah: string
+  status: string
+  waktu: string
+}
+
+export interface DashboardKeuanganStats {
+  pembayaran_hari_ini: number
+  total_pembayaran_hari_ini: string
+  tagihan_tertunggak: number
+  total_tertunggak: string
+  jatuh_tempo_minggu_ini: number
+  pendapatan_bulan_ini: string
+}
+
+export interface DashboardKeuanganRingkasan {
+  stats: DashboardKeuanganStats
+  tren_pendapatan: DashboardTrendPoint[]
+  distribusi_pembayaran: DashboardStatusDist[]
+  pembayaran_terbaru: DashboardPembayaranRingkas[]
+  tagihan_akan_jatuh_tempo: Tagihan[]
+}
+
+export interface DashboardJadwalRingkas {
+  id: number
+  nomor_permohonan: string
+  pelanggan: string
+  jenis_pekerjaan: string
+  alamat: string
+  waktu: string
+  status: string
+}
+
+export interface DashboardTeknisiStats {
+  pekerjaan_hari_ini: number
+  sedang_dikerjakan: number
+  selesai_hari_ini: number
+  tiket_kendala_aktif: number
+}
+
+export interface DashboardTeknisiRingkasan {
+  stats: DashboardTeknisiStats
+  jadwal_hari_ini: DashboardJadwalRingkas[]
+  tiket_kendala_aktif: LaporanKendala[]
+  riwayat_pekerjaan: DashboardJadwalRingkas[]
+}
+
+export interface DashboardSuperAdminStats {
+  total_pelanggan: number
+  pelanggan_aktif: number
+  pertumbuhan_pelanggan: number
+  total_teknisi: number
+  pendapatan_bulan_ini: string
+  kendala_aktif: number
+}
+
+export interface DashboardAktivitasRingkas {
+  id: number
+  tipe: string
+  deskripsi: string
+  pengguna: string
+  waktu: string
+}
+
+export interface DashboardSuperAdminRingkasan {
+  stats: DashboardSuperAdminStats
+  tren_pelanggan: DashboardTrendPoint[]
+  tren_pendapatan: DashboardTrendPoint[]
+  aktivitas_terbaru: DashboardAktivitasRingkas[]
+  kesehatan_sistem: DashboardKesehatanSistem
+}
+
 export interface LayananInternetDetail {
   id: number
   nomor_layanan: string

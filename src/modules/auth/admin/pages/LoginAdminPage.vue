@@ -29,9 +29,9 @@ const showPassword = ref(false)
 // Halaman default per peran setelah login — cermin rute Fase-5-9.
 const rutePerPeran: Record<string, string> = {
   super_admin: '/admin/super-admin/admin',
-  operasional: '/admin/operasional/permohonan-layanan',
-  teknisi: '/admin/teknisi/jadwal-kerja',
-  keuangan: '/admin/keuangan/tagihan',
+  operasional: '/admin/operasional/overview',
+  teknisi: '/admin/teknisi/overview',
+  keuangan: '/admin/keuangan/overview',
 }
 
 const onSubmit = handleSubmit((values) => {
