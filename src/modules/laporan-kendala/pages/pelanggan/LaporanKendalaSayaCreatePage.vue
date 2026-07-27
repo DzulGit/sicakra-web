@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
+import { ImagePlus, X } from 'lucide-vue-next'
 import { buatLaporanSchema } from '@/schemas/laporan-kendala.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { useBuatLaporanKendala } from '../../composables/usePelangganLaporanKendala'
@@ -20,12 +22,33 @@ const router = useRouter()
 // realistisnya pelanggan tidak punya puluhan layanan sekaligus.
 const { data: layananSaya } = useLayananSayaList()
 
-const { handleSubmit, errors, defineField, setErrors } = useForm({
+const { handleSubmit, errors, defineField, setErrors, setFieldValue } = useForm({
   validationSchema: toTypedSchema(buatLaporanSchema),
 })
 const [layananInternetId, layananInternetIdAttrs] = defineField('layanan_internet_id')
 const [kategoriKendala, kategoriKendalaAttrs] = defineField('kategori_kendala')
 const [deskripsi, deskripsiAttrs] = defineField('deskripsi')
+
+// Foto opsional — input file tidak cocok pakai v-model biasa, jadi
+// ditangani manual lewat setFieldValue + preview URL lokal.
+const fotoInputRef = ref<HTMLInputElement | null>(null)
+const previewUrl = ref<string | null>(null)
+
+function onPilihFoto(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  setFieldValue('foto', file)
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  previewUrl.value = URL.createObjectURL(file)
+}
+
+function hapusFoto() {
+  setFieldValue('foto', undefined)
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  previewUrl.value = null
+  if (fotoInputRef.value) fotoInputRef.value.value = ''
+}
 
 const { mutate, isPending } = useBuatLaporanKendala()
 
@@ -85,6 +108,42 @@ const onSubmit = handleSubmit((values) => {
             placeholder="Jelaskan kendala yang kamu alami"
           />
           <p v-if="errors.deskripsi" class="text-xs text-destructive">{{ errors.deskripsi }}</p>
+        </div>
+        <div class="space-y-2">
+          <Label for="foto">Foto (Opsional)</Label>
+          <p class="text-xs text-muted-foreground">
+            Lampirkan foto kendala kalau ada, mis. lampu indikator perangkat atau kabel rusak.
+          </p>
+
+          <div v-if="previewUrl" class="relative w-fit">
+            <img :src="previewUrl" alt="Preview foto kendala" class="h-32 w-32 rounded-lg object-cover" />
+            <button
+              type="button"
+              class="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+              aria-label="Hapus foto"
+              @click="hapusFoto"
+            >
+              <X class="size-3.5" />
+            </button>
+          </div>
+
+          <label
+            v-else
+            for="foto"
+            class="flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50"
+          >
+            <ImagePlus class="size-4" />
+            Pilih Foto
+          </label>
+          <input
+            id="foto"
+            ref="fotoInputRef"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            class="hidden"
+            @change="onPilihFoto"
+          />
+          <p v-if="errors.foto" class="text-xs text-destructive">{{ errors.foto }}</p>
         </div>
         <Button type="submit" class="w-full" :disabled="isPending">
           {{ isPending ? 'Mengirim...' : 'Kirim Laporan' }}

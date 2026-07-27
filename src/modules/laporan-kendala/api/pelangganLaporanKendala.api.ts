@@ -14,5 +14,17 @@ export function getLaporanKendalaSayaDetail(id: number | string) {
 }
 
 export function buatLaporanKendala(payload: BuatLaporanForm) {
-  return httpClient.post<ApiResponse<LaporanKendala>>(BASE, payload)
+  const formData = new FormData()
+  formData.append('layanan_internet_id', payload.layanan_internet_id)
+  formData.append('kategori_kendala', payload.kategori_kendala)
+  formData.append('deskripsi', payload.deskripsi)
+  if (payload.foto) {
+    formData.append('foto', payload.foto)
+  }
+
+  return httpClient.post<ApiResponse<LaporanKendala>>(BASE, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 }

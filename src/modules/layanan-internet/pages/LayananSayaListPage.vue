@@ -28,7 +28,7 @@ const { data: hasil, isLoading } = useLayananSayaList()
     <div v-else class="grid gap-4 sm:grid-cols-2">
       <Card v-for="layanan in hasil.data" :key="layanan.id">
         <CardHeader class="flex-row items-center justify-between">
-          <CardTitle class="text-base">{{ layanan.nomor_layanan }}</CardTitle>
+          <CardTitle class="text-base">{{ layanan.paket_internet?.nama_paket ?? layanan.nama_paket_custom }}</CardTitle>
           <StatusBadge :value="layanan.status" :map="statusLayananEnum" />
         </CardHeader>
         <CardContent class="space-y-2 text-sm">
