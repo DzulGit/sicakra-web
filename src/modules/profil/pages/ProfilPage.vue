@@ -116,144 +116,153 @@ const onSubmitPassword = handleSubmitPassword((values) => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="max-w-lg"><Skeleton class="h-72 w-full" /></div>
+  <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <Skeleton class="h-72 w-full" />
+    <Skeleton class="h-72 w-full" />
+  </div>
 
-  <div v-else class="max-w-lg space-y-6">
-    <Card>
-      <CardHeader>
-        <CardTitle>Profil Saya</CardTitle>
-        <CardDescription>Nomor pelanggan, NIK, dan nomor HP tidak bisa diubah sendiri.</CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-3 text-sm">
-        <div>
-          <p class="text-muted-foreground">Nomor Pelanggan</p>
-          <p class="font-medium">{{ profil?.nomor_pelanggan }}</p>
-        </div>
-        <div>
-          <p class="text-muted-foreground">NIK</p>
-          <p class="font-medium">{{ profil?.nik }}</p>
-        </div>
-        <div>
-          <p class="text-muted-foreground">Nomor HP</p>
-          <p class="font-medium">{{ profil?.nomor_hp }}</p>
-        </div>
-      </CardContent>
-    </Card>
+  <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Kolom Kiri: Info Profil & Ubah Data -->
+    <div class="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profil Saya</CardTitle>
+          <CardDescription>Nomor pelanggan, NIK, dan nomor HP tidak bisa diubah sendiri.</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-3 text-sm">
+          <div>
+            <p class="text-muted-foreground">Nomor Pelanggan</p>
+            <p class="font-medium">{{ profil?.nomor_pelanggan }}</p>
+          </div>
+          <div>
+            <p class="text-muted-foreground">NIK</p>
+            <p class="font-medium">{{ profil?.nik }}</p>
+          </div>
+          <div>
+            <p class="text-muted-foreground">Nomor HP</p>
+            <p class="font-medium">{{ profil?.nomor_hp }}</p>
+          </div>
+        </CardContent>
+      </Card>
 
-    <Card>
-      <CardHeader>
-        <CardTitle class="text-base">Ubah Data</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form class="space-y-4" novalidate @submit="onSubmit">
-          <div class="space-y-2">
-            <Label for="nama_lengkap">Nama Lengkap</Label>
-            <Input
-              id="nama_lengkap"
-              v-model="namaLengkap"
-              v-bind="namaLengkapAttrs"
-              :aria-invalid="!!errors.nama_lengkap"
-            />
-            <p v-if="errors.nama_lengkap" class="text-xs text-destructive">{{ errors.nama_lengkap }}</p>
-          </div>
-          <div class="space-y-2">
-            <Label for="email">Email</Label>
-            <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
-            <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
-          </div>
-          <Button type="submit" :disabled="isPending">{{ isPending ? 'Menyimpan...' : 'Simpan' }}</Button>
-        </form>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle class="text-base">Ubah Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form class="space-y-4" novalidate @submit="onSubmit">
+            <div class="space-y-2">
+              <Label for="nama_lengkap">Nama Lengkap</Label>
+              <Input
+                id="nama_lengkap"
+                v-model="namaLengkap"
+                v-bind="namaLengkapAttrs"
+                :aria-invalid="!!errors.nama_lengkap"
+              />
+              <p v-if="errors.nama_lengkap" class="text-xs text-destructive">{{ errors.nama_lengkap }}</p>
+            </div>
+            <div class="space-y-2">
+              <Label for="email">Email</Label>
+              <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
+              <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
+            </div>
+            <Button type="submit" :disabled="isPending">{{ isPending ? 'Menyimpan...' : 'Simpan' }}</Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
 
-    <Card>
-      <CardHeader>
-        <CardTitle class="text-base">Ubah Username</CardTitle>
-        <CardDescription>Dipakai untuk login. Awalnya sama dengan nomor pelanggan.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form class="space-y-4" novalidate @submit="onSubmitUsername">
-          <div class="space-y-2">
-            <Label for="username">Username</Label>
-            <Input
-              id="username"
-              v-model="username"
-              v-bind="usernameAttrs"
-              autocomplete="username"
-              :aria-invalid="!!errorsUsername.username"
-            />
-            <p v-if="errorsUsername.username" class="text-xs text-destructive">
-              {{ errorsUsername.username }}
-            </p>
-          </div>
-          <Button type="submit" :disabled="isPendingUsername">
-            {{ isPendingUsername ? 'Menyimpan...' : 'Simpan Username' }}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <!-- Kolom Kanan: Username & Password -->
+    <div class="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle class="text-base">Ubah Username</CardTitle>
+          <CardDescription>Dipakai untuk login. Awalnya sama dengan nomor pelanggan.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form class="space-y-4" novalidate @submit="onSubmitUsername">
+            <div class="space-y-2">
+              <Label for="username">Username</Label>
+              <Input
+                id="username"
+                v-model="username"
+                v-bind="usernameAttrs"
+                autocomplete="username"
+                :aria-invalid="!!errorsUsername.username"
+              />
+              <p v-if="errorsUsername.username" class="text-xs text-destructive">
+                {{ errorsUsername.username }}
+              </p>
+            </div>
+            <Button type="submit" :disabled="isPendingUsername">
+              {{ isPendingUsername ? 'Menyimpan...' : 'Simpan Username' }}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-    <Card>
-      <CardHeader>
-        <CardTitle class="text-base">Ubah Password</CardTitle>
-        <CardDescription>
-          {{
-            wajibPasswordLama
-              ? 'Masukkan password lama untuk mengganti password.'
-              : 'Kamu belum pernah ganti password — cukup buat password baru.'
-          }}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form class="space-y-4" novalidate @submit="onSubmitPassword">
-          <div v-if="wajibPasswordLama" class="space-y-2">
-            <Label for="password_lama">Password Lama</Label>
-            <Input
-              id="password_lama"
-              v-model="passwordLama"
-              v-bind="passwordLamaAttrs"
-              type="password"
-              autocomplete="current-password"
-              :aria-invalid="!!errorsPassword.password_lama"
-            />
-            <p v-if="errorsPassword.password_lama" class="text-xs text-destructive">
-              {{ errorsPassword.password_lama }}
-            </p>
-          </div>
-          <div class="space-y-2">
-            <Label for="password_baru">Password Baru</Label>
-            <Input
-              id="password_baru"
-              v-model="passwordBaru"
-              v-bind="passwordBaruAttrs"
-              type="password"
-              placeholder="Minimal 8 karakter"
-              autocomplete="new-password"
-              :aria-invalid="!!errorsPassword.password"
-            />
-            <p v-if="errorsPassword.password" class="text-xs text-destructive">
-              {{ errorsPassword.password }}
-            </p>
-          </div>
-          <div class="space-y-2">
-            <Label for="password_confirmation">Konfirmasi Password Baru</Label>
-            <Input
-              id="password_confirmation"
-              v-model="passwordKonfirmasi"
-              v-bind="passwordKonfirmasiAttrs"
-              type="password"
-              autocomplete="new-password"
-              :aria-invalid="!!errorsPassword.password_confirmation"
-            />
-            <p v-if="errorsPassword.password_confirmation" class="text-xs text-destructive">
-              {{ errorsPassword.password_confirmation }}
-            </p>
-          </div>
-          <Button type="submit" :disabled="isPendingPassword">
-            {{ isPendingPassword ? 'Menyimpan...' : 'Simpan Password' }}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle class="text-base">Ubah Password</CardTitle>
+          <CardDescription>
+            {{
+              wajibPasswordLama
+                ? 'Masukkan password lama untuk mengganti password.'
+                : 'Kamu belum pernah ganti password — cukup buat password baru.'
+            }}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form class="space-y-4" novalidate @submit="onSubmitPassword">
+            <div v-if="wajibPasswordLama" class="space-y-2">
+              <Label for="password_lama">Password Lama</Label>
+              <Input
+                id="password_lama"
+                v-model="passwordLama"
+                v-bind="passwordLamaAttrs"
+                type="password"
+                autocomplete="current-password"
+                :aria-invalid="!!errorsPassword.password_lama"
+              />
+              <p v-if="errorsPassword.password_lama" class="text-xs text-destructive">
+                {{ errorsPassword.password_lama }}
+              </p>
+            </div>
+            <div class="space-y-2">
+              <Label for="password_baru">Password Baru</Label>
+              <Input
+                id="password_baru"
+                v-model="passwordBaru"
+                v-bind="passwordBaruAttrs"
+                type="password"
+                placeholder="Minimal 8 karakter"
+                autocomplete="new-password"
+                :aria-invalid="!!errorsPassword.password"
+              />
+              <p v-if="errorsPassword.password" class="text-xs text-destructive">
+                {{ errorsPassword.password }}
+              </p>
+            </div>
+            <div class="space-y-2">
+              <Label for="password_confirmation">Konfirmasi Password Baru</Label>
+              <Input
+                id="password_confirmation"
+                v-model="passwordKonfirmasi"
+                v-bind="passwordKonfirmasiAttrs"
+                type="password"
+                autocomplete="new-password"
+                :aria-invalid="!!errorsPassword.password_confirmation"
+              />
+              <p v-if="errorsPassword.password_confirmation" class="text-xs text-destructive">
+                {{ errorsPassword.password_confirmation }}
+              </p>
+            </div>
+            <Button type="submit" :disabled="isPendingPassword">
+              {{ isPendingPassword ? 'Menyimpan...' : 'Simpan Password' }}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   </div>
 </template>

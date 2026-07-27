@@ -14,6 +14,7 @@ export interface Pelanggan {
   updated_at?: string
   layanan_internet?: LayananInternetDetail[]
   permohonan_layanan?: PermohonanLayanan[]
+  username?: string
 }
 
 export interface PaketInternet {
