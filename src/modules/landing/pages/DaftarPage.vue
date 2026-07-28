@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import { CheckCircle2 } from 'lucide-vue-next'
+import {
+  CheckCircle2, ChevronLeft, ChevronRight, MapPin,
+  Package, User, ShoppingCart, FileText, FileImage,
+  Monitor, Settings, Tv, CreditCard, Info, ArrowLeft, ArrowRight
+} from 'lucide-vue-next'
 import { daftarSchema } from '@/schemas/pendaftaran.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { useDaftar } from '@/modules/pendaftaran/composables/usePendaftaran'
@@ -14,17 +18,113 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import type { PaketInternet } from '@/types/models'
 
 const route = useRoute()
+const router = useRouter()
 const { data: daftarPaket } = usePaketInternetList()
 
-const { handleSubmit, errors, defineField, setErrors, setFieldValue, values } = useForm({
+const currentStep = ref(1)
+const selectedPaket = ref<PaketInternet | null>(null)
+const isModalOpen = ref(false)
+const setujuKirim = ref(false)
+
+// ponytail: banner images as placeholder, swap with real promos later
+const banners = [
+  { id: 1, image: 'banner1.png'},
+  { id: 2, image: 'banner2.png'},
+  { id: 3, image: 'banner3.png'},
+]
+const bannerAktif = ref(0)
+let bannerTimer: ReturnType<typeof setInterval> | null = null
+
+function mulaiBanner() {
+  bannerTimer = setInterval(() => {
+    bannerAktif.value = (bannerAktif.value + 1) % banners.length
+  }, 3000)
+}
+function pindahBanner(i: number) {
+  bannerAktif.value = i
+  clearInterval(bannerTimer!)
+  mulaiBanner()
+}
+onMounted(mulaiBanner)
+onBeforeUnmount(() => bannerTimer && clearInterval(bannerTimer))
+
+// Filter
+const filterHarga = ref<string[]>([])
+const filterKecepatan = ref<string[]>([])
+const filterPerangkat = ref<string[]>([])
+
+const paketFiltered = computed(() => {
+  const all = (daftarPaket?.value ?? []) as PaketInternet[]
+  return all.filter((p) => {
+    const harga = Number(p.harga)
+    if (filterHarga.value.length) {
+      if (!filterHarga.value.some((r) => {
+        if (r === '>1000000') return harga > 1000000
+        if (r === '500000-1000000') return harga >= 500000 && harga <= 1000000
+        if (r === '300000-499999') return harga >= 300000 && harga <= 499999
+        return harga >= 100000 && harga <= 299999
+      })) return false
+    }
+    const kec = Number(p.kecepatan_mbps)
+    if (filterKecepatan.value.length) {
+      if (!filterKecepatan.value.some((r) => {
+        if (r === '>200') return kec > 200
+        if (r === '50-100') return kec >= 50 && kec <= 100
+        if (r === '20-50') return kec >= 20 && kec < 50
+        return kec >= 10 && kec < 20
+      })) return false
+    }
+    const perangkat = Number(p.jumlah_perangkat)
+    if (filterPerangkat.value.length) {
+      if (!filterPerangkat.value.some((r) => {
+        if (r === '1-3') return perangkat >= 1 && perangkat <= 3
+        if (r === '3-6') return perangkat >= 3 && perangkat <= 6
+        return perangkat >= 6 && perangkat <= 10
+      })) return false
+    }
+    return true
+  })
+})
+
+function toggleFilter(arr: string[], val: string) {
+  const i = arr.indexOf(val)
+  if (i >= 0) arr.splice(i, 1)
+  else arr.push(val)
+}
+
+// Pagination
+const PER_PAGE = 4
+const halaman = ref(0)
+const totalHalaman = computed(() => Math.max(1, Math.ceil(paketFiltered.value.length / PER_PAGE)))
+const paketDiHalaman = computed(() => {
+  const start = halaman.value * PER_PAGE
+  return paketFiltered.value.slice(start, start + PER_PAGE)
+})
+watch(paketFiltered, () => { halaman.value = 0 })
+watch(filterHarga, () => { halaman.value = 0 }, { deep: true })
+watch(filterKecepatan, () => { halaman.value = 0 }, { deep: true })
+watch(filterPerangkat, () => { halaman.value = 0 }, { deep: true })
+
+function pilihPaket(paket: PaketInternet) {
+  selectedPaket.value = paket
+  isModalOpen.value = true
+}
+
+// Form
+const { handleSubmit, errors, defineField, setErrors, setFieldValue } = useForm({
   validationSchema: toTypedSchema(daftarSchema),
   initialValues: {
     tipe_paket: 'reguler',
-    paket_internet_id:
-      typeof route.query.paket_internet_id === 'string' ? route.query.paket_internet_id : undefined,
+    paket_internet_id: typeof route.query.paket_internet_id === 'string' ? route.query.paket_internet_id : undefined,
+    rt: '001', rw: '001', kode_pos: '00000',
   },
 })
 
@@ -33,91 +133,234 @@ const [nik, nikAttrs] = defineField('nik')
 const [nomorHp, nomorHpAttrs] = defineField('nomor_hp')
 const [email, emailAttrs] = defineField('email')
 const [alamatPemasangan, alamatPemasanganAttrs] = defineField('alamat_pemasangan')
-const [rt, rtAttrs] = defineField('rt')
-const [rw, rwAttrs] = defineField('rw')
-const [kodePos, kodePosAttrs] = defineField('kode_pos')
-const [tipePaket, tipePaketAttrs] = defineField('tipe_paket')
-const [paketInternetId, paketInternetIdAttrs] = defineField('paket_internet_id')
-const [namaPaketCustom, namaPaketCustomAttrs] = defineField('nama_paket_custom')
-const [kecepatanCustomMbps, kecepatanCustomMbpsAttrs] = defineField('kecepatan_custom_mbps')
-const [catatanCustom, catatanCustomAttrs] = defineField('catatan_custom')
 
 const fotoKtp = ref<File | null>(null)
 const fotoSelfieKtp = ref<File | null>(null)
-const lokasiPeta = ref<{ lat: number; lng: number } | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string } | null>(null)
 
-// Pola sama kayak file upload: sinkron REAKTIF ke vee-validate, bukan cuma
-// pas submit — biar gak kejadian catch-22 yang sama kayak bug foto kemarin.
-watch(fotoKtp, (file) => setFieldValue('foto_ktp', file ?? undefined))
-watch(fotoSelfieKtp, (file) => setFieldValue('foto_selfie_ktp', file ?? undefined))
-watch(lokasiPeta, (lokasi) => {
-  setFieldValue('latitude', lokasi?.lat)
-  setFieldValue('longitude', lokasi?.lng)
+watch(fotoKtp, (f) => setFieldValue('foto_ktp', f ?? undefined))
+watch(fotoSelfieKtp, (f) => setFieldValue('foto_selfie_ktp', f ?? undefined))
+watch(lokasiPeta, (l) => {
+  setFieldValue('latitude', l?.lat)
+  setFieldValue('longitude', l?.lng)
+  if (l?.address) setFieldValue('alamat_pemasangan', l.address)
 })
 
 const { mutate, isPending } = useDaftar()
 const nomorPermohonanBerhasil = ref<string | null>(null)
 
-const onSubmit = handleSubmit((formValues) => {
+function lanjutKeLokasi() {
+  setFieldValue('paket_internet_id', String(selectedPaket.value!.id))
+  isModalOpen.value = false
+  currentStep.value = 2
+}
+function lanjutKeDataDiri() {
+  if (!lokasiPeta.value) return
+  currentStep.value = 3
+}
+function lanjutKeReview() { currentStep.value = 4 }
+
+const onSubmit = handleSubmit((fv) => {
   mutate(
-    { ...formValues, foto_ktp: fotoKtp.value as File, foto_selfie_ktp: fotoSelfieKtp.value ?? undefined },
+    { ...fv, foto_ktp: fotoKtp.value as File, foto_selfie_ktp: fotoSelfieKtp.value ?? undefined },
     {
-      onSuccess: ({ data }) => {
-        nomorPermohonanBerhasil.value = data.data.nomor_permohonan
-      },
-      onError: (error) => {
-        const fieldErrors = mapValidationErrors(error)
-        if (fieldErrors) setErrors(fieldErrors)
-      },
+      onSuccess: ({ data }) => { nomorPermohonanBerhasil.value = data.data.nomor_permohonan; currentStep.value = 5 },
+      onError: (e) => { const fe = mapValidationErrors(e); if (fe) setErrors(fe) },
     },
   )
 })
+
+const ringkasan = computed(() => ({
+  paket: selectedPaket.value ? `${selectedPaket.value.nama_paket} — ${selectedPaket.value.kecepatan_mbps} Mbps` : '-',
+  harga: selectedPaket.value ? `Rp ${Number(selectedPaket.value.harga).toLocaleString('id-ID')}/bln` : '-',
+  alamat: alamatPemasangan.value || '-',
+  nama: namaLengkap.value || '-',
+  nik: nik.value || '-',
+  email: email.value || '-',
+  hp: nomorHp.value || '-',
+  fotoKtp: fotoKtp.value?.name,
+  fotoSelfie: fotoSelfieKtp.value?.name,
+}))
+
+const steps = [
+  { id: 1, label: 'Pilih Paket', icon: Package },
+  { id: 2, label: 'Atur Lokasi', icon: MapPin },
+  { id: 3, label: 'Data Diri', icon: User },
+  { id: 4, label: 'Review', icon: FileText },
+  { id: 5, label: 'Selesai', icon: CheckCircle2 },
+]
 </script>
 
 <template>
-  <div>
-    <!-- ============ HEADER ============ -->
-    <section class="bg-landing-ink text-landing-mist">
-      <div class="mx-auto max-w-6xl px-6 py-16 sm:py-20">
-        <p class="font-landing-mono text-xs uppercase tracking-[0.2em] text-landing-signal">Daftar Berlangganan</p>
-        <h1 class="mt-3 max-w-xl font-display text-4xl tracking-tight sm:text-5xl">
-          Lima menit, lalu tim kami yang lanjutkan.
-        </h1>
-        <p class="mt-4 max-w-lg text-landing-mist/70">
-          Isi data di bawah — tim kami akan verifikasi dan hubungi kamu untuk jadwal survey dalam
-          1x24 jam.
-        </p>
-      </div>
-    </section>
-
-    <!-- ============ FORM ============ -->
-    <section class="bg-landing-mist">
-      <div class="mx-auto max-w-2xl px-6 py-16">
-        <!-- Sukses -->
-        <div v-if="nomorPermohonanBerhasil" class="rounded-2xl bg-landing-paper p-10 text-center">
-          <CheckCircle2 class="mx-auto size-12 text-success" />
-          <h2 class="mt-4 font-display text-2xl text-landing-ink">Pendaftaran berhasil dikirim</h2>
-          <p class="mt-2 text-sm text-landing-ink/60">
-            Nomor permohonan kamu:
-            <span class="font-landing-mono font-medium text-landing-ink">{{ nomorPermohonanBerhasil }}</span>
-          </p>
-          <p class="mt-4 text-sm text-landing-ink/60">
-            Simpan nomor ini. Tim kami akan menghubungi nomor HP yang kamu daftarkan untuk proses
-            verifikasi dan jadwal survey.
-          </p>
-          <RouterLink
-            to="/"
-            class="mt-6 inline-flex items-center justify-center rounded-full bg-landing-ink px-6 py-3 text-sm font-medium text-landing-mist"
+  <div class="min-h-screen bg-landing-mist pb-20">
+    <!-- Progress Stepper -->
+    <div class="sticky top-0 z-30 border-b bg-white/95 backdrop-blur-sm">
+      <div class="mx-auto flex max-w-7xl items-center gap-1 px-4 py-3 sm:gap-2 sm:px-6">
+        <template v-for="(s, i) in steps" :key="s.id">
+          <div
+            class="flex items-center gap-1.5 text-xs sm:text-sm"
+            :class="currentStep === s.id ? 'font-bold text-landing-teal' : currentStep > s.id ? 'text-green-600' : 'text-slate-300'"
           >
-            Kembali ke Beranda
-          </RouterLink>
+            <component :is="s.icon" class="size-4" />
+            <span class="hidden sm:inline">{{ s.label }}</span>
+          </div>
+          <ChevronRight v-if="i < steps.length - 1" class="size-3.5 text-slate-300" />
+        </template>
+        <button class="ml-auto text-xs text-slate-400 hover:text-slate-600" @click="currentStep = 1">Ulang</button>
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+      <!-- STEP 1: Pilih Paket -->
+      <div v-if="currentStep === 1">
+        <!-- Banner 2:1 -->
+        <div class="relative mb-6 overflow-hidden rounded-2xl">
+          <div
+            class="flex transition-transform duration-500 ease-in-out"
+            :style="{ transform: `translateX(-${bannerAktif * 100}%)` }"
+          >
+            <div v-for="b in banners" :key="b.id" class="w-full shrink-0">
+              <img :src="b.image" :alt="b.title" class="aspect-[2/1] w-full object-cover" />
+              <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/40 to-transparent p-6 sm:p-10">
+                <h3 class="text-xl font-bold text-white sm:text-3xl">{{ b.title }}</h3>
+              </div>
+            </div>
+          </div>
+          <div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+            <button
+              v-for="(b, i) in banners" :key="b.id"
+              class="size-2.5 rounded-full transition-colors"
+              :class="i === bannerAktif ? 'bg-white' : 'bg-white/40'"
+              @click="pindahBanner(i)"
+            />
+          </div>
         </div>
 
-        <!-- Form -->
-        <form v-else class="space-y-10 rounded-2xl bg-landing-paper p-6 sm:p-8" novalidate @submit="onSubmit">
-          <!-- Data Diri -->
-          <fieldset class="space-y-4">
-            <legend class="font-display text-lg text-landing-ink">Data Diri</legend>
+        <div class="flex flex-col gap-6 lg:flex-row">
+          <!-- Filter sidebar -->
+          <div class="w-full shrink-0 lg:w-64">
+            <div class="rounded-xl border bg-white p-5 shadow-sm">
+              <h3 class="mb-4 font-bold text-sm">Filter Paket</h3>
+              <div class="space-y-5">
+                <div>
+                  <h4 class="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Harga</h4>
+                  <div class="space-y-1.5">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['100000-299999','Rp100.000 – Rp299.999'],['300000-499999','Rp300.000 – Rp499.999'],['500000-1000000','Rp500.000 – Rp1.000.000'],['>1000000','> Rp1.000.000']]" :key="v">
+                      <Checkbox :checked="filterHarga.includes(v)" @update:checked="toggleFilter(filterHarga, v)" />
+                      {{ l }}
+                    </label>
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <h4 class="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Kecepatan</h4>
+                  <div class="space-y-1.5">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['10-20','10 – 20 Mbps'],['20-50','20 – 50 Mbps'],['50-100','50 – 100 Mbps'],['>200','> 200 Mbps']]" :key="v">
+                      <Checkbox :checked="filterKecepatan.includes(v)" @update:checked="toggleFilter(filterKecepatan, v)" />
+                      {{ l }}
+                    </label>
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <h4 class="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Perangkat</h4>
+                  <div class="space-y-1.5">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['1-3','1 – 3 Perangkat'],['3-6','3 – 6 Perangkat'],['6-10','6 – 10 Perangkat']]" :key="v">
+                      <Checkbox :checked="filterPerangkat.includes(v)" @update:checked="toggleFilter(filterPerangkat, v)" />
+                      {{ l }}
+                    </label>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" class="w-full text-xs" @click="filterHarga=[];filterKecepatan=[];filterPerangkat=[];halaman=0">Reset Filter</Button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paket grid -->
+          <div class="flex-1">
+            <!-- Empty state -->
+            <div v-if="paketFiltered.length === 0" class="flex flex-col items-center gap-2 rounded-xl border bg-white py-16 text-sm text-slate-400">
+              <ShoppingCart class="size-8" /> Tidak ada paket yang cocok dengan filter
+            </div>
+
+            <!-- Cards -->
+            <div v-else class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              <div
+                v-for="paket in paketDiHalaman"
+                :key="paket.id"
+                class="flex flex-col rounded-2xl border bg-white transition-all hover:shadow-md"
+                :class="selectedPaket?.id === paket.id ? 'border-landing-teal ring-2 ring-landing-teal/20' : 'border-slate-200'"
+              >
+                <div class="flex flex-1 flex-col p-5">
+                  <h3 class="font-bold text-landing-ink">{{ paket.nama_paket }}</h3>
+                  <p class="mt-1 text-3xl font-bold text-landing-teal">{{ paket.kecepatan_mbps }} <span class="text-sm font-medium">Mbps</span></p>
+                  <div class="mt-4 space-y-1.5 text-xs text-slate-500">
+                    <div class="flex items-center gap-1.5"><Monitor class="size-3.5" /> {{ paket.jumlah_perangkat }} Perangkat Terhubung</div>
+                    <div class="flex items-center gap-1.5"><Settings class="size-3.5" /> Biaya Pasang Gratis</div>
+                    <div class="flex items-center gap-1.5"><Tv class="size-3.5" /> Prime Video, Catchplay+</div>
+                  </div>
+                </div>
+                <div class="border-t px-5 py-3">
+                  <div class="mb-3">
+                    <span class="text-xs text-slate-400">Mulai dari</span>
+                    <p class="text-xl font-bold text-landing-ink">Rp {{ Number(paket.harga).toLocaleString('id-ID') }}<span class="text-xs font-normal text-slate-400">/bln</span></p>
+                  </div>
+                  <Button
+                    class="w-full py-2.5 text-sm text-white bg-landing-teal hover:bg-landing-teal-deep"
+                    @click="pilihPaket(paket)"
+                  >
+                    {{ selectedPaket?.id === paket.id ? 'Lihat Detail' : 'Pilih Paket' }}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="totalHalaman > 1" class="mt-6 flex items-center justify-center gap-3">
+              <Button variant="outline" size="sm" :disabled="halaman === 0" @click="halaman--">
+                <ArrowLeft class="mr-1 size-4" /> Sebelumnya
+              </Button>
+              <span class="text-sm text-slate-500">
+                {{ halaman + 1 }} / {{ totalHalaman }}
+              </span>
+              <Button variant="outline" size="sm" :disabled="halaman >= totalHalaman - 1" @click="halaman++">
+                Selanjutnya <ArrowRight class="ml-1 size-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Lokasi -->
+      <div v-if="currentStep === 2" class="mx-auto max-w-3xl">
+        <Button variant="ghost" class="mb-4 pl-0" @click="currentStep = 1"><ChevronLeft class="mr-1 size-4" /> Kembali</Button>
+        <div class="rounded-2xl border bg-white p-6 shadow-sm">
+          <h2 class="font-bold text-xl mb-1">Atur Lokasi Pemasangan</h2>
+          <p class="mb-5 text-sm text-muted-foreground">Klik peta atau gunakan tombol Deteksi Lokasi untuk mengisi alamat otomatis.</p>
+          <div class="mb-5 h-[350px] w-full overflow-hidden rounded-xl border">
+            <LocationPicker v-model="lokasiPeta" class="h-full w-full" />
+          </div>
+          <div class="space-y-2">
+            <Label for="alamat_pemasangan">Detail Alamat Lengkap</Label>
+            <Textarea
+              id="alamat_pemasangan" v-model="alamatPemasangan" v-bind="alamatPemasanganAttrs"
+              placeholder="Otomatis terisi dari peta..."
+              class="min-h-[90px]"
+            />
+            <p v-if="errors.alamat_pemasangan" class="text-xs text-destructive">{{ errors.alamat_pemasangan }}</p>
+          </div>
+          <Button @click="lanjutKeDataDiri" class="mt-6 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep" :disabled="!lokasiPeta">
+            Simpan Alamat & Lanjut <ChevronRight class="ml-1 size-4" />
+          </Button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Data Diri -->
+      <div v-if="currentStep === 3" class="mx-auto max-w-2xl">
+        <Button variant="ghost" class="mb-4 pl-0" @click="currentStep = 2"><ChevronLeft class="mr-1 size-4" /> Kembali</Button>
+        <div class="rounded-2xl border bg-white p-6 sm:p-8 shadow-sm">
+          <h2 class="font-bold text-xl mb-6">Data Diri & Dokumen</h2>
+          <div class="space-y-4">
             <div class="space-y-2">
               <Label for="nama_lengkap">Nama Lengkap</Label>
               <Input id="nama_lengkap" v-model="namaLengkap" v-bind="namaLengkapAttrs" :aria-invalid="!!errors.nama_lengkap" />
@@ -140,125 +383,160 @@ const onSubmit = handleSubmit((formValues) => {
               <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
               <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
             </div>
-          </fieldset>
-
-          <!-- Alamat -->
-          <fieldset class="space-y-4">
-            <legend class="font-display text-lg text-landing-ink">Alamat Pemasangan</legend>
-            <div class="space-y-2">
-              <Label for="alamat_pemasangan">Alamat Lengkap</Label>
-              <Textarea id="alamat_pemasangan" v-model="alamatPemasangan" v-bind="alamatPemasanganAttrs" />
-              <p v-if="errors.alamat_pemasangan" class="text-xs text-destructive">{{ errors.alamat_pemasangan }}</p>
-            </div>
-            <div class="grid gap-4 sm:grid-cols-3">
-              <div class="space-y-2">
-                <Label for="rt">RT</Label>
-                <Input id="rt" v-model="rt" v-bind="rtAttrs" maxlength="3" :aria-invalid="!!errors.rt" />
-                <p v-if="errors.rt" class="text-xs text-destructive">{{ errors.rt }}</p>
-              </div>
-              <div class="space-y-2">
-                <Label for="rw">RW</Label>
-                <Input id="rw" v-model="rw" v-bind="rwAttrs" maxlength="3" :aria-invalid="!!errors.rw" />
-                <p v-if="errors.rw" class="text-xs text-destructive">{{ errors.rw }}</p>
-              </div>
-              <div class="space-y-2">
-                <Label for="kode_pos">Kode Pos</Label>
-                <Input id="kode_pos" v-model="kodePos" v-bind="kodePosAttrs" maxlength="5" :aria-invalid="!!errors.kode_pos" />
-                <p v-if="errors.kode_pos" class="text-xs text-destructive">{{ errors.kode_pos }}</p>
-              </div>
-            </div>
-            <LocationPicker v-model="lokasiPeta" />
-            <p v-if="errors.latitude" class="text-xs text-destructive">{{ errors.latitude }}</p>
-          </fieldset>
-
-          <!-- Paket -->
-          <fieldset class="space-y-4">
-            <legend class="font-display text-lg text-landing-ink">Paket</legend>
-            <div class="space-y-2">
-              <Label>Tipe Paket</Label>
-              <Select v-model="tipePaket" v-bind="tipePaketAttrs">
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="reguler">Paket Reguler</SelectItem>
-                  <SelectItem value="custom">Custom (Konsultasi)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div v-if="values.tipe_paket === 'reguler'" class="space-y-2">
-              <Label>Pilih Paket</Label>
-              <Select v-model="paketInternetId" v-bind="paketInternetIdAttrs">
-                <SelectTrigger><SelectValue placeholder="Pilih paket" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="p in daftarPaket ?? []" :key="p.id" :value="String(p.id)">
-                    {{ p.nama_paket }} — {{ p.kecepatan_mbps }} Mbps
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p v-if="errors.paket_internet_id" class="text-xs text-destructive">{{ errors.paket_internet_id }}</p>
-            </div>
-
-            <template v-else>
-              <div class="space-y-2">
-                <Label for="nama_paket_custom">Nama Paket yang Diinginkan</Label>
-                <Input
-                  id="nama_paket_custom"
-                  v-model="namaPaketCustom"
-                  v-bind="namaPaketCustomAttrs"
-                  placeholder="mis. Custom 150 Mbps"
-                />
-                <p v-if="errors.nama_paket_custom" class="text-xs text-destructive">{{ errors.nama_paket_custom }}</p>
-              </div>
-              <div class="space-y-2">
-                <Label for="kecepatan_custom_mbps">Perkiraan Kecepatan (Mbps)</Label>
-                <Input
-                  id="kecepatan_custom_mbps"
-                  v-model="kecepatanCustomMbps"
-                  v-bind="kecepatanCustomMbpsAttrs"
-                  type="number"
-                  min="1"
-                />
-                <p v-if="errors.kecepatan_custom_mbps" class="text-xs text-destructive">
-                  {{ errors.kecepatan_custom_mbps }}
-                </p>
-              </div>
-              <div class="space-y-2">
-                <Label for="catatan_custom">Catatan Kebutuhan <span class="text-muted-foreground">(opsional)</span></Label>
-                <Textarea
-                  id="catatan_custom"
-                  v-model="catatanCustom"
-                  v-bind="catatanCustomAttrs"
-                  placeholder="Ceritakan kebutuhan khusus kamu"
-                />
-              </div>
-            </template>
-          </fieldset>
-
-          <!-- Dokumen -->
-          <fieldset class="space-y-4">
-            <legend class="font-display text-lg text-landing-ink">Dokumen</legend>
-            <FileInputFoto
-              v-model="fotoKtp"
-              label="Foto KTP"
-              :error="errors.foto_ktp"
-            />
-            <FileInputFoto
-              v-model="fotoSelfieKtp"
-              label="Foto Selfie dengan KTP"
-              hint="Opsional"
-              :error="errors.foto_selfie_ktp"
-            />
-          </fieldset>
-
-          <Button
-            type="submit"
-            :disabled="isPending"
-            class="w-full rounded-full bg-landing-signal py-6 text-landing-ink hover:bg-landing-signal/90"
-          >
-            {{ isPending ? 'Mengirim...' : 'Kirim Pendaftaran' }}
+            <FileInputFoto v-model="fotoKtp" label="Foto KTP" :error="errors.foto_ktp" />
+            <FileInputFoto v-model="fotoSelfieKtp" label="Foto Selfie dengan KTP" hint="Opsional" :error="errors.foto_selfie_ktp" />
+          </div>
+          <Button @click="lanjutKeReview" class="mt-8 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep">
+            Lanjut ke Review <ChevronRight class="ml-1 size-4" />
           </Button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Review & Kirim -->
+      <div v-if="currentStep === 4" class="mx-auto max-w-3xl">
+        <Button variant="ghost" class="mb-4 pl-0" @click="currentStep = 3"><ChevronLeft class="mr-1 size-4" /> Kembali</Button>
+        <form novalidate @submit="onSubmit">
+          <div class="rounded-2xl border bg-white p-6 sm:p-8 shadow-sm">
+            <h2 class="font-bold text-xl mb-6">Review Pendaftaran</h2>
+            <p class="mb-6 text-sm text-muted-foreground">Pastikan semua data sudah benar sebelum dikirim.</p>
+            <div class="grid gap-6 sm:grid-cols-2">
+              <div class="rounded-xl border bg-slate-50/50 p-4">
+                <h3 class="mb-3 flex items-center gap-1.5 text-sm font-semibold text-landing-teal"><Package class="size-4" /> Paket Dipilih</h3>
+                <div class="space-y-1.5 text-sm">
+                  <p><span class="text-slate-400">Paket:</span> <span class="font-medium">{{ ringkasan.paket }}</span></p>
+                  <p><span class="text-slate-400">Harga:</span> <span class="font-medium">{{ ringkasan.harga }}</span></p>
+                </div>
+              </div>
+              <div class="rounded-xl border bg-slate-50/50 p-4">
+                <h3 class="mb-3 flex items-center gap-1.5 text-sm font-semibold text-landing-teal"><MapPin class="size-4" /> Alamat Pemasangan</h3>
+                <p class="text-sm leading-relaxed">{{ ringkasan.alamat }}</p>
+              </div>
+              <div class="rounded-xl border bg-slate-50/50 p-4">
+                <h3 class="mb-3 flex items-center gap-1.5 text-sm font-semibold text-landing-teal"><User class="size-4" /> Data Diri</h3>
+                <div class="space-y-1.5 text-sm">
+                  <p><span class="text-slate-400">Nama:</span> <span class="font-medium">{{ ringkasan.nama }}</span></p>
+                  <p><span class="text-slate-400">NIK:</span> <span class="font-medium">{{ ringkasan.nik }}</span></p>
+                  <p><span class="text-slate-400">No. HP:</span> <span class="font-medium">{{ ringkasan.hp }}</span></p>
+                  <p><span class="text-slate-400">Email:</span> {{ ringkasan.email || '-' }}</p>
+                </div>
+              </div>
+              <div class="rounded-xl border bg-slate-50/50 p-4">
+                <h3 class="mb-3 flex items-center gap-1.5 text-sm font-semibold text-landing-teal"><FileImage class="size-4" /> Dokumen</h3>
+                <div class="space-y-1.5 text-sm">
+                  <p><span class="text-slate-400">Foto KTP:</span> <span class="font-medium">{{ ringkasan.fotoKtp || '-' }}</span></p>
+                  <p><span class="text-slate-400">Foto Selfie:</span> <span class="font-medium">{{ ringkasan.fotoSelfie || '-' }}</span></p>
+                </div>
+              </div>
+            </div>
+            <Separator class="my-6" />
+            <label class="flex cursor-pointer items-start gap-3 rounded-lg bg-slate-50 p-4">
+              <Checkbox v-model:checked="setujuKirim" class="mt-0.5" />
+              <div class="text-sm">
+                <span class="font-medium">Saya menyatakan bahwa data yang diisi adalah benar</span>
+                <p class="mt-0.5 text-xs text-muted-foreground">Dengan mengirim pendaftaran, Anda menyetujui syarat dan ketentuan yang berlaku.</p>
+              </div>
+            </label>
+            <Button type="submit" :disabled="!setujuKirim || isPending" class="mt-6 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep">
+              <CheckCircle2 v-if="setujuKirim && !isPending" class="mr-1.5 size-5" />
+              {{ isPending ? 'Mengirim...' : 'Kirim Pendaftaran Sekarang' }}
+            </Button>
+          </div>
         </form>
       </div>
-    </section>
+
+      <!-- STEP 5: Sukses -->
+      <div v-if="currentStep === 5" class="mx-auto max-w-2xl">
+        <div class="rounded-2xl border bg-white p-10 text-center shadow-sm">
+          <CheckCircle2 class="mx-auto size-14 text-green-500" />
+          <h2 class="mt-4 font-bold text-2xl">Pendaftaran berhasil dikirim</h2>
+          <p class="mt-2 text-sm text-muted-foreground">
+            Nomor permohonan kamu:
+            <span class="font-mono font-bold">{{ nomorPermohonanBerhasil }}</span>
+          </p>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Simpan nomor ini. Tim kami akan menghubungi nomor HP yang kamu daftarkan.
+          </p>
+          <Button @click="router.push('/')" class="mt-6 px-8 py-3 bg-landing-ink text-white hover:bg-landing-ink/90">Kembali ke Beranda</Button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dialog Detail Paket (IndiHome-style) -->
+    <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
+      <DialogContent class="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle class="text-xl">{{ selectedPaket?.nama_paket }} — {{ selectedPaket?.kecepatan_mbps }} Mbps Internet</DialogTitle>
+        </DialogHeader>
+
+        <div class="space-y-5">
+          <!-- Harga utama -->
+          <div class="rounded-xl bg-slate-50 p-5 text-center">
+            <p class="text-sm text-slate-500">{{ selectedPaket?.kecepatan_mbps }} Mbps</p>
+            <p class="mt-1 text-3xl font-bold text-landing-teal">Rp {{ Number(selectedPaket?.harga).toLocaleString('id-ID') }}<span class="text-base font-normal text-slate-400">/bulan</span></p>
+            <p class="mt-1 text-sm text-slate-500">Bayar sekaligus mulai Rp{{ (Number(selectedPaket?.harga) * 0.7).toLocaleString('id-ID') }}/bulan</p>
+          </div>
+
+          <!-- Detail grid -->
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="flex items-start gap-3 rounded-lg border p-3">
+              <Monitor class="mt-0.5 size-5 text-landing-teal shrink-0" />
+              <div>
+                <p class="text-xs text-slate-400">Perangkat Terhubung</p>
+                <p class="text-sm font-semibold">{{ selectedPaket?.jumlah_perangkat }} Perangkat</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 rounded-lg border p-3">
+              <Settings class="mt-0.5 size-5 text-landing-teal shrink-0" />
+              <div>
+                <p class="text-xs text-slate-400">Biaya Pasang</p>
+                <p class="text-sm font-semibold">Rp0 (Gratis)</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 rounded-lg border p-3">
+              <Tv class="mt-0.5 size-5 text-landing-teal shrink-0" />
+              <div>
+                <p class="text-xs text-slate-400">OTT Pilihan</p>
+                <p class="text-sm font-semibold">Prime Video, Catchplay+</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 rounded-lg border p-3">
+              <CreditCard class="mt-0.5 size-5 text-landing-teal shrink-0" />
+              <div>
+                <p class="text-xs text-slate-400">Pembayaran</p>
+                <p class="text-sm font-semibold">Pascabayar</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Petunjuk pembayaran -->
+          <div class="rounded-xl bg-slate-50 p-4">
+            <div class="flex items-start gap-2">
+              <Info class="mt-0.5 size-4 text-landing-teal shrink-0" />
+              <div class="text-xs text-slate-500 space-y-1.5">
+                <p>Pembayaran IndiHome terdiri dari pembayaran biaya instalasi & pembayaran tagihan bulanan.</p>
+                <p>Pembayaran biaya instalasi dilakukan setelah proses instalasi selesai oleh teknisi, pembayaran dapat dilakukan melalui berbagai channel pembayaran.</p>
+                <p>Pembayaran tagihan bulanan dilakukan setiap tanggal 5-20 setiap bulannya. Untuk bulan pertama pemakaian, pembayaran dilakukan di bulan selanjutnya. Pembayaran menggunakan skema pascabayar (pakai layanan dulu, baru bayar).</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Syarat & Ketentuan -->
+          <div class="text-xs text-slate-400 space-y-0.5">
+            <p class="font-medium text-slate-500">Syarat & Ketentuan:</p>
+            <ul class="list-disc pl-4 space-y-0.5">
+              <li>Harga belum termasuk PPN 11%</li>
+              <li>Kontrak berlangganan minimal 12 bulan</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-4 flex gap-3">
+          <Button variant="outline" class="flex-1" @click="isModalOpen = false">Batal</Button>
+          <Button @click="lanjutKeLokasi" class="flex-1 text-white bg-landing-teal hover:bg-landing-teal-deep">
+            Pilih Paket Ini
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

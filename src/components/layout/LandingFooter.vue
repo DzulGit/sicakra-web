@@ -14,14 +14,20 @@ const navigasi = [
     <div class="mx-auto max-w-6xl px-6 py-16">
       <div class="grid gap-10 md:grid-cols-3">
         <div>
-          <img src="/public/sicakra.png" alt="Logo" class="h-25 w-auto" />
+          <div class="flex items-center gap-4">
+            <img src="/public/sicakra.png" alt="Logo" class="h-25 w-auto" />
+            <img src="/public/aqrapana.png" alt="Logo" class="h-25 w-auto" />
+          </div>
+
           <p class="mt-2 max-w-xs text-sm text-muted-foreground">
             Layanan internet cepat dan andal untuk rumah dan usaha kamu.
           </p>
         </div>
 
         <div>
-          <p class="font-landing-mono text-xs uppercase tracking-[0.15em] text-landing-mist/40">Navigasi</p>
+          <p class="font-landing-mono text-xs uppercase tracking-[0.15em] text-landing-mist/40">
+            Navigasi
+          </p>
           <nav class="mt-4 flex flex-col gap-2">
             <RouterLink
               v-for="item in navigasi"
@@ -35,14 +41,21 @@ const navigasi = [
         </div>
 
         <div>
-          <p class="font-landing-mono text-xs uppercase tracking-[0.15em] text-landing-mist/40">Kontak</p>
+          <p class="font-landing-mono text-xs uppercase tracking-[0.15em] text-landing-mist/40">
+            Kontak
+          </p>
           <p class="mt-4 text-sm text-landing-mist/70">halo@sicakra.id</p>
           <p class="mt-1 text-sm text-landing-mist/70">0800-1-SICAKRA</p>
         </div>
       </div>
 
-      <div class="mt-12 flex flex-col gap-2 border-t border-landing-mist/10 pt-6 font-landing-mono text-[11px] text-landing-mist/40 sm:flex-row sm:items-center sm:justify-between">
-        <p>&copy; {{ new Date().getFullYear() }} SICAKRA — DISELENGGARAKAN OLEH PT AQRAPANA JAYA MANDIRI</p>
+      <div
+        class="mt-12 flex flex-col gap-2 border-t border-landing-mist/10 pt-6 font-landing-mono text-[11px] text-landing-mist/40 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <p>
+          &copy; {{ new Date().getFullYear() }} SICAKRA — DISELENGGARAKAN OLEH PT AQRAPANA JAYA
+          MANDIRI
+        </p>
         <p class="flex items-center gap-2">
           <span class="inline-block size-1.5 rounded-full bg-landing-signal" />
           SEMUA LAYANAN BEROPERASI NORMAL
