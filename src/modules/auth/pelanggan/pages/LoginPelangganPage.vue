@@ -60,8 +60,8 @@ const submitLogin = form.handleSubmit((values) => {
       <div class="absolute -right-24 -top-24 size-96 rounded-full border border-landing-signal/10" />
       <div class="absolute -bottom-32 -left-16 size-80 rounded-full border border-landing-signal/10" />
 
-      <RouterLink to="/" class="absolute left-12 top-16 z-10 flex items-center gap-2.5">
-        <img src="/logo-sicakra.png" alt="Sicakra" class="h-9 w-auto" />
+      <RouterLink to="/" class="absolute left-7 top-16 z-10 flex items-center gap-2.5">
+        <img src="/public/sicakra.png" alt="Sicakra" class="h-17 w-auto" />
         <span class="font-display text-lg tracking-tight">Sicakra</span>
       </RouterLink>
 
@@ -83,7 +83,7 @@ const submitLogin = form.handleSubmit((values) => {
     <div class="flex min-h-screen items-center justify-center bg-landing-mist px-6 py-12 sm:py-16 lg:min-h-0">
       <div class="w-full max-w-sm">
         <RouterLink to="/" class="flex flex-col items-center gap-2 text-center lg:hidden">
-          <img src="/logo-sicakra.png" alt="Sicakra" class="h-11 w-auto" />
+          <img src="/logo-sicakra.png" alt="Sicakra" class="h-20 w-auto" />
         </RouterLink>
 
         <div class="mt-8 text-center lg:mt-0 lg:text-left">

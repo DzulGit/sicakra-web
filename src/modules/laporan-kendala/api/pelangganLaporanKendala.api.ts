@@ -18,8 +18,11 @@ export function buatLaporanKendala(payload: BuatLaporanForm) {
   formData.append('layanan_internet_id', payload.layanan_internet_id)
   formData.append('kategori_kendala', payload.kategori_kendala)
   formData.append('deskripsi', payload.deskripsi)
-  if (payload.foto) {
-    formData.append('foto', payload.foto)
+  
+  if (payload.foto && payload.foto.length > 0) {
+    payload.foto.forEach((file) => {
+      formData.append('foto[]', file)
+    })
   }
 
   return httpClient.post<ApiResponse<LaporanKendala>>(BASE, formData, {

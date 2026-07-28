@@ -118,6 +118,7 @@ export interface LaporanKendala {
   created_at: string
   updated_at: string
   layanan_internet?: LayananInternetRingkas
+  foto?: string | null
 }
 
 export interface Pembayaran {
