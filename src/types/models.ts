@@ -22,6 +22,7 @@ export interface PaketInternet {
   nama_paket: string
   kecepatan_mbps: number
   harga: string
+  jumlah_perangkat: number
   deskripsi: string | null
   status_aktif: boolean
 }
@@ -45,6 +46,7 @@ export interface TimTeknisi {
   nama_tim: string
   status_aktif: boolean
   anggota?: AdminRingkas[]
+  anggota_count?: number
 }
 
 export interface RingkasanAktivasi {

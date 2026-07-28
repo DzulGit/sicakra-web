@@ -33,6 +33,7 @@ const { handleSubmit, errors, defineField, setErrors, setValues, setFieldValue }
 const [namaPaket, namaPaketAttrs] = defineField('nama_paket')
 const [kecepatanMbps, kecepatanMbpsAttrs] = defineField('kecepatan_mbps')
 const [harga, hargaAttrs] = defineField('harga')
+const [jumlahPerangkat, jumlahPerangkatAttrs] = defineField('jumlah_perangkat')
 const [deskripsi, deskripsiAttrs] = defineField('deskripsi')
 const [statusAktif] = defineField('status_aktif')
 
@@ -44,6 +45,7 @@ watch(
       nama_paket: nilai.nama_paket,
       kecepatan_mbps: nilai.kecepatan_mbps,
       harga: Number(nilai.harga),
+      jumlah_perangkat: nilai.jumlah_perangkat,
       deskripsi: nilai.deskripsi ?? '',
       status_aktif: nilai.status_aktif,
     })
@@ -103,7 +105,7 @@ const onSubmit = handleSubmit((values) => {
           <Input id="nama_paket" v-model="namaPaket" v-bind="namaPaketAttrs" :aria-invalid="!!errors.nama_paket" />
           <p v-if="errors.nama_paket" class="text-xs text-destructive">{{ errors.nama_paket }}</p>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-3 gap-4">
           <div class="space-y-2">
             <Label for="kecepatan_mbps">Kecepatan (Mbps)</Label>
             <Input id="kecepatan_mbps" v-model="kecepatanMbps" v-bind="kecepatanMbpsAttrs" type="number" min="1" />
@@ -113,6 +115,11 @@ const onSubmit = handleSubmit((values) => {
             <Label for="harga">Harga (Rp)</Label>
             <Input id="harga" v-model="harga" v-bind="hargaAttrs" type="number" min="0" />
             <p v-if="errors.harga" class="text-xs text-destructive">{{ errors.harga }}</p>
+          </div>
+          <div class="space-y-2">
+            <Label for="jumlah_perangkat">Jumlah Perangkat</Label>
+            <Input id="jumlah_perangkat" v-model="jumlahPerangkat" v-bind="jumlahPerangkatAttrs" type="number" min="1" max="255" />
+            <p v-if="errors.jumlah_perangkat" class="text-xs text-destructive">{{ errors.jumlah_perangkat }}</p>
           </div>
         </div>
         <div class="space-y-2">
