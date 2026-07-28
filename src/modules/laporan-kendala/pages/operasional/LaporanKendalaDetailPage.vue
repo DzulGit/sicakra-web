@@ -58,6 +58,16 @@ const bisaTeruskan = computed(() => laporan.value?.status === 'diproses')
 const bisaTutup = computed(() =>
   ['menunggu', 'diproses', 'selesai'].includes(laporan.value?.status ?? ''),
 )
+
+const isImageOpen = ref(false)
+const selectedImage = ref<string | null>(null)
+
+function bukaGambar(foto: string) {
+  selectedImage.value = foto.startsWith('http') 
+    ? foto 
+    : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`
+  isImageOpen.value = true
+}
 </script>
 
 <template>
@@ -117,6 +127,19 @@ const bisaTutup = computed(() =>
               <p>{{ laporan.hasil_penanganan }}</p>
             </div>
           </div>
+          <div v-if="laporan.foto" class="space-y-1.5 mt-4">
+            <p class="text-xs text-muted-foreground">Foto Kendala</p>
+            <div class="flex flex-wrap gap-4 mt-2">
+              <img 
+                v-for="(foto, index) in (Array.isArray(laporan.foto) ? laporan.foto : [laporan.foto])" 
+                :key="index"
+                :src="foto.startsWith('http') ? foto : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`" 
+                alt="Foto Laporan" 
+                class="h-32 w-32 rounded-md border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                @click="bukaGambar(foto)"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -158,5 +181,18 @@ const bisaTutup = computed(() =>
       :loading="isPendingTutup"
       @confirm="handleTutup"
     />
+    <Teleport to="body">
+      <div 
+        v-if="isImageOpen && selectedImage" 
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-zoom-out"
+        @click="isImageOpen = false; selectedImage = null"
+      >
+        <img 
+          :src="selectedImage" 
+          alt="Foto Laporan Full" 
+          class="max-h-[90vh] max-w-[90vw] rounded-md object-contain" 
+        />
+      </div>
+    </Teleport>
   </div>
 </template>

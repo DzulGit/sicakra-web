@@ -130,6 +130,9 @@ const onSubmit = handleSubmit((values) => {
 
       <!-- Wrapper form utama -->
       <div class="absolute z-10 w-full max-w-sm">
+        <RouterLink to="/" class="flex flex-col items-center gap-2 text-center lg:hidden">
+          <img src="/logo-sicakra.png" alt="Sicakra" class="h-20 w-auto" />
+        </RouterLink>
 
         <div class="text-center lg:mt-0 lg:text-left">
           <h2 class="font-display text-2xl tracking-tight text-landing-ink sm:text-[26px]">

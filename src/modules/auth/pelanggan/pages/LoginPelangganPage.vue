@@ -25,7 +25,7 @@ const router = useRouter()
 const form = useForm({
   validationSchema: toTypedSchema(loginPelangganSchema),
 })
-const [username, usernameAttrs] = form.defineField('username')
+const [nomorPelanggan, nomorPelangganAttrs] = form.defineField('username')
 const [password, passwordAttrs] = form.defineField('password')
 const { mutate: login, isPending } = useLoginPelanggan()
 
@@ -39,6 +39,7 @@ const submitLogin = form.handleSubmit((values) => {
         id: pelanggan.id,
         nama_lengkap: pelanggan.nama_lengkap,
         tipe: 'pelanggan',
+        // TODO: pastikan field ini benar-benar dikirim backend pada response login.
         password_sudah_dibuat: pelanggan.password_sudah_dibuat ?? true,
       })
       toast.success(`Selamat datang, ${pelanggan.nama_lengkap}`)
@@ -47,7 +48,7 @@ const submitLogin = form.handleSubmit((values) => {
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)
       if (fieldErrors) form.setErrors(fieldErrors)
-      else toast.error('Username atau password salah.')
+      else toast.error('Nomor pelanggan atau password salah.')
     },
   })
 })
@@ -56,14 +57,22 @@ const submitLogin = form.handleSubmit((values) => {
 <template>
   <div class="grid min-h-screen lg:grid-cols-2">
     <!-- ============ SISI KIRI — Brand & pesan ============ -->
-    <div class="relative hidden overflow-hidden bg-landing-ink px-12 py-16 text-landing-mist lg:flex lg:flex-col lg:justify-center">
+    <div
+      class="relative hidden overflow-hidden bg-landing-ink px-12 py-16 text-landing-mist lg:flex lg:flex-col lg:justify-center">
       <div class="absolute -right-24 -top-24 size-96 rounded-full border border-landing-signal/10" />
       <div class="absolute -bottom-32 -left-16 size-80 rounded-full border border-landing-signal/10" />
 
-      <RouterLink to="/" class="absolute left-12 top-16 z-10 flex items-center gap-2.5">
-        <img src="/logo-sicakra.png" alt="Sicakra" class="h-9 w-auto" />
-        <span class="font-display text-lg tracking-tight">Sicakra</span>
+      <RouterLink to="/" class="absolute left-12 top-14 z-20 flex flex-col transition-all duration-300">
+        <span class="font-display text-3xl font-semibold tracking-tight text-white hover:text-landing-signal">
+          Sicakra
+        </span>
+
+        <span class="mt-1 text-[11px] uppercase tracking-[0.22em] text-landing-mist/60">
+          PT Aqrapana Daya Mandiri
+        </span>
       </RouterLink>
+
+      <div class="absolute left-32 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-landing-signal/5 blur-3xl" />
 
       <div class="relative z-10">
         <p class="font-landing-mono text-xs uppercase tracking-[0.2em] text-landing-signal">
@@ -76,17 +85,43 @@ const submitLogin = form.handleSubmit((values) => {
           Masuk untuk memantau layanan, tagihan, dan melaporkan kendala jaringan kamu — semua
           dalam satu tempat.
         </p>
+        <div class="mt-10 flex items-center gap-4">
+          <div class="h-px w-14 bg-landing-signal/70"></div>
+          <span class="font-landing-mono text-[11px] uppercase tracking-[0.25em] text-landing-mist/40">
+            Fast • Stable • Reliable
+          </span>
+        </div>
+      </div>
+
+      <!-- Logo Footer -->
+      <div class="absolute bottom-10 left-7 z-10 flex items-center gap-3">
+        <img src="/sicakra.png" alt="Logo Sicakra" 
+          class="h-20 w-auto object-contain transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-110 hover:drop-shadow-[0_0_30px_rgba(255,196,0,0.45)]" />
+
+        <img src="/aqrapana.png" alt="Logo Aqrapana"
+          class="h-20 w-auto object-contain transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-110 hover:drop-shadow-[0_0_30px_rgba(255,196,0,0.45)]" />
+      </div>
+
+      <div class="absolute right-20 top-1/2 -translate-y-1/2 opacity-10">
+        <div class="grid grid-cols-5 gap-4">
+          <span v-for="i in 25" :key="i" class="h-1.5 w-1.5 rounded-full bg-landing-signal" />
+        </div>
       </div>
     </div>
 
     <!-- ============ SISI KANAN — Form login ============ -->
-    <div class="flex min-h-screen items-center justify-center bg-landing-mist px-6 py-12 sm:py-16 lg:min-h-0">
-      <div class="w-full max-w-sm">
+    <div
+      class="relative overflow-hidden flex min-h-screen items-center justify-center bg-landing-mist px-6 py-12 sm:py-16 lg:min-h-0">
+      <!-- Decorative circles -->
+      <div class="absolute -top-24 -right-24 h-96 w-96 rounded-full border-2 border-landing-ink/25 z-0" />
+      <div class="absolute -bottom-28 -left-24 h-80 w-80 rounded-full border-2 border-landing-ink/25 z-0" />
+
+      <div class="absolute z-10 w-full max-w-sm">
         <RouterLink to="/" class="flex flex-col items-center gap-2 text-center lg:hidden">
-          <img src="/logo-sicakra.png" alt="Sicakra" class="h-11 w-auto" />
+          <img src="/logo-sicakra.png" alt="Sicakra" class="h-20 w-auto" />
         </RouterLink>
 
-        <div class="mt-8 text-center lg:mt-0 lg:text-left">
+        <div class="text-center lg:mt-0 lg:text-left">
           <h2 class="font-display text-2xl tracking-tight text-landing-ink sm:text-[26px]">
             Selamat Datang Kembali
           </h2>
@@ -95,16 +130,10 @@ const submitLogin = form.handleSubmit((values) => {
 
         <form class="mt-8 space-y-5" novalidate @submit="submitLogin">
           <div class="space-y-2">
-            <Label for="username" class="text-landing-ink/80">Username</Label>
-            <Input
-              id="username"
-              v-model="username"
-              v-bind="usernameAttrs"
-              placeholder="PLG000001"
-              autocomplete="username"
-              class="h-11 border-landing-ink/15 bg-white focus-visible:ring-landing-signal"
-              :aria-invalid="!!form.errors.value.username"
-            />
+            <Label for="nomor_pelanggan" class="text-landing-ink/80">Nomor Pelanggan</Label>
+            <Input id="username" v-model="nomorPelanggan" v-bind="nomorPelangganAttrs" placeholder="PLG000001"
+              autocomplete="username" class="h-11 border-landing-ink/15 bg-white focus-visible:ring-landing-signal"
+              :aria-invalid="!!form.errors.value.username" />
             <p v-if="form.errors.value.username" class="text-xs text-destructive">
               {{ form.errors.value.username }}
             </p>
@@ -113,22 +142,14 @@ const submitLogin = form.handleSubmit((values) => {
           <div class="space-y-2">
             <Label for="password" class="text-landing-ink/80">Password</Label>
             <div class="relative">
-              <Input
-                id="password"
-                v-model="password"
-                v-bind="passwordAttrs"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="••••••••"
-                autocomplete="current-password"
+              <Input id="password" v-model="password" v-bind="passwordAttrs" :type="showPassword ? 'text' : 'password'"
+                placeholder="••••••••" autocomplete="current-password"
                 class="h-11 border-landing-ink/15 bg-white pr-10 focus-visible:ring-landing-signal"
-                :aria-invalid="!!form.errors.value.password"
-              />
-              <button
-                type="button"
+                :aria-invalid="!!form.errors.value.password" />
+              <button type="button"
                 class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-landing-ink/40 hover:text-landing-ink"
                 :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
-                @click="showPassword = !showPassword"
-              >
+                @click="showPassword = !showPassword">
                 <EyeOff v-if="showPassword" class="size-4" />
                 <Eye v-else class="size-4" />
               </button>
@@ -137,16 +158,13 @@ const submitLogin = form.handleSubmit((values) => {
               {{ form.errors.value.password }}
             </p>
             <p class="text-xs text-landing-ink/45">
-              Belum pernah ganti username/password? Gunakan nomor pelanggan kamu sebagai username
-              dan password.
+              Belum pernah ganti password? Gunakan nomor pelanggan kamu sebagai password.
             </p>
           </div>
 
-          <Button
-            type="submit"
+          <Button type="submit"
             class="h-11 w-full rounded-full bg-landing-ink text-sm font-medium text-landing-mist hover:bg-landing-ink/90"
-            :disabled="isPending"
-          >
+            :disabled="isPending">
             {{ isPending ? 'Memproses...' : 'Masuk' }}
           </Button>
         </form>

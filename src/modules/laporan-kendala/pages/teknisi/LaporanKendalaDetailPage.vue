@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
@@ -50,6 +50,16 @@ const onSubmit = handleSubmit((values) => {
     },
   )
 })
+
+const isImageOpen = ref(false)
+const selectedImage = ref<string | null>(null)
+
+function bukaGambar(foto: string) {
+  selectedImage.value = foto.startsWith('http') 
+    ? foto 
+    : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`
+  isImageOpen.value = true
+}
 </script>
 
 <template>
@@ -93,6 +103,20 @@ const onSubmit = handleSubmit((values) => {
           <p class="text-xs text-muted-foreground">Deskripsi Kendala</p>
           <p>{{ laporan.deskripsi }}</p>
         </div>
+
+        <div v-if="laporan.foto" class="mt-4">
+          <p class="text-xs text-muted-foreground mb-2">Foto Kendala</p>
+          <div class="flex flex-wrap gap-4">
+            <img 
+              v-for="(foto, index) in (Array.isArray(laporan.foto) ? laporan.foto : [laporan.foto])" 
+              :key="index"
+              :src="foto.startsWith('http') ? foto : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`" 
+              alt="Foto Laporan" 
+              class="h-32 w-32 rounded-md border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+              @click="bukaGambar(foto)"
+            />
+          </div>
+        </div>
       </CardContent>
     </Card>
 
@@ -134,4 +158,17 @@ const onSubmit = handleSubmit((values) => {
       Laporan ini belum/tidak dalam status yang bisa kamu selesaikan.
     </p>
   </div>
+  <Teleport to="body">
+    <div 
+      v-if="isImageOpen && selectedImage" 
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-zoom-out"
+      @click="isImageOpen = false; selectedImage = null"
+    >
+      <img 
+        :src="selectedImage" 
+        alt="Foto Laporan Full" 
+        class="max-h-[90vh] max-w-[90vw] rounded-md object-contain" 
+      />
+    </div>
+  </Teleport>
 </template>

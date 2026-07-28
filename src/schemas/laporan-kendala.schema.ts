@@ -15,12 +15,16 @@ export const buatLaporanSchema = z.object({
   kategori_kendala: z.string().min(1, 'Kategori wajib diisi'),
   deskripsi: z.string().min(1, 'Deskripsi wajib diisi'),
   foto: z
-    .instanceof(File)
-    .refine((file) => file.size <= 4 * 1024 * 1024, 'Ukuran foto maksimal 4MB')
-    .refine(
-      (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type),
-      'Format foto harus JPG, PNG, atau WEBP',
-    )
-    .optional(),
+  .array(
+    z
+      .instanceof(File)
+      .refine((file) => file.size <= 4 * 1024 * 1024, 'Ukuran foto maksimal 4MB')
+      .refine(
+        (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type),
+        'Format foto harus JPG, PNG, atau WEBP',
+      )
+  )
+  .max(3, 'Maksimal 3 foto')
+  .optional(),
 })
 export type BuatLaporanForm = z.infer<typeof buatLaporanSchema>
