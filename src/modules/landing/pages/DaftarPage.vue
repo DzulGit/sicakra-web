@@ -36,9 +36,9 @@ const setujuKirim = ref(false)
 
 // ponytail: banner images as placeholder, swap with real promos later
 const banners = [
-  { id: 1, image: 'banner1.png'},
-  { id: 2, image: 'banner2.png'},
-  { id: 3, image: 'banner3.png'},
+  { id: 1, image: 'banner1.png', title: 'Promo Kemerdekaan' },
+  { id: 2, image: 'banner2.png', title: 'Gratis Biaya Pasang' },
+  { id: 3, image: 'banner3.png', title: 'Diskon Up To 50%' },
 ]
 const bannerAktif = ref(0)
 let bannerTimer: ReturnType<typeof setInterval> | null = null
@@ -62,35 +62,49 @@ const filterKecepatan = ref<string[]>([])
 const filterPerangkat = ref<string[]>([])
 
 const paketFiltered = computed(() => {
-  const all = (daftarPaket?.value ?? []) as PaketInternet[]
+  let all = []
+  if (Array.isArray(daftarPaket.value)) {
+    all = daftarPaket.value
+  } else if (daftarPaket.value?.data && Array.isArray(daftarPaket.value.data)) {
+    all = daftarPaket.value.data
+  }
+
   return all.filter((p) => {
     const harga = Number(p.harga)
-    if (filterHarga.value.length) {
-      if (!filterHarga.value.some((r) => {
+    let passHarga = true
+    if (filterHarga.value.length > 0) {
+      passHarga = filterHarga.value.some((r) => {
         if (r === '>1000000') return harga > 1000000
-        if (r === '500000-1000000') return harga >= 500000 && harga <= 1000000
-        if (r === '300000-499999') return harga >= 300000 && harga <= 499999
-        return harga >= 100000 && harga <= 299999
-      })) return false
+        if (r === '500000-999999') return harga >= 500000 && harga <= 999999
+        if (r === '100000-499999') return harga >= 100000 && harga <= 499999
+        return false
+      })
     }
+
     const kec = Number(p.kecepatan_mbps)
-    if (filterKecepatan.value.length) {
-      if (!filterKecepatan.value.some((r) => {
+    let passKec = true
+    if (filterKecepatan.value.length > 0) {
+      passKec = filterKecepatan.value.some((r) => {
         if (r === '>200') return kec > 200
         if (r === '50-100') return kec >= 50 && kec <= 100
-        if (r === '20-50') return kec >= 20 && kec < 50
-        return kec >= 10 && kec < 20
-      })) return false
+        if (r === '20-50') return kec >= 20 && kec <= 50
+        if (r === '10-20') return kec >= 10 && kec <= 20
+        return false
+      })
     }
+
     const perangkat = Number(p.jumlah_perangkat)
-    if (filterPerangkat.value.length) {
-      if (!filterPerangkat.value.some((r) => {
-        if (r === '1-3') return perangkat >= 1 && perangkat <= 3
-        if (r === '3-6') return perangkat >= 3 && perangkat <= 6
-        return perangkat >= 6 && perangkat <= 10
-      })) return false
+    let passPerangkat = true
+    if (filterPerangkat.value.length > 0) {
+      passPerangkat = filterPerangkat.value.some((r) => {
+        if (r === '1-20') return perangkat >= 1 && perangkat <= 10
+        if (r === '20-50') return perangkat >= 10 && perangkat <= 20
+        if (r === '50+') return perangkat > 50
+        return false
+      })
     }
-    return true
+
+    return passHarga && passKec && passPerangkat
   })
 })
 
@@ -150,6 +164,7 @@ const { mutate, isPending } = useDaftar()
 const nomorPermohonanBerhasil = ref<string | null>(null)
 
 function lanjutKeLokasi() {
+  setFieldValue('tipe_paket', 'reguler')
   setFieldValue('paket_internet_id', String(selectedPaket.value!.id))
   isModalOpen.value = false
   currentStep.value = 2
@@ -170,17 +185,30 @@ const onSubmit = handleSubmit((fv) => {
   )
 })
 
-const ringkasan = computed(() => ({
-  paket: selectedPaket.value ? `${selectedPaket.value.nama_paket} — ${selectedPaket.value.kecepatan_mbps} Mbps` : '-',
-  harga: selectedPaket.value ? `Rp ${Number(selectedPaket.value.harga).toLocaleString('id-ID')}/bln` : '-',
-  alamat: alamatPemasangan.value || '-',
-  nama: namaLengkap.value || '-',
-  nik: nik.value || '-',
-  email: email.value || '-',
-  hp: nomorHp.value || '-',
-  fotoKtp: fotoKtp.value?.name,
-  fotoSelfie: fotoSelfieKtp.value?.name,
-}))
+const ringkasan = computed(() => {
+  let paketText = '-'
+  let hargaText = '-'
+  
+  if (tipePaket.value === 'reguler' && selectedPaket.value) {
+    paketText = `${selectedPaket.value.nama_paket} — ${selectedPaket.value.kecepatan_mbps} Mbps`
+    hargaText = `Rp ${Number(selectedPaket.value.harga).toLocaleString('id-ID')}/bln`
+  } else if (tipePaket.value === 'custom') {
+    paketText = `Custom: ${namaPaketCustom.value || '-'} — ${kecepatanCustomMbps.value || '?'} Mbps`
+    hargaText = 'Menunggu Negosiasi/Survey'
+  }
+
+  return {
+    paket: paketText,
+    harga: hargaText,
+    alamat: alamatPemasangan.value || '-',
+    nama: namaLengkap.value || '-',
+    nik: nik.value || '-',
+    email: email.value || '-',
+    hp: nomorHp.value || '-',
+    fotoKtp: fotoKtp.value?.name,
+    fotoSelfie: fotoSelfieKtp.value?.name,
+  }
+})
 
 const steps = [
   { id: 1, label: 'Pilih Paket', icon: Package },
@@ -189,6 +217,24 @@ const steps = [
   { id: 4, label: 'Review', icon: FileText },
   { id: 5, label: 'Selesai', icon: CheckCircle2 },
 ]
+
+const [tipePaket] = defineField('tipe_paket')
+const [namaPaketCustom, namaPaketCustomAttrs] = defineField('nama_paket_custom')
+const [kecepatanCustomMbps, kecepatanCustomMbpsAttrs] = defineField('kecepatan_custom_mbps')
+const [catatanCustom, catatanCustomAttrs] = defineField('catatan_custom')
+
+const isModalCustomOpen = ref(false)
+
+function pilihPaketCustom() {
+  isModalCustomOpen.value = true
+}
+
+function lanjutDariCustom() {
+  setFieldValue('tipe_paket', 'custom')
+  setFieldValue('paket_internet_id', undefined)
+  isModalCustomOpen.value = false
+  currentStep.value = 2
+}
 </script>
 
 <template>
@@ -244,9 +290,9 @@ const steps = [
               <div class="space-y-5">
                 <div>
                   <h4 class="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Harga</h4>
-                  <div class="space-y-1.5">
-                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['100000-299999','Rp100.000 – Rp299.999'],['300000-499999','Rp300.000 – Rp499.999'],['500000-1000000','Rp500.000 – Rp1.000.000'],['>1000000','> Rp1.000.000']]" :key="v">
-                      <Checkbox :checked="filterHarga.includes(v)" @update:checked="toggleFilter(filterHarga, v)" />
+                  <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['100000-499999','Rp100.000 – Rp499.999'],['500000-999999','Rp500.000 – Rp999.999'],['>1000000','> Rp1.000.000']]" :key="v">
+                      <input type="checkbox" :value="v" v-model="filterHarga" class="size-4 cursor-pointer accent-landing-teal" />
                       {{ l }}
                     </label>
                   </div>
@@ -254,9 +300,9 @@ const steps = [
                 <Separator />
                 <div>
                   <h4 class="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Kecepatan</h4>
-                  <div class="space-y-1.5">
+                  <div class="space-y-2">
                     <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['10-20','10 – 20 Mbps'],['20-50','20 – 50 Mbps'],['50-100','50 – 100 Mbps'],['>200','> 200 Mbps']]" :key="v">
-                      <Checkbox :checked="filterKecepatan.includes(v)" @update:checked="toggleFilter(filterKecepatan, v)" />
+                      <input type="checkbox" :value="v" v-model="filterKecepatan" class="size-4 cursor-pointer accent-landing-teal" />
                       {{ l }}
                     </label>
                   </div>
@@ -264,14 +310,14 @@ const steps = [
                 <Separator />
                 <div>
                   <h4 class="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Perangkat</h4>
-                  <div class="space-y-1.5">
-                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['1-3','1 – 3 Perangkat'],['3-6','3 – 6 Perangkat'],['6-10','6 – 10 Perangkat']]" :key="v">
-                      <Checkbox :checked="filterPerangkat.includes(v)" @update:checked="toggleFilter(filterPerangkat, v)" />
+                  <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer" v-for="[v, l] in [['1-20','1 – 20 Perangkat'],['20-50','20 – 50 Perangkat'],['50+','> 50 Perangkat']]" :key="v">
+                      <input type="checkbox" :value="v" v-model="filterPerangkat" class="size-4 cursor-pointer accent-landing-teal" />
                       {{ l }}
                     </label>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" class="w-full text-xs" @click="filterHarga=[];filterKecepatan=[];filterPerangkat=[];halaman=0">Reset Filter</Button>
+                <Button variant="outline" size="sm" class="w-full text-xs mt-4" @click="filterHarga=[];filterKecepatan=[];filterPerangkat=[];halaman=0">Reset Filter</Button>
               </div>
             </div>
           </div>
@@ -325,6 +371,17 @@ const steps = [
               </span>
               <Button variant="outline" size="sm" :disabled="halaman >= totalHalaman - 1" @click="halaman++">
                 Selanjutnya <ArrowRight class="ml-1 size-4" />
+              </Button>
+            </div>
+
+            <!-- Banner Paket Custom -->
+            <div class="mt-8 rounded-2xl border border-landing-teal/30 bg-landing-teal/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div>
+                <h3 class="text-xl font-bold text-landing-ink">Tidak menemukan paket yang pas?</h3>
+                <p class="mt-2 text-sm text-slate-600">Konsultasikan kebutuhan internet khusus untuk bisnis, kantor, atau warnet Anda dengan tim kami. Kecepatan dan harga bisa disesuaikan.</p>
+              </div>
+              <Button @click="pilihPaketCustom" class="shrink-0 bg-landing-teal hover:bg-landing-teal-deep text-white px-6 py-6 rounded-xl shadow-sm">
+                Buat Paket Custom
               </Button>
             </div>
           </div>
@@ -429,14 +486,28 @@ const steps = [
               </div>
             </div>
             <Separator class="my-6" />
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg bg-slate-50 p-4">
-              <Checkbox v-model:checked="setujuKirim" class="mt-0.5" />
+            
+            <!-- PESAN ERROR BILA FORM TIDAK VALID SAAT DIKLIK -->
+            <div v-if="Object.keys(errors).length > 0" class="mb-4 rounded-lg bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
+              <p class="font-bold mb-1">Pendaftaran tertunda karena data berikut belum lengkap/sesuai:</p>
+              <ul class="list-disc pl-5">
+                <li v-for="(msg, field) in errors" :key="field">
+                  <span class="font-medium capitalize">{{ field.replace('_', ' ') }}</span>: {{ msg }}
+                </li>
+              </ul>
+              <p class="mt-2 text-xs">Silakan tekan tombol <b>Kembali</b> untuk memperbaiki data di atas.</p>
+            </div>
+
+            <!-- CHECKBOX MENGGUNAKAN NATIVE HTML AGAR PASTI BISA DI-TOGGLE -->
+            <label class="flex cursor-pointer items-start gap-3 rounded-lg bg-slate-50 p-4 border transition-colors" :class="setujuKirim ? 'border-slate-200' : 'border-destructive/50'">
+              <input type="checkbox" v-model="setujuKirim" class="mt-1 size-4 accent-landing-teal" />
               <div class="text-sm">
                 <span class="font-medium">Saya menyatakan bahwa data yang diisi adalah benar</span>
                 <p class="mt-0.5 text-xs text-muted-foreground">Dengan mengirim pendaftaran, Anda menyetujui syarat dan ketentuan yang berlaku.</p>
               </div>
             </label>
-            <Button type="submit" :disabled="!setujuKirim || isPending" class="mt-6 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep">
+            
+            <Button type="submit" :disabled="!setujuKirim || isPending" class="mt-6 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep disabled:opacity-50">
               <CheckCircle2 v-if="setujuKirim && !isPending" class="mr-1.5 size-5" />
               {{ isPending ? 'Mengirim...' : 'Kirim Pendaftaran Sekarang' }}
             </Button>
@@ -529,11 +600,46 @@ const steps = [
             </ul>
           </div>
         </div>
-
+    
         <div class="mt-4 flex gap-3">
           <Button variant="outline" class="flex-1" @click="isModalOpen = false">Batal</Button>
           <Button @click="lanjutKeLokasi" class="flex-1 text-white bg-landing-teal hover:bg-landing-teal-deep">
             Pilih Paket Ini
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    <!-- Dialog Paket Custom -->
+    <Dialog :open="isModalCustomOpen" @update:open="isModalCustomOpen = $event">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle class="text-xl">Buat Paket Custom</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <p class="text-sm text-slate-500">Ceritakan kebutuhan internet Anda, tim kami akan menghubungi untuk negosiasi harga dan spesifikasi teknis.</p>
+          
+          <div class="space-y-2">
+            <Label>Nama Paket / Kebutuhan (Mis: Kantor Cabang)</Label>
+            <Input v-model="namaPaketCustom" v-bind="namaPaketCustomAttrs" placeholder="Masukkan kebutuhan..." />
+            <p v-if="errors.nama_paket_custom" class="text-xs text-destructive">{{ errors.nama_paket_custom }}</p>
+          </div>
+          
+          <div class="space-y-2">
+            <Label>Perkiraan Kecepatan (Mbps)</Label>
+            <Input type="number" v-model="kecepatanCustomMbps" v-bind="kecepatanCustomMbpsAttrs" placeholder="Mis. 200" />
+            <p v-if="errors.kecepatan_custom_mbps" class="text-xs text-destructive">{{ errors.kecepatan_custom_mbps }}</p>
+          </div>
+          
+          <div class="space-y-2">
+            <Label>Catatan Tambahan (Opsional)</Label>
+            <Textarea v-model="catatanCustom" v-bind="catatanCustomAttrs" placeholder="Butuh IP Publik, instalasi khusus, dsb..." />
+          </div>
+        </div>
+        
+        <div class="mt-2 flex gap-3">
+          <Button variant="outline" class="flex-1" @click="isModalCustomOpen = false">Batal</Button>
+          <Button @click="lanjutDariCustom" class="flex-1 text-white bg-landing-teal hover:bg-landing-teal-deep" :disabled="!namaPaketCustom || !kecepatanCustomMbps">
+            Lanjut Atur Lokasi
           </Button>
         </div>
       </DialogContent>
