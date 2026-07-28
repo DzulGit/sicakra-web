@@ -2,7 +2,7 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { usePermohonanLayananList } from '../composables/usePermohonanLayanan'
-import { statusPermohonanEnum, jenisPermohonanEnum } from '@/lib/enums'
+import { statusPermohonanEnum } from '@/lib/enums'
 import DataTable from '@/components/data/DataTable.vue'
 import FilterBar from '@/components/data/FilterBar.vue'
 import Pagination from '@/components/data/Pagination.vue'
@@ -11,18 +11,13 @@ import { Button } from '@/components/ui/button'
 import type { FilterFieldConfig } from '@/types/filter'
 import type { PermohonanLayanan } from '@/types/models'
 
-const { data: hasil, isLoading } = usePermohonanLayananList()
+const { data: hasil, isLoading } = usePermohonanLayananList({ jenis_permohonan: 'relokasi' })
 
 const filterFields: FilterFieldConfig[] = [
   {
     key: 'status',
     label: 'Status',
     options: Object.entries(statusPermohonanEnum).map(([value, meta]) => ({ value, label: meta.label })),
-  },
-  {
-    key: 'jenis_permohonan',
-    label: 'Jenis',
-    options: Object.entries(jenisPermohonanEnum).map(([value, meta]) => ({ value, label: meta.label })),
   },
 ]
 
@@ -32,12 +27,6 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
     id: 'pelanggan',
     header: 'Pelanggan',
     cell: ({ row }) => row.original.pelanggan?.nama_lengkap ?? '-',
-  },
-  {
-    accessorKey: 'jenis_permohonan',
-    header: 'Jenis',
-    cell: ({ row }) =>
-      h(StatusBadge, { value: row.original.jenis_permohonan, map: jenisPermohonanEnum }),
   },
   {
     accessorKey: 'status',
@@ -70,7 +59,7 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
       :data="hasil?.data ?? []"
       :loading="isLoading"
       empty-judul="Belum ada permohonan"
-      empty-deskripsi="Permohonan baru dari pendaftaran akan muncul di sini."
+      empty-deskripsi="Permohonan relokasi akan muncul di sini."
     />
 
     <Pagination v-if="hasil" :meta="hasil" />

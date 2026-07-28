@@ -12,10 +12,10 @@ import {
 import type { JadwalkanKerjaForm, VerifikasiDanJadwalkanForm, VerifikasiPermohonanForm } from '@/schemas/permohonan-layanan.schema'
 import type { PermohonanLayanan } from '@/types/models'
 
-function useFilterParams() {
+function useFilterParams(forced?: Record<string, string>) {
   const route = useRoute()
   return computed(() => {
-    const params: Record<string, string> = {}
+    const params: Record<string, string> = { ...forced }
     for (const [key, value] of Object.entries(route.query)) {
       if (typeof value === 'string') params[key] = value
     }
@@ -23,8 +23,8 @@ function useFilterParams() {
   })
 }
 
-export function usePermohonanLayananList() {
-  const params = useFilterParams()
+export function usePermohonanLayananList(forcedParams?: Record<string, string>) {
+  const params = useFilterParams(forcedParams)
 
   return useQuery({
     queryKey: ['permohonan-layanan', 'list', params],

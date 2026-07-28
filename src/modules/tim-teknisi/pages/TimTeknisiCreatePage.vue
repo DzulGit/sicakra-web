@@ -28,7 +28,7 @@ const onSubmit = handleSubmit((formValues) => {
   mutate(formValues, {
     onSuccess: () => {
       toast.success('Tim teknisi berhasil dibuat.')
-      router.push('/admin/super-admin/tim-teknisi')
+      router.push('/admin/operasional/tim-teknisi')
     },
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)

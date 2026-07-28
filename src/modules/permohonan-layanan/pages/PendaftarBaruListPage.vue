@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
-import { getPermohonanLayananList } from '../api/permohonanLayanan.api'
+import { usePermohonanLayananList } from '../composables/usePermohonanLayanan'
 import { statusPermohonanEnum } from '@/lib/enums'
-import { useQuery } from '@tanstack/vue-query'
 import DataTable from '@/components/data/DataTable.vue'
+import FilterBar from '@/components/data/FilterBar.vue'
 import Pagination from '@/components/data/Pagination.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
+import type { FilterFieldConfig } from '@/types/filter'
 import type { PermohonanLayanan } from '@/types/models'
 
-const { data: hasil, isLoading } = useQuery({
-  queryKey: ['permohonan-layanan', 'pendaftar-baru'],
-  queryFn: () => getPermohonanLayananList({ status: 'MENUNGGU_VERIFIKASI' }).then((res) => res.data.data),
-})
+const { data: hasil, isLoading } = usePermohonanLayananList({ jenis_permohonan: 'pemasangan_baru' })
+
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'status',
+    label: 'Status',
+    options: Object.entries(statusPermohonanEnum).map(([value, meta]) => ({ value, label: meta.label })),
+  },
+]
 
 const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
   { accessorKey: 'nomor_permohonan', header: 'Nomor Daftar' },
@@ -33,10 +39,6 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
     cell: ({ row }) => row.original.pelanggan?.nomor_hp ?? '-',
   },
   {
-    accessorKey: 'jenis_permohonan',
-    header: 'Jenis',
-  },
-  {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => h(StatusBadge, { value: row.original.status, map: statusPermohonanEnum }),
@@ -48,7 +50,7 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
       h(
         Button,
         { as: 'RouterLink', to: `/admin/operasional/permohonan-layanan/${row.original.id}`, variant: 'outline', size: 'sm' },
-        () => 'Verifikasi',
+        () => 'Detail',
       ),
   },
 ]
@@ -59,16 +61,15 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Pendaftar Baru</h1>
     </div>
-    <p class="text-sm text-muted-foreground">
-      Pendaftar yang menunggu verifikasi — segera diproses.
-    </p>
+
+    <FilterBar :fields="filterFields" />
 
     <DataTable
       :columns="columns"
       :data="hasil?.data ?? []"
       :loading="isLoading"
       empty-judul="Tidak ada pendaftar baru"
-      empty-deskripsi="Semua pendaftar sudah diverifikasi."
+      empty-deskripsi="Belum ada pendaftaran pemasangan baru."
     />
 
     <Pagination v-if="hasil" :meta="hasil" />
