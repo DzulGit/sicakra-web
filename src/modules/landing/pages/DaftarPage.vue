@@ -3,11 +3,9 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import {
-  CheckCircle2, ChevronLeft, ChevronRight, MapPin,
+import { CheckCircle2, ChevronLeft, ChevronRight, MapPin,
   Package, User, ShoppingCart, FileText, FileImage,
-  Monitor, Settings, Tv, CreditCard, Info, ArrowLeft, ArrowRight
-} from 'lucide-vue-next'
+  Monitor, Settings, Tv, CreditCard, Info, ArrowLeft, ArrowRight } from 'lucide-vue-next'
 import { daftarSchema } from '@/schemas/pendaftaran.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { useDaftar } from '@/modules/pendaftaran/composables/usePendaftaran'
@@ -21,7 +19,6 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import type { PaketInternet } from '@/types/models'
 
@@ -62,14 +59,15 @@ const filterKecepatan = ref<string[]>([])
 const filterPerangkat = ref<string[]>([])
 
 const paketFiltered = computed(() => {
-  let all = []
-  if (Array.isArray(daftarPaket.value)) {
-    all = daftarPaket.value
-  } else if (daftarPaket.value?.data && Array.isArray(daftarPaket.value.data)) {
-    all = daftarPaket.value.data
+  const raw = daftarPaket?.value
+  let all: any[] = []
+  if (Array.isArray(raw)) {
+    all = raw
+  } else if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as any).data)) {
+    all = (raw as any).data
   }
 
-  return all.filter((p) => {
+  return all.filter((p: any) => {
     const harga = Number(p.harga)
     let passHarga = true
     if (filterHarga.value.length > 0) {
@@ -107,12 +105,6 @@ const paketFiltered = computed(() => {
     return passHarga && passKec && passPerangkat
   })
 })
-
-function toggleFilter(arr: string[], val: string) {
-  const i = arr.indexOf(val)
-  if (i >= 0) arr.splice(i, 1)
-  else arr.push(val)
-}
 
 // Pagination
 const PER_PAGE = 4
@@ -282,7 +274,7 @@ function lanjutDariCustom() {
           </div>
         </div>
 
-        <div class="flex flex-col gap-6 lg:flex-row">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-stretch">
           <!-- Filter sidebar -->
           <div class="w-full shrink-0 lg:w-64">
             <div class="rounded-xl border bg-white p-5 shadow-sm">
@@ -323,59 +315,64 @@ function lanjutDariCustom() {
           </div>
 
           <!-- Paket grid -->
-          <div class="flex-1">
-            <!-- Empty state -->
-            <div v-if="paketFiltered.length === 0" class="flex flex-col items-center gap-2 rounded-xl border bg-white py-16 text-sm text-slate-400">
-              <ShoppingCart class="size-8" /> Tidak ada paket yang cocok dengan filter
-            </div>
+          <div class="flex flex-1 flex-col gap-6">
+            <!-- Content fills height to match filter sidebar -->
+            <div class="flex-1">
+              <!-- Empty state — full height, centered flush with filter bottom -->
+              <div v-if="paketFiltered.length === 0" class="flex h-full flex-col items-center justify-center gap-2 rounded-xl border bg-white text-sm text-slate-400">
+                <ShoppingCart class="size-8" /> Tidak ada paket yang cocok dengan filter
+              </div>
 
-            <!-- Cards -->
-            <div v-else class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              <div
-                v-for="paket in paketDiHalaman"
-                :key="paket.id"
-                class="flex flex-col rounded-2xl border bg-white transition-all hover:shadow-md"
-                :class="selectedPaket?.id === paket.id ? 'border-landing-teal ring-2 ring-landing-teal/20' : 'border-slate-200'"
-              >
-                <div class="flex flex-1 flex-col p-5">
-                  <h3 class="font-bold text-landing-ink">{{ paket.nama_paket }}</h3>
-                  <p class="mt-1 text-3xl font-bold text-landing-teal">{{ paket.kecepatan_mbps }} <span class="text-sm font-medium">Mbps</span></p>
-                  <div class="mt-4 space-y-1.5 text-xs text-slate-500">
-                    <div class="flex items-center gap-1.5"><Monitor class="size-3.5" /> {{ paket.jumlah_perangkat }} Perangkat Terhubung</div>
-                    <div class="flex items-center gap-1.5"><Settings class="size-3.5" /> Biaya Pasang Gratis</div>
-                    <div class="flex items-center gap-1.5"><Tv class="size-3.5" /> Prime Video, Catchplay+</div>
+              <!-- Cards + pagination -->
+              <template v-else>
+                <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                  <div
+                    v-for="paket in paketDiHalaman"
+                    :key="paket.id"
+                    class="flex flex-col rounded-2xl border bg-white transition-all hover:shadow-md"
+                    :class="selectedPaket?.id === paket.id ? 'border-landing-teal ring-2 ring-landing-teal/20' : 'border-slate-200'"
+                  >
+                    <div class="flex flex-1 flex-col p-5">
+                      <h3 class="font-bold text-landing-ink">{{ paket.nama_paket }}</h3>
+                      <p class="mt-1 text-3xl font-bold text-landing-teal">{{ paket.kecepatan_mbps }} <span class="text-sm font-medium">Mbps</span></p>
+                      <div class="mt-4 space-y-1.5 text-xs text-slate-500">
+                        <div class="flex items-center gap-1.5"><Monitor class="size-3.5" /> {{ paket.jumlah_perangkat }} Perangkat Terhubung</div>
+                        <div class="flex items-center gap-1.5"><Settings class="size-3.5" /> Biaya Pasang Gratis</div>
+                        <div class="flex items-center gap-1.5"><Tv class="size-3.5" /> Prime Video, Catchplay+</div>
+                      </div>
+                    </div>
+                    <div class="border-t px-5 py-3">
+                      <div class="mb-3">
+                        <span class="text-xs text-slate-400">Mulai dari</span>
+                        <p class="text-xl font-bold text-landing-ink">Rp {{ Number(paket.harga).toLocaleString('id-ID') }}<span class="text-xs font-normal text-slate-400">/bln</span></p>
+                      </div>
+                      <Button
+                        class="w-full py-2.5 text-sm text-white bg-landing-teal hover:bg-landing-teal-deep"
+                        @click="pilihPaket(paket)"
+                      >
+                        {{ selectedPaket?.id === paket.id ? 'Lihat Detail' : 'Pilih Paket' }}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div class="border-t px-5 py-3">
-                  <div class="mb-3">
-                    <span class="text-xs text-slate-400">Mulai dari</span>
-                    <p class="text-xl font-bold text-landing-ink">Rp {{ Number(paket.harga).toLocaleString('id-ID') }}<span class="text-xs font-normal text-slate-400">/bln</span></p>
-                  </div>
-                  <Button
-                    class="w-full py-2.5 text-sm text-white bg-landing-teal hover:bg-landing-teal-deep"
-                    @click="pilihPaket(paket)"
-                  >
-                    {{ selectedPaket?.id === paket.id ? 'Lihat Detail' : 'Pilih Paket' }}
+
+                <!-- Pagination -->
+                <div v-if="totalHalaman > 1" class="mt-6 flex items-center justify-center gap-3">
+                  <Button variant="outline" size="sm" :disabled="halaman === 0" @click="halaman--">
+                    <ArrowLeft class="mr-1 size-4" /> Sebelumnya
+                  </Button>
+                  <span class="text-sm text-slate-500">
+                    {{ halaman + 1 }} / {{ totalHalaman }}
+                  </span>
+                  <Button variant="outline" size="sm" :disabled="halaman >= totalHalaman - 1" @click="halaman++">
+                    Selanjutnya <ArrowRight class="ml-1 size-4" />
                   </Button>
                 </div>
-              </div>
+              </template>
             </div>
 
-            <!-- Pagination -->
-            <div v-if="totalHalaman > 1" class="mt-6 flex items-center justify-center gap-3">
-              <Button variant="outline" size="sm" :disabled="halaman === 0" @click="halaman--">
-                <ArrowLeft class="mr-1 size-4" /> Sebelumnya
-              </Button>
-              <span class="text-sm text-slate-500">
-                {{ halaman + 1 }} / {{ totalHalaman }}
-              </span>
-              <Button variant="outline" size="sm" :disabled="halaman >= totalHalaman - 1" @click="halaman++">
-                Selanjutnya <ArrowRight class="ml-1 size-4" />
-              </Button>
-            </div>
-
-            <!-- Banner Paket Custom -->
-            <div class="mt-8 rounded-2xl border border-landing-teal/30 bg-landing-teal/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <!-- Banner Paket Custom — always snug at bottom of right column -->
+            <div class="rounded-2xl border border-landing-teal/30 bg-landing-teal/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div>
                 <h3 class="text-xl font-bold text-landing-ink">Tidak menemukan paket yang pas?</h3>
                 <p class="mt-2 text-sm text-slate-600">Konsultasikan kebutuhan internet khusus untuk bisnis, kantor, atau warnet Anda dengan tim kami. Kecepatan dan harga bisa disesuaikan.</p>
