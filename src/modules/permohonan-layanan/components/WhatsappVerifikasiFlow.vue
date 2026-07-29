@@ -28,12 +28,18 @@ const { data: daftarTim } = useTimTeknisiAktif()
 
 const { handleSubmit, errors, defineField, setErrors, setFieldValue, values } = useForm({
   validationSchema: toTypedSchema(verifikasiDanJadwalkanSchema),
-  initialValues: { status: 'DITERIMA', teknisi_ids: [] },
+  initialValues: { 
+    status: 'DITERIMA', 
+    teknisi_ids: [],
+    tipe_paket: props.permohonan.tipe_paket
+  },
 })
+
 const [status, statusAttrs] = defineField('status')
 const [catatan, catatanAttrs] = defineField('catatan')
 const [timTeknisiId, timTeknisiIdAttrs] = defineField('tim_teknisi_id')
 const [tanggalKerja, tanggalKerjaAttrs] = defineField('tanggal_kerja')
+const [hargaCustom, hargaCustomAttrs] = defineField('harga_custom')
 
 function pilihTim(timId: string) {
   setFieldValue('tim_teknisi_id', timId)
@@ -161,6 +167,20 @@ const butuhJadwal = computed(() => values.status === 'DITERIMA')
 
             <template v-if="butuhJadwal">
               <Separator />
+
+              <div v-if="permohonan.tipe_paket === 'custom'" class="space-y-2 mt-4 mb-4">
+                <Label for="harga_custom">Harga Kesepakatan (Rp/Bulan)</Label>
+                <Input
+                  id="harga_custom"
+                  type="number"
+                  v-model="hargaCustom"
+                  v-bind="hargaCustomAttrs"
+                  placeholder="Mis: 350000"
+                  :aria-invalid="!!errors.harga_custom"
+                />
+                <p v-if="errors.harga_custom" class="text-xs text-destructive">{{ errors.harga_custom }}</p>
+                <p class="text-xs text-muted-foreground">Harga ini akan digunakan sebagai tagihan bulanan pelanggan.</p>
+              </div>
 
               <div class="space-y-2">
                 <Label>Pilih Tim <span class="text-muted-foreground">(opsional, isi cepat)</span></Label>
