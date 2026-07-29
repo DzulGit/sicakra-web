@@ -55,3 +55,9 @@ export const verifikasiDanJadwalkanSchema = z
     }
   })
 export type VerifikasiDanJadwalkanForm = z.infer<typeof verifikasiDanJadwalkanSchema>
+
+export const jadwalkanSurveySchema = z.object({
+  admin_id: z.string().min(1, 'Teknisi wajib dipilih'),
+  tanggal_survey: z.string().min(1, 'Tanggal survey wajib diisi'),
+})
+export type JadwalkanSurveyForm = z.infer<typeof jadwalkanSurveySchema>
