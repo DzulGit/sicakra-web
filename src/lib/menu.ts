@@ -10,7 +10,6 @@ import {
   MessageSquareWarning,
   Globe,
   UserCircle,
-  UserPlus,
   Contact,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
@@ -29,7 +28,6 @@ export interface MenuGroup {
 const menuOperasional: MenuItem[] = [
   { label: 'Overview', to: '/admin/operasional/overview', icon: LayoutDashboard },
   { label: 'Permohonan Layanan', to: '/admin/operasional/permohonan-layanan', icon: FileText },
-  { label: 'Pendaftar Baru', to: '/admin/operasional/pendaftar-baru', icon: UserPlus },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
   { label: 'Paket Internet', to: '/admin/operasional/paket-internet', icon: Globe },
   { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },

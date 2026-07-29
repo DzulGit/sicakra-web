@@ -88,26 +88,68 @@ export function generateWaMessage(permohonan: PermohonanLayanan): { text: string
   const namaPelanggan = pelanggan?.nama_lengkap ?? '(nama belum tersedia)'
   const nomorWa = pelanggan?.nomor_hp ?? ''
   const nomorHpBersih = nomorWa.replace(/[^0-9]/g, '')
-  const paket =
+  const nomorPermohonan = permohonan.nomor_permohonan
+  const alamat = `${permohonan.alamat_pemasangan}${permohonan.rt ? `, RT ${permohonan.rt}/RW ${permohonan.rw}` : ''}${permohonan.kode_pos ? `, ${permohonan.kode_pos}` : ''}`
+  const jenis = permohonan.jenis_permohonan
+
+  const paketTeks =
     permohonan.tipe_paket === 'reguler'
       ? permohonan.paket_internet?.nama_paket ?? '(paket tidak tersedia)'
       : permohonan.nama_paket_custom ?? '(paket custom)'
-  const alamat = `${permohonan.alamat_pemasangan}, RT ${permohonan.rt}/RW ${permohonan.rw}, ${permohonan.kode_pos}`
-  const nomorPermohonan = permohonan.nomor_permohonan
+
+  let rincian: string[] = []
+  let penutup: string[] = []
+
+  if (jenis === 'ganti_paket') {
+    rincian = [
+      `📦 *Paket Saat Ini:* ${paketTeks}`,
+      `📦 *Paket Baru:* ${permohonan.paket_internet?.nama_paket ?? '(menunggu)'}`,
+      `📍 *Alamat:* ${alamat}`,
+    ]
+    if (permohonan.alasan) rincian.push(`📝 *Alasan:* ${permohonan.alasan}`)
+    penutup = [
+      'Mohon konfirmasi apakah penggantian paket sudah sesuai.',
+      'Setelah konfirmasi, kami akan segera memproses perubahan paket Anda.',
+    ]
+  } else if (jenis === 'tambah_paket') {
+    rincian = [
+      `📦 *Paket Tambahan:* ${paketTeks}`,
+      `📍 *Alamat Pemasangan:* ${alamat}`,
+    ]
+    penutup = [
+      'Mohon konfirmasi apakah data di atas sudah sesuai.',
+      'Apabila sudah benar, kami akan menjadwalkan pemasangan untuk paket tambahan Anda.',
+    ]
+  } else if (jenis === 'relokasi') {
+    rincian = [
+      `📦 *Paket Layanan:* ${paketTeks}`,
+      `📍 *Alamat Baru:* ${alamat}`,
+    ]
+    penutup = [
+      'Mohon konfirmasi apakah alamat baru sudah sesuai.',
+      'Setelah konfirmasi, kami akan menjadwalkan relokasi layanan Anda.',
+    ]
+  } else {
+    rincian = [
+      `📦 *Paket Layanan:* ${paketTeks}`,
+      `📍 *Alamat Pemasangan:* ${alamat}`,
+    ]
+    penutup = [
+      'Mohon konfirmasi apakah data di atas sudah sesuai.',
+      'Apabila data sudah benar, kami ingin mendiskusikan jadwal survey dan pemasangan di lokasi.',
+    ]
+  }
 
   const text = [
     `Yth. Bapak/Ibu *${namaPelanggan}*,`,
     '',
-    `Perkenalkan kami dari *Tim Operasional Sicakra*. Saat ini kami menerima permohonan layanan Internet Sicakra atas nama Bapak/Ibu dengan nomor pendaftaran *${nomorPermohonan}*.`,
+    `Perkenalkan kami dari *Tim Operasional Sicakra*. Saat ini kami menerima permohonan dengan nomor *${nomorPermohonan}* atas nama Bapak/Ibu.`,
     '',
     'Berikut rincian permohonan yang kami terima:',
     '',
-    `📦 *Paket Layanan:* ${paket}`,
-    `📍 *Alamat Pemasangan:* ${alamat}`,
+    ...rincian,
     '',
-    'Mohon konfirmasi apakah data di atas sudah sesuai.',
-    '',
-    'Apabila data sudah benar, kami ingin mendiskusikan jadwal *survey dan pemasangan* di lokasi. Kami mohon kesediaan Bapak/Ibu untuk menginformasikan hari dan tanggal yang sekiranya luang.',
+    ...penutup,
     '',
     'Kami tunggu balasannya, ya.',
     '',

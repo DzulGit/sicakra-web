@@ -21,7 +21,6 @@ const TimTeknisiCreatePage = () => import('@/modules/tim-teknisi/pages/TimTeknis
 const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiEditPage.vue')
 const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListPage.vue')
 const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
-const PendaftarBaruListPage = () => import('@/modules/permohonan-layanan/pages/PendaftarBaruListPage.vue')
 const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
 const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
 
@@ -161,18 +160,6 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Ubah Paket Internet',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['operasional'],
-    },
-  },
-  {
-    path: '/admin/operasional/pendaftar-baru',
-    name: 'admin.operasional.pendaftar-baru.index',
-    component: PendaftarBaruListPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Pendaftar Baru',
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional'],
