@@ -60,14 +60,24 @@ const filterPerangkat = ref<string[]>([])
 
 const paketFiltered = computed(() => {
   const raw = daftarPaket?.value
-  let all: any[] = []
+  // 1. Ganti any[] menjadi PaketInternet[]
+  let all: PaketInternet[] = [] 
+  
   if (Array.isArray(raw)) {
-    all = raw
-  } else if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as any).data)) {
-    all = (raw as any).data
+    all = raw as PaketInternet[]
+  } else if (
+    raw && 
+    typeof raw === 'object' && 
+    'data' in raw && 
+    // 2. Ganti (raw as any) menjadi (raw as { data: unknown })
+    Array.isArray((raw as { data: unknown }).data)
+  ) {
+    // 3. Ganti (raw as any) menjadi (raw as { data: PaketInternet[] })
+    all = (raw as { data: PaketInternet[] }).data 
   }
 
-  return all.filter((p: any) => {
+  // 4. Ganti (p: any) menjadi (p: PaketInternet)
+  return all.filter((p: PaketInternet) => {
     const harga = Number(p.harga)
     let passHarga = true
     if (filterHarga.value.length > 0) {
@@ -130,7 +140,7 @@ const { handleSubmit, errors, defineField, setErrors, setFieldValue } = useForm(
   initialValues: {
     tipe_paket: 'reguler',
     paket_internet_id: typeof route.query.paket_internet_id === 'string' ? route.query.paket_internet_id : undefined,
-    rt: '001', rw: '001', kode_pos: '00000',
+
   },
 })
 
@@ -139,6 +149,7 @@ const [nik, nikAttrs] = defineField('nik')
 const [nomorHp, nomorHpAttrs] = defineField('nomor_hp')
 const [email, emailAttrs] = defineField('email')
 const [alamatPemasangan, alamatPemasanganAttrs] = defineField('alamat_pemasangan')
+const [detailAlamat, detailAlamatAttrs] = defineField('detail_alamat')
 
 const fotoKtp = ref<File | null>(null)
 const fotoSelfieKtp = ref<File | null>(null)
@@ -403,6 +414,15 @@ function lanjutDariCustom() {
             />
             <p v-if="errors.alamat_pemasangan" class="text-xs text-destructive">{{ errors.alamat_pemasangan }}</p>
           </div>
+          <div class="space-y-2">
+            <Label for="detail_alamat">Detail Alamat <span class="text-muted-foreground">(opsional)</span></Label>
+            <Textarea
+              id="detail_alamat" v-model="detailAlamat" v-bind="detailAlamatAttrs"
+              placeholder="Contoh: RT 03 RW 05, Rumah cat hijau, samping masjid..."
+              class="min-h-[80px]"
+            />
+            <p v-if="errors.detail_alamat" class="text-xs text-destructive">{{ errors.detail_alamat }}</p>
+          </div>
           <Button @click="lanjutKeDataDiri" class="mt-6 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep" :disabled="!lokasiPeta">
             Simpan Alamat & Lanjut <ChevronRight class="ml-1 size-4" />
           </Button>
@@ -437,8 +457,10 @@ function lanjutDariCustom() {
               <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
               <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
             </div>
-            <FileInputFoto v-model="fotoKtp" label="Foto KTP" :error="errors.foto_ktp" />
-            <FileInputFoto v-model="fotoSelfieKtp" label="Foto Selfie dengan KTP" hint="Opsional" :error="errors.foto_selfie_ktp" />
+            <div class="grid gap-4 sm:grid-cols-2">
+              <FileInputFoto v-model="fotoKtp" label="Foto KTP" :error="errors.foto_ktp" />
+              <FileInputFoto v-model="fotoSelfieKtp" label="Foto Selfie dengan KTP" hint="Opsional" :error="errors.foto_selfie_ktp" />
+            </div>
           </div>
           <Button @click="lanjutKeReview" class="mt-8 w-full py-5 text-white bg-landing-teal hover:bg-landing-teal-deep">
             Lanjut ke Review <ChevronRight class="ml-1 size-4" />
