@@ -334,10 +334,57 @@ export interface LayananInternetDetail {
   rt: string
   rw: string
   kode_pos: string
+  detail_alamat?: string | null
   status: 'aktif' | 'nonaktif'
   tanggal_aktif: string
+  perangkat_count?: number
   paket_internet?: PaketInternet
   perangkat?: Perangkat[]
   riwayat_perubahan_paket?: RiwayatPerubahanPaket[]
   riwayat_relokasi?: RiwayatRelokasi[]
+}
+
+export interface DashboardRingkasan {
+  pelanggan: {
+    nama_lengkap: string
+    nomor_pelanggan: string
+  }
+  ringkasan: {
+    total_layanan: number
+    layanan_aktif: number
+    tagihan_belum_bayar: number
+    total_tagihan_belum_bayar: number
+    kendala_aktif: number
+    permohonan_pending: number
+  }
+  layanan_terbaru: Array<{
+    id: number
+    nomor_layanan: string
+    nama_paket: string | null
+    kecepatan_mbps: number | null
+    status: string
+    alamat_pemasangan: string
+  }>
+  tagihan_terbaru: Array<{
+    id: number
+    nomor_tagihan: string
+    total: number
+    status_pembayaran: string
+    tenggat: string | null
+    layanan: string
+  }>
+  kendala_terbaru: Array<{
+    id: number
+    nomor_laporan: string
+    kategori_kendala: string
+    status: string
+    created_at: string
+  }>
+  permohonan_terbaru: Array<{
+    id: number
+    nomor_permohonan: string
+    jenis_permohonan: string
+    status_permohonan: string
+    created_at: string
+  }>
 }

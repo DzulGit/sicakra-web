@@ -19,9 +19,7 @@ export function daftar(payload: DaftarForm) {
   if (payload.email) formData.append('email', payload.email)
 
   formData.append('alamat_pemasangan', payload.alamat_pemasangan)
-  formData.append('rt', payload.rt)
-  formData.append('rw', payload.rw)
-  formData.append('kode_pos', payload.kode_pos)
+  if (payload.detail_alamat) formData.append('detail_alamat', payload.detail_alamat)
   formData.append('latitude', String(payload.latitude))
   formData.append('longitude', String(payload.longitude))
 

@@ -15,9 +15,7 @@ export const daftarSchema = z
     email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
 
     alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
-    rt: z.string({ required_error: 'RT wajib diisi' }).min(1, 'RT wajib diisi').max(3),
-    rw: z.string({ required_error: 'RW wajib diisi' }).min(1, 'RW wajib diisi').max(3),
-    kode_pos: z.string({ required_error: 'Kode pos wajib diisi' }).min(1, 'Kode pos wajib diisi').max(5),
+    detail_alamat: z.string().optional(),
     latitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-90).max(90),
     longitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-180).max(180),
 

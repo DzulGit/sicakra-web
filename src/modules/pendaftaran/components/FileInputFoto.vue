@@ -52,7 +52,7 @@ function hapusFoto() {
       <img 
         :src="previewUrl" 
         alt="Preview foto" 
-        class="h-32 w-32 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border"
+        class="w-full aspect-[4/3] rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border"
         @click="isImageOpen = true"
       />
       <button
@@ -67,7 +67,7 @@ function hapusFoto() {
 
     <label
       v-else
-      class="flex h-32 w-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-landing-ink/30 text-sm text-landing-ink/60 hover:bg-landing-ink/5 mt-2 transition-colors"
+      class="flex w-full aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-landing-ink/30 text-sm text-landing-ink/60 hover:bg-landing-ink/5 mt-2 transition-colors"
     >
       <ImagePlus class="size-6" />
       Pilih Foto

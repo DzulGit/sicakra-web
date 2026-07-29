@@ -63,6 +63,8 @@ export const statusPerangkatEnum: EnumMap = {
 
 export const jenisPermohonanEnum: EnumMap = {
   pemasangan_baru: { label: 'Pemasangan Baru', badgeVariant: 'outline' },
+  tambah_paket: { label: 'Tambah Paket', badgeVariant: 'outline' },
+  ganti_paket: { label: 'Ganti Paket', badgeVariant: 'outline' },
   relokasi: { label: 'Relokasi', badgeVariant: 'outline' },
 }
 
