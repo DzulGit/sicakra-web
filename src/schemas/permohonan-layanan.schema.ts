@@ -34,6 +34,8 @@ export const verifikasiDanJadwalkanSchema = z
     tanggal_kerja: z.string().optional(),
     teknisi_ids: z.array(z.number()).optional(),
     tim_teknisi_id: z.string().optional(),
+    tipe_paket: z.string().optional(), // Bantuan deteksi dari UI
+    harga_custom: z.coerce.number().min(1, 'Harga wajib diisi').optional(), // Input harga khusus custom
   })
   .superRefine((data, ctx) => {
     if (data.status !== 'DITERIMA' && !data.catatan?.trim()) {
@@ -46,6 +48,16 @@ export const verifikasiDanJadwalkanSchema = z
       if (!data.teknisi_ids?.length) {
         ctx.addIssue({ code: 'custom', message: 'Pilih minimal 1 teknisi', path: ['teknisi_ids'] })
       }
+      // Wajibkan pengisian harga jika paket yang disetujui adalah custom
+      if (data.tipe_paket === 'custom' && !data.harga_custom) {
+        ctx.addIssue({ code: 'custom', message: 'Harga kesepakatan wajib diisi untuk paket custom', path: ['harga_custom'] })
+      }
     }
   })
 export type VerifikasiDanJadwalkanForm = z.infer<typeof verifikasiDanJadwalkanSchema>
+
+export const jadwalkanSurveySchema = z.object({
+  admin_id: z.string().min(1, 'Teknisi wajib dipilih'),
+  tanggal_survey: z.string().min(1, 'Tanggal survey wajib diisi'),
+})
+export type JadwalkanSurveyForm = z.infer<typeof jadwalkanSurveySchema>

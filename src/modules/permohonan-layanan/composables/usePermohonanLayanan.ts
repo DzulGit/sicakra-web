@@ -11,6 +11,7 @@ import {
 } from '../api/permohonanLayanan.api'
 import type { JadwalkanKerjaForm, VerifikasiDanJadwalkanForm, VerifikasiPermohonanForm } from '@/schemas/permohonan-layanan.schema'
 import type { PermohonanLayanan } from '@/types/models'
+import { jadwalkanSurvey } from '../api/permohonanLayanan.api'
 
 function useFilterParams(forced?: Record<string, string>) {
   const route = useRoute()
@@ -121,4 +122,15 @@ export function generateWaMessage(permohonan: PermohonanLayanan): { text: string
       : ''
 
   return { text, waUrl }
+}
+
+export function useJadwalkanSurvey() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number | string; payload: any }) =>
+      jadwalkanSurvey(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['permohonan-layanan'] })
+    },
+  })
 }

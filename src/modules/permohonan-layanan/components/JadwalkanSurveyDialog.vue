@@ -40,7 +40,7 @@ const onSubmit = handleSubmit((values) => {
         resetForm()
         emit('update:open', false)
       },
-      onError: (error) => {
+      onError: (error: any) => {
         const fieldErrors = mapValidationErrors(error)
         if (fieldErrors) setErrors(fieldErrors)
         else toast.error('Terjadi kesalahan, coba lagi.')

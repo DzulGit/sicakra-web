@@ -33,3 +33,7 @@ export function verifikasiDanJadwalkan(id: number | string, payload: VerifikasiD
 export function getDaftarTeknisi() {
   return httpClient.get<ApiResponse<AdminRingkas[]>>('/admin/operasional/teknisi')
 }
+
+export function jadwalkanSurvey(id: number | string, payload: any) {
+  return httpClient.patch(`/admin/operasional/permohonan-layanan/${id}/jadwalkan-survey`, payload)
+}
