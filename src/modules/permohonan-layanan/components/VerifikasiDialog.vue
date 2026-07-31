@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 
 const props = defineProps<{ open: boolean; permohonanId: number }>()
 const emit = defineEmits<{ (e: 'update:open', v: boolean): void }>()
@@ -26,6 +27,8 @@ const { handleSubmit, errors, defineField, setErrors, resetForm } = useForm({
 })
 const [status, statusAttrs] = defineField('status')
 const [catatan, catatanAttrs] = defineField('catatan')
+
+const [hargaCustom, hargaCustomAttrs] = defineField('harga_custom')
 
 const { mutate, isPending } = useVerifikasiPermohonan()
 
@@ -67,6 +70,17 @@ const onSubmit = handleSubmit((values) => {
             </SelectContent>
           </Select>
           <p v-if="errors.status" class="text-xs text-destructive">{{ errors.status }}</p>
+        </div>
+        <div class="space-y-2">
+          <Label for="harga_custom">Harga Custom</Label>
+          <Input
+            id="harga_custom"
+            type="number"
+            v-model="hargaCustom"
+            v-bind="hargaCustomAttrs"
+            placeholder="Isi jika paket custom"
+          />
+          <p v-if="errors.harga_custom" class="text-xs text-destructive">{{ errors.harga_custom }}</p>
         </div>
         <div class="space-y-2">
           <Label for="catatan">Catatan</Label>

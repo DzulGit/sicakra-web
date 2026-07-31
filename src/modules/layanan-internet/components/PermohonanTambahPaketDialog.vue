@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import LocationPicker from '@/modules/pendaftaran/components/PemilihanLokasi.vue'
 import { useBuatPermohonan } from '../composables/usePelangganLayanan'
@@ -19,7 +20,11 @@ const { data: daftarPaket } = useQuery({
   queryFn: () => getPaketInternetList().then((r) => r.data.data),
 })
 
+const tipePaket = ref<'reguler' | 'custom'>('reguler')
 const paketId = ref<number | null>(null)
+const namaPaketCustom = ref('')
+const kecepatanCustom = ref<number | null>(null)
+
 const lokasiPeta = ref<{ lat: number; lng: number; address?: string } | null>(null)
 const alamatPemasangan = ref('')
 const detailAlamat = ref('')
@@ -37,14 +42,19 @@ const paketTersedia = computed(() =>
 const { mutateAsync: buatPermohonan } = useBuatPermohonan()
 
 async function kirim() {
-  if (!paketId.value) { error.value = 'Pilih paket'; return }
+  if (tipePaket.value === 'reguler' && !paketId.value) { error.value = 'Pilih paket'; return }
+  if (tipePaket.value === 'custom' && (!namaPaketCustom.value || !kecepatanCustom.value)) { error.value = 'Lengkapi detail paket custom'; return }
   if (!lokasiPeta.value) { error.value = 'Pilih lokasi pemasangan di peta'; return }
+  
   isSubmitting.value = true; error.value = ''
   try {
     await buatPermohonan({
       jenis_permohonan: 'tambah_paket',
       layanan_internet_id: props.layanan.id,
-      paket_internet_id: paketId.value,
+      tipe_paket: tipePaket.value,
+      paket_internet_id: tipePaket.value === 'reguler' ? paketId.value : undefined,
+      nama_paket_custom: tipePaket.value === 'custom' ? namaPaketCustom.value : undefined,
+      kecepatan_custom_mbps: tipePaket.value === 'custom' ? kecepatanCustom.value : undefined,
       alamat_pemasangan: alamatPemasangan.value || lokasiPeta.value.address || `${lokasiPeta.value.lat}, ${lokasiPeta.value.lng}`,
       detail_alamat: detailAlamat.value || undefined,
       latitude: lokasiPeta.value.lat,
@@ -70,6 +80,17 @@ async function kirim() {
 
       <div class="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
         <div class="space-y-2">
+          <Label>Tipe Paket</Label>
+          <Select v-model="tipePaket">
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="reguler">Paket Reguler</SelectItem>
+              <SelectItem value="custom">Paket Custom</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div v-if="tipePaket === 'reguler'" class="space-y-2">
           <Label for="paket">Pilih Paket Tambahan</Label>
           <Select v-model="paketId">
             <SelectTrigger><SelectValue placeholder="Pilih paket..." /></SelectTrigger>
@@ -79,6 +100,17 @@ async function kirim() {
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div v-if="tipePaket === 'custom'" class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <Label for="nama_custom">Nama Paket Custom</Label>
+            <Input id="nama_custom" v-model="namaPaketCustom" placeholder="Contoh: Paket 150Mbps" />
+          </div>
+          <div class="space-y-2">
+            <Label for="kecepatan_custom">Kecepatan (Mbps)</Label>
+            <Input id="kecepatan_custom" type="number" v-model="kecepatanCustom" placeholder="Contoh: 150" />
+          </div>
         </div>
 
         <div class="space-y-2">
@@ -111,7 +143,7 @@ async function kirim() {
 
         <div class="flex justify-end gap-3 pt-1">
           <Button variant="outline" @click="emit('close')">Batal</Button>
-          <Button :disabled="!paketId || !lokasiPeta || isSubmitting" @click="kirim">
+          <Button :disabled="isSubmitting" @click="kirim">
             {{ isSubmitting ? 'Mengirim...' : 'Ajukan Tambah Paket' }}
           </Button>
         </div>

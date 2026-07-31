@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { useBuatPermohonan } from '../composables/usePelangganLayanan'
 import type { LayananInternetDetail } from '@/types/models'
+import { Input } from '@/components/ui/input'
 
 const props = defineProps<{ layanan: LayananInternetDetail }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
@@ -29,16 +30,25 @@ const paketTersedia = computed(() =>
 
 const { mutateAsync: buatPermohonan } = useBuatPermohonan()
 
+const tipePaket = ref<'reguler' | 'custom'>('reguler')
+const namaPaketCustom = ref('')
+const kecepatanCustom = ref<number | null>(null)
+
 async function kirim() {
-  if (!paketIdBaru.value) { error.value = 'Pilih paket baru'; return }
+  if (tipePaket.value === 'reguler' && !paketIdBaru.value) { error.value = 'Pilih paket baru'; return }
+  if (tipePaket.value === 'custom' && (!namaPaketCustom.value || !kecepatanCustom.value)) { error.value = 'Lengkapi detail paket custom'; return }
+  
   isSubmitting.value = true; error.value = ''
   try {
     await buatPermohonan({
       jenis_permohonan: 'ganti_paket',
       layanan_internet_id: props.layanan.id,
-      paket_internet_id: paketIdBaru.value,
+      tipe_paket: tipePaket.value,
+      paket_internet_id: tipePaket.value === 'reguler' ? paketIdBaru.value : undefined,
+      nama_paket_custom: tipePaket.value === 'custom' ? namaPaketCustom.value : undefined,
+      kecepatan_custom_mbps: tipePaket.value === 'custom' ? kecepatanCustom.value : undefined,
       alasan: alasan.value || undefined,
-    })
+    } as any)
     emit('close')
   } catch {
     error.value = 'Gagal mengirim permohonan. Coba lagi.'
@@ -58,6 +68,17 @@ async function kirim() {
 
       <div class="space-y-4">
         <div class="space-y-2">
+          <Label>Tipe Paket</Label>
+          <Select v-model="tipePaket">
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="reguler">Paket Reguler</SelectItem>
+              <SelectItem value="custom">Paket Custom</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div v-if="tipePaket === 'reguler'" class="space-y-2">
           <Label for="paket_baru">Pilih Paket Baru</Label>
           <Select v-model="paketIdBaru">
             <SelectTrigger><SelectValue placeholder="Pilih paket..." /></SelectTrigger>
@@ -69,6 +90,17 @@ async function kirim() {
           </Select>
         </div>
 
+        <div v-if="tipePaket === 'custom'" class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <Label for="nama_custom">Nama Paket Custom</Label>
+            <Input id="nama_custom" v-model="namaPaketCustom" placeholder="Contoh: Paket 150Mbps" />
+          </div>
+          <div class="space-y-2">
+            <Label for="kecepatan_custom">Kecepatan (Mbps)</Label>
+            <Input id="kecepatan_custom" type="number" v-model="kecepatanCustom" placeholder="Contoh: 150" />
+          </div>
+        </div>
+
         <div class="space-y-2">
           <Label for="alasan">Alasan <span class="text-muted-foreground">(opsional)</span></Label>
           <Textarea id="alasan" v-model="alasan" placeholder="Contoh: butuh kecepatan lebih tinggi..." class="min-h-[80px]" />
@@ -78,7 +110,7 @@ async function kirim() {
 
         <div class="flex justify-end gap-3">
           <Button variant="outline" @click="emit('close')">Batal</Button>
-          <Button :disabled="!paketIdBaru || isSubmitting" @click="kirim">{{ isSubmitting ? 'Mengirim...' : 'Ajukan Ganti Paket' }}</Button>
+          <Button :disabled="isSubmitting" @click="kirim">{{ isSubmitting ? 'Mengirim...' : 'Ajukan Ganti Paket' }}</Button>
         </div>
       </div>
     </DialogContent>
