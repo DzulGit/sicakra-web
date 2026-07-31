@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import type { FilterFieldConfig } from '@/types/filter'
 import type { PermohonanLayanan } from '@/types/models'
 
-const { data: hasil, isLoading } = usePermohonanLayananList({ jenis_permohonan: 'relokasi' })
+const { data: hasil, isLoading } = usePermohonanLayananList({})
 
 const filterFields: FilterFieldConfig[] = [
   {
