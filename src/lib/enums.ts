@@ -40,6 +40,7 @@ export const statusLayananEnum: EnumMap = {
 export const statusPembayaranEnum: EnumMap = {
   belum_bayar: { label: 'Belum Bayar', badgeVariant: 'warning' },
   sudah_bayar: { label: 'Sudah Bayar', badgeVariant: 'success' },
+  kedaluwarsa: { label: 'Kedaluwarsa', badgeVariant: 'secondary' },
 }
 
 export const statusTransaksiEnum: EnumMap = {
