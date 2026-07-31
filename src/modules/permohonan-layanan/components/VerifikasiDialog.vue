@@ -76,7 +76,7 @@ const onSubmit = handleSubmit((values) => {
           <Input
             id="harga_custom"
             type="number"
-            v-model="hargaCustom"
+            v-model="hargaCustom as any"
             v-bind="hargaCustomAttrs"
             placeholder="Isi jika paket custom"
           />

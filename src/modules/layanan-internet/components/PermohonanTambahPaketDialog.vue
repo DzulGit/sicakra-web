@@ -23,7 +23,7 @@ const { data: daftarPaket } = useQuery({
 const tipePaket = ref<'reguler' | 'custom'>('reguler')
 const paketId = ref<number | null>(null)
 const namaPaketCustom = ref('')
-const kecepatanCustom = ref<number | null>(null)
+const kecepatanCustom = ref<number | ''>('')
 
 const lokasiPeta = ref<{ lat: number; lng: number; address?: string } | null>(null)
 const alamatPemasangan = ref('')

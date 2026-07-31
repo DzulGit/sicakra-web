@@ -7,7 +7,7 @@ export const verifikasiPermohonanSchema = z
       message: 'Pilih keputusan verifikasi',
     }),
     catatan: z.string().optional(),
-    harga_custom: z.coerce.number().min(0).optional().nullable(),
+    harga_custom: z.coerce.number().min(0).optional(),
   })
   .refine((data) => data.status === 'DITERIMA' || !!data.catatan?.trim(), {
     message: 'Catatan wajib diisi untuk Tolak / Perlu Revisi',

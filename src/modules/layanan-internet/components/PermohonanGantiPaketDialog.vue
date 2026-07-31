@@ -32,7 +32,7 @@ const { mutateAsync: buatPermohonan } = useBuatPermohonan()
 
 const tipePaket = ref<'reguler' | 'custom'>('reguler')
 const namaPaketCustom = ref('')
-const kecepatanCustom = ref<number | null>(null)
+const kecepatanCustom = ref<number | ''>('')
 
 async function kirim() {
   if (tipePaket.value === 'reguler' && !paketIdBaru.value) { error.value = 'Pilih paket baru'; return }
