@@ -16,6 +16,10 @@ export function getRingkasanOmzet(tahun: number) {
   return httpClient.get<ApiResponse<RingkasanOmzet[]>>(`${BASE}-ringkasan`, { params: { tahun } })
 }
 
+export function generateTagihanManual(pelangganId: number | string) {
+  return httpClient.post<ApiResponse<Tagihan[]>>(`${BASE}/generate/${pelangganId}`)
+}
+
 // SENGAJA tidak ada create()/update() — TagihanPolicy backend melarang keduanya,
 // Keuangan bersifat read-only. Lihat docs/api/keuangan.md.
 
@@ -28,4 +32,10 @@ export function getTagihanSayaList(params: Record<string, string>) {
 
 export function getTagihanSayaDetail(id: number | string) {
   return httpClient.get<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}`)
+}
+
+export function bayarTagihan(id: number | string, jumlahBulan?: number) {
+  return httpClient.post<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}/bayar`, {
+    jumlah_bulan: jumlahBulan,
+  })
 }

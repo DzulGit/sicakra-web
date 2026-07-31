@@ -11,8 +11,8 @@ const JadwalKerjaListPage = () => import('@/modules/jadwal-kerja/pages/JadwalKer
 const JadwalKerjaDetailPage = () => import('@/modules/jadwal-kerja/pages/JadwalKerjaDetailPage.vue')
 const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaListPage.vue')
 const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
-const TagihanListPage = () => import('@/modules/tagihan/pages/pelanggan/TagihanListPage.vue')
-const TagihanDetailPage = () => import('@/modules/tagihan/pages/pelanggan/TagihanDetailPage.vue')
+const TagihanListPage = () => import('@/modules/tagihan/pages/admin/TagihanListPage.vue')
+const TagihanDetailPage = () => import('@/modules/tagihan/pages/admin/TagihanDetailPage.vue')
 const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
 const AdminCreatePage = () => import('@/modules/admin-management/pages/AdminCreatePage.vue')
 const AdminEditPage = () => import('@/modules/admin-management/pages/AdminEditPage.vue')
@@ -174,7 +174,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Pelanggan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional'],
+      peran: ['operasional', 'keuangan', 'super_admin'],
     },
   },
   {
@@ -186,7 +186,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Detail Pelanggan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional'],
+      peran: ['operasional', 'keuangan', 'super_admin'],
     },
   },
 

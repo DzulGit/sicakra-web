@@ -144,10 +144,14 @@ export interface Tagihan {
   kecepatan_snapshot_mbps: number
   harga_snapshot: string
   total_tagihan: string
+  jumlah_bulan: number
   tanggal_jatuh_tempo: string
-  status_pembayaran: 'belum_bayar' | 'sudah_bayar'
+  status_pembayaran: 'belum_bayar' | 'sudah_bayar' | 'kedaluwarsa'
   xendit_invoice_id: string | null
   xendit_invoice_url: string | null
+  xendit_invoice_status: string | null
+  xendit_invoice_expires_at: string | null
+  xendit_invoice_retry_count: number
   dibayar_pada: string | null
   created_at: string
   layanan_internet?: LayananInternetRingkas
@@ -342,6 +346,7 @@ export interface LayananInternetDetail {
   perangkat?: Perangkat[]
   riwayat_perubahan_paket?: RiwayatPerubahanPaket[]
   riwayat_relokasi?: RiwayatRelokasi[]
+  tagihan?: Tagihan[]
 }
 
 export interface DashboardRingkasan {

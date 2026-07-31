@@ -1,7 +1,15 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { getRingkasanOmzet, getTagihanDetail, getTagihanList, getTagihanSayaDetail, getTagihanSayaList } from '../api/keuanganTagihan.api'
+import {
+  bayarTagihan,
+  generateTagihanManual,
+  getRingkasanOmzet,
+  getTagihanDetail,
+  getTagihanList,
+  getTagihanSayaDetail,
+  getTagihanSayaList,
+} from '../api/keuanganTagihan.api'
 
 export function useTagihanList() {
   const route = useRoute()
@@ -34,6 +42,17 @@ export function useRingkasanOmzet(tahun: MaybeRefOrGetter<number>) {
   })
 }
 
+export function useGenerateTagihanManual() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (pelangganId: number | string) => generateTagihanManual(pelangganId).then((res) => res.data.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })
+    },
+  })
+}
+
 // ----- Sisi Pelanggan -----
 export function useTagihanSayaList() {
   const route = useRoute()
@@ -54,5 +73,17 @@ export function useTagihanSayaDetail(id: MaybeRefOrGetter<number | string>) {
   return useQuery({
     queryKey: ['tagihan', 'saya', 'detail', id],
     queryFn: () => getTagihanSayaDetail(toValue(id)).then((res) => res.data.data),
+  })
+}
+
+export function useBayarTagihan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, jumlahBulan }: { id: number | string; jumlahBulan?: number }) =>
+      bayarTagihan(id, jumlahBulan).then((res) => res.data.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
+    },
   })
 }
