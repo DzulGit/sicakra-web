@@ -39,3 +39,7 @@ export function bayarTagihan(id: number | string, jumlahBulan?: number) {
     jumlah_bulan: jumlahBulan,
   })
 }
+
+export function regenerateInvoice(id: number | string) {
+  return httpClient.post<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}/regenerate-invoice`)
+}

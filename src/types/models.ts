@@ -102,6 +102,11 @@ export interface LayananInternetRingkas {
   id: number
   nomor_layanan: string
   pelanggan?: Pelanggan
+  paket_internet?: PaketInternet
+  alamat_pemasangan?: string
+  detail_alamat?: string | null
+  nama_paket_custom?: string | null
+  kecepatan_custom_mbps?: number | null
 }
 
 export interface LaporanKendala {
@@ -148,6 +153,7 @@ export interface Tagihan {
   tanggal_jatuh_tempo: string
   status_pembayaran: 'belum_bayar' | 'sudah_bayar' | 'kedaluwarsa'
   xendit_invoice_id: string | null
+  xendit_external_id: string | null
   xendit_invoice_url: string | null
   xendit_invoice_status: string | null
   xendit_invoice_expires_at: string | null

@@ -9,6 +9,7 @@ import {
   getTagihanList,
   getTagihanSayaDetail,
   getTagihanSayaList,
+  regenerateInvoice,
 } from '../api/keuanganTagihan.api'
 
 export function useTagihanList() {
@@ -83,6 +84,17 @@ export function useBayarTagihan() {
       bayarTagihan(id, jumlahBulan).then((res) => res.data.data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
+    },
+  })
+}
+
+export function useRegenerateInvoice() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number | string) => regenerateInvoice(id).then((res) => res.data.data),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
     },
   })
