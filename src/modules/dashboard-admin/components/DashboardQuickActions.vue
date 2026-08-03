@@ -18,7 +18,7 @@ interface Action {
 const roleActions: Record<string, Action[]> = {
   operasional: [
     { label: 'Permohonan', to: '/admin/operasional/permohonan-layanan', icon: FileText, variant: 'default' },
-    { label: 'Pendaftar Baru', to: '/admin/operasional/pendaftar-baru', icon: UserPlus, variant: 'outline' },
+    { label: 'Pendaftar Baru', to: '/admin/operasional/pelanggan', icon: UserPlus, variant: 'outline' },
     { label: 'Paket Internet', to: '/admin/operasional/paket-internet', icon: Wifi, variant: 'outline' },
     { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning, variant: 'outline' },
     { label: 'Tim Teknisi', to: '/admin/operasional/tim-teknisi', icon: UsersRound, variant: 'outline' },
