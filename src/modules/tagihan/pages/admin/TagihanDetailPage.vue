@@ -26,6 +26,15 @@ function formatTanggal(iso: string | null) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
 }
+
+const layanan = computed(() => tagihan.value?.layanan_internet)
+const pelanggan = computed(() => layanan.value?.pelanggan)
+
+function waHref(nomor: string) {
+  const bersih = nomor.replace(/\D/g, '')
+  const intl = bersih.startsWith('0') ? '62' + bersih.slice(1) : bersih
+  return `https://wa.me/${intl}`
+}
 </script>
 
 <template>
@@ -37,7 +46,44 @@ function formatTanggal(iso: string | null) {
     <div v-if="isLoading"><Skeleton class="h-96 w-full max-w-2xl" /></div>
 
     <template v-else-if="tagihan">
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <!-- Info Pelanggan & Layanan -->
+        <Card v-if="pelanggan">
+          <CardHeader>
+            <CardTitle class="text-base">Pelanggan & Layanan</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-2 text-sm">
+            <div>
+              <p class="text-muted-foreground">Nama</p>
+              <p class="font-medium">{{ pelanggan.nama_lengkap }}</p>
+            </div>
+            <div v-if="pelanggan.nomor_pelanggan" class="flex justify-between">
+              <span class="text-muted-foreground">No. Pelanggan</span>
+              <span class="font-mono text-xs">{{ pelanggan.nomor_pelanggan }}</span>
+            </div>
+            <div v-if="layanan?.nomor_layanan" class="flex justify-between">
+              <span class="text-muted-foreground">No. Layanan</span>
+              <span class="font-mono text-xs">{{ layanan.nomor_layanan }}</span>
+            </div>
+            <div v-if="pelanggan.nomor_hp">
+              <p class="text-muted-foreground">No. HP</p>
+              <a :href="waHref(pelanggan.nomor_hp)" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">
+                {{ pelanggan.nomor_hp }} (WhatsApp)
+              </a>
+            </div>
+            <div v-if="layanan?.alamat_pemasangan">
+              <p class="text-muted-foreground">Alamat Instalasi</p>
+              <p>{{ [layanan.detail_alamat, layanan.alamat_pemasangan].filter(Boolean).join(', ') }}</p>
+            </div>
+            <div v-if="layanan?.paket_internet">
+              <p class="text-muted-foreground">Paket</p>
+              <p>
+                {{ layanan.paket_internet.nama_paket }} — {{ layanan.paket_internet.kecepatan_mbps }} Mbps
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         <!-- Info Tagihan -->
         <Card>
           <CardHeader>

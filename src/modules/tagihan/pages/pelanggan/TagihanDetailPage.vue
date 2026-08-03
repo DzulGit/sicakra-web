@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useTagihanSayaDetail, useBayarTagihan } from '../../composables/useKeuanganTagihan'
+import { AxiosError } from 'axios'
+import type { ApiErrorResponse } from '@/types/api'
+import { useRegenerateInvoice, useTagihanSayaDetail } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
-import PilihJumlahBulanModal from '../../components/PilihJumlahBulanModal.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -16,9 +17,7 @@ const route = useRoute()
 const id = computed(() => route.params.id as string)
 
 const { data: tagihan, isLoading } = useTagihanSayaDetail(id)
-const { mutate: bayar, isPending } = useBayarTagihan()
-
-const showPilihBulan = ref(false)
+const { mutate: regenerate, isPending: isRegenerating } = useRegenerateInvoice()
 
 function formatRupiah(nilai: string) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
@@ -29,19 +28,19 @@ function formatTanggal(iso: string) {
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
 }
 
-function handleBayar(jumlahBulan: number) {
-  showPilihBulan.value = false
-  bayar(
-    { id: id.value, jumlahBulan },
-    {
-      onSuccess: () => {
-        toast.success('Pembayaran sedang diproses')
-      },
-      onError: (e: any) => {
-        toast.error(e?.response?.data?.message ?? 'Gagal memproses pembayaran')
-      },
+function handleRegenerate() {
+  regenerate(id.value, {
+    onSuccess: (baru) => {
+      if (baru.xendit_invoice_url) {
+        window.open(baru.xendit_invoice_url, '_blank', 'noopener,noreferrer')
+      }
+      toast.success('Link pembayaran baru dibuat')
     },
-  )
+    onError: (e: Error) => {
+      const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+      toast.error(pesan ?? 'Gagal membuat link pembayaran')
+    },
+  })
 }
 </script>
 
@@ -119,11 +118,11 @@ function handleBayar(jumlahBulan: number) {
         <Button
           v-if="tagihan.xendit_invoice_retry_count < 3"
           class="w-full"
-          :disabled="isPending"
-          @click="showPilihBulan = true"
+          :disabled="isRegenerating"
+          @click="handleRegenerate"
         >
-          <ExternalLink class="mr-2 size-4" />
-          Bayar Lagi
+          <RefreshCw class="mr-2 size-4" />
+          Buat Ulang Link Pembayaran
         </Button>
       </div>
 
@@ -146,12 +145,4 @@ function handleBayar(jumlahBulan: number) {
       <RiwayatPembayaranTable :pembayaran="tagihan.pembayaran" />
     </CardContent>
   </Card>
-
-  <PilihJumlahBulanModal
-    v-if="tagihan"
-    :open="showPilihBulan"
-    :harga-snapshot="Number(tagihan.harga_snapshot)"
-    @close="showPilihBulan = false"
-    @confirm="handleBayar"
-  />
 </template>
