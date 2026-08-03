@@ -59,7 +59,7 @@ const menuSections = computed(() => [
     key: 'pendaftar-baru',
     title: 'Pendaftar Baru',
     icon: UserPlus,
-    link: '/admin/operasional/pendaftar-baru',
+    link: '/admin/operasional/pelanggan',
     total: data.value?.pendaftar_baru.total ?? 0,
     stats: Object.entries(data.value?.pendaftar_baru.by_status ?? {}).map(([k, v]) => ({
       label: statusPermohonanEnum[k]?.label ?? k,
