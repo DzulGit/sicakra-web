@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { AxiosError } from 'axios'
 import type { ApiErrorResponse } from '@/types/api'
-import { useRegenerateInvoice, useTagihanSayaDetail } from '../../composables/useKeuanganTagihan'
+import { useRegenerateInvoice, useTagihanSayaDetail, useBayarTagihan } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { toast } from 'vue-sonner'
 import { RefreshCw, ExternalLink, Clock } from 'lucide-vue-next'
 
@@ -18,11 +19,46 @@ const id = computed(() => route.params.id as string)
 
 const { data: tagihan, isLoading } = useTagihanSayaDetail(id)
 const { mutate: regenerate, isPending: isRegenerating } = useRegenerateInvoice()
+const { mutate: bayar, isPending: isBayarPending } = useBayarTagihan()
 
-function formatRupiah(nilai: string) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
-    Number(nilai),
-  )
+const selectedJumlahBulan = ref('1')
+
+watch(tagihan, (newVal) => {
+  if (newVal && newVal.jumlah_bulan) {
+    selectedJumlahBulan.value = String(newVal.jumlah_bulan)
+  }
+}, { immediate: true })
+
+const daftarPilihanBulan = computed(() => {
+  if (!tagihan.value) return []
+  const startMonth = Number(tagihan.value.periode_bulan)
+  const startYear = Number(tagihan.value.periode_tahun)
+  const options = []
+
+  for (let i = 1; i <= 12; i++) {
+    const startDate = new Date(startYear, startMonth - 1)
+    const startBulanStr = startDate.toLocaleDateString('id-ID', { month: 'long' })
+    const startTahunStr = startDate.getFullYear()
+
+    if (i === 1) {
+      options.push({ value: String(i), label: `1 Bulan (${startBulanStr} ${startTahunStr})` })
+    } else {
+      const endDate = new Date(startYear, startMonth - 1 + i - 1)
+      const endBulanStr = endDate.toLocaleDateString('id-ID', { month: 'long' })
+      const endTahunStr = endDate.getFullYear()
+      options.push({ value: String(i), label: `${i} Bulan (${startBulanStr} ${startTahunStr} - ${endBulanStr} ${endTahunStr})` })
+    }
+  }
+  return options
+})
+
+const totalHargaDinamic = computed(() => {
+  if (!tagihan.value) return 0
+  return Number(tagihan.value.harga_snapshot) * Number(selectedJumlahBulan.value)
+})
+
+function formatRupiah(nilai: string | number) {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(nilai))
 }
 function formatTanggal(iso: string) {
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
@@ -30,8 +66,8 @@ function formatTanggal(iso: string) {
 
 function handleRegenerate() {
   regenerate(id.value, {
-    onSuccess: (baru) => {
-      if (baru.xendit_invoice_url) {
+    onSuccess: (baru: any) => {
+      if (baru?.xendit_invoice_url) {
         window.open(baru.xendit_invoice_url, '_blank', 'noopener,noreferrer')
       }
       toast.success('Link pembayaran baru dibuat')
@@ -41,6 +77,24 @@ function handleRegenerate() {
       toast.error(pesan ?? 'Gagal membuat link pembayaran')
     },
   })
+}
+
+function handleUbahDurasi() {
+  bayar(
+    { id: id.value, jumlahBulan: Number(selectedJumlahBulan.value) },
+    {
+      onSuccess: (res: any) => {
+        if (res?.data?.xendit_invoice_url) {
+          window.open(res.data.xendit_invoice_url, '_blank', 'noopener,noreferrer')
+        }
+        toast.success('Durasi tagihan berhasil diperbarui')
+      },
+      onError: (e: any) => {
+        const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+        toast.error(pesan ?? 'Gagal memperbarui durasi')
+      }
+    }
+  )
 }
 </script>
 
@@ -58,34 +112,61 @@ function handleRegenerate() {
         <p>{{ tagihan.nama_paket_snapshot }} — {{ tagihan.kecepatan_snapshot_mbps }} Mbps</p>
       </div>
       <div>
-        <p class="text-muted-foreground">Periode</p>
-        <p>{{ tagihan.periode_bulan }}/{{ tagihan.periode_tahun }}</p>
-      </div>
-      <div>
-        <p class="text-muted-foreground">Total Tagihan</p>
-        <p class="text-lg font-semibold">{{ formatRupiah(tagihan.total_tagihan) }}</p>
-      </div>
-      <div v-if="tagihan.jumlah_bulan > 1">
-        <p class="text-muted-foreground">Mencakup</p>
-        <p>{{ tagihan.jumlah_bulan }} bulan pembayaran</p>
-      </div>
-      <div>
         <p class="text-muted-foreground">Jatuh Tempo</p>
         <p>{{ formatTanggal(tagihan.tanggal_jatuh_tempo) }}</p>
       </div>
 
+      <!-- Pilih Bulan (Hanya muncul jika belum dibayar / kedaluwarsa) -->
+      <div v-if="tagihan.status_pembayaran !== 'sudah_bayar'" class="space-y-1.5 pt-2">
+        <p class="text-muted-foreground">Pilih Durasi Pembayaran</p>
+        <Select 
+          v-model="selectedJumlahBulan" 
+          :disabled="isBayarPending || isRegenerating || (tagihan.status_pembayaran === 'belum_bayar' && !tagihan.xendit_invoice_url && !tagihan.xendit_invoice_id)"
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Pilih jangka waktu pembayaran" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="opt in daftarPilihanBulan" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div v-else-if="tagihan.jumlah_bulan > 1">
+        <p class="text-muted-foreground">Mencakup</p>
+        <p>{{ tagihan.jumlah_bulan }} bulan pembayaran</p>
+      </div>
+
+      <div>
+        <p class="text-muted-foreground">Total Tagihan</p>
+        <p class="text-lg font-semibold">{{ formatRupiah(tagihan.status_pembayaran === 'sudah_bayar' ? tagihan.total_tagihan : totalHargaDinamic) }}</p>
+      </div>
+
       <!-- Belum bayar + link Xendit aktif -->
-      <Button
-        v-if="tagihan.status_pembayaran === 'belum_bayar' && tagihan.xendit_invoice_url"
-        as="a"
-        :href="tagihan.xendit_invoice_url"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="w-full"
-      >
-        <ExternalLink class="mr-2 size-4" />
-        Bayar Sekarang
-      </Button>
+      <div v-if="tagihan.status_pembayaran === 'belum_bayar' && tagihan.xendit_invoice_url" class="space-y-3 pt-2">
+        <Button
+          v-if="String(tagihan.jumlah_bulan) === selectedJumlahBulan"
+          as="a"
+          :href="tagihan.xendit_invoice_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full"
+        >
+          <ExternalLink class="mr-2 size-4" />
+          Bayar Sekarang
+        </Button>
+        <Button
+          v-else
+          class="w-full"
+          :disabled="isBayarPending"
+          @click="handleUbahDurasi"
+        >
+          <RefreshCw v-if="isBayarPending" class="mr-2 size-4 animate-spin" />
+          Terapkan & Bayar
+        </Button>
+      </div>
 
       <!-- Belum bayar + invoice belum ke-generate (async) -->
       <div
@@ -118,10 +199,10 @@ function handleRegenerate() {
         <Button
           v-if="tagihan.xendit_invoice_retry_count < 3"
           class="w-full"
-          :disabled="isRegenerating"
-          @click="handleRegenerate"
+          :disabled="isRegenerating || isBayarPending"
+          @click="String(tagihan.jumlah_bulan) === selectedJumlahBulan ? handleRegenerate() : handleUbahDurasi()"
         >
-          <RefreshCw class="mr-2 size-4" />
+          <RefreshCw v-if="isRegenerating || isBayarPending" class="mr-2 size-4 animate-spin" />
           Buat Ulang Link Pembayaran
         </Button>
       </div>
