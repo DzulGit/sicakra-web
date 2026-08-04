@@ -33,9 +33,6 @@ const tautan = [
       </nav>
 
       <div class="hidden items-center gap-3 md:flex">
-        <RouterLink to="/admin/masuk" class="text-sm text-landing-ink/70 hover:text-landing-ink">
-          Masuk
-        </RouterLink>
         <RouterLink
           to="/daftar"
           class="rounded-full bg-landing-ink px-5 py-2 text-sm font-medium text-landing-mist transition-colors hover:bg-landing-teal-deep"
