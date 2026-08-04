@@ -42,6 +42,8 @@ const menuTeknisi: MenuItem[] = [
 
 const menuKeuangan: MenuItem[] = [
   { label: 'Overview', to: '/admin/keuangan/overview', icon: LayoutDashboard },
+  { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
+  { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
 ]
 
 const menuSuperAdmin: MenuItem[] = [
