@@ -5,6 +5,7 @@ import DashboardSection from './DashboardSection.vue'
 import DashboardStatCard from './DashboardStatCard.vue'
 import DashboardScheduleList from './DashboardScheduleList.vue'
 import DashboardTechnicianActivity from './DashboardTechnicianActivity.vue'
+import DashboardActiveTickets from './DashboardActiveTickets.vue'
 import DashboardQuickActions from './DashboardQuickActions.vue'
 import { useDashboardTeknisi } from '../composables/useDashboardTeknisi'
 
@@ -55,6 +56,8 @@ const activityItems = data?.riwayat_pekerjaan?.map(j => ({
     <DashboardScheduleList :data="data?.jadwal_hari_ini" :loading="isLoading" />
     <DashboardTechnicianActivity :data="activityItems" :loading="isLoading" />
   </div>
+
+  <DashboardActiveTickets :data="data?.tiket_kendala_aktif" :loading="isLoading" />
 
   <DashboardQuickActions />
 </template>
