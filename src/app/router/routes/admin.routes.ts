@@ -13,6 +13,7 @@ const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pa
 const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
 const TagihanListPage = () => import('@/modules/tagihan/pages/admin/TagihanListPage.vue')
 const TagihanDetailPage = () => import('@/modules/tagihan/pages/admin/TagihanDetailPage.vue')
+const PendapatanPage = () => import('@/modules/pendapatan/pages/PendapatanPage.vue')
 const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
 const AdminCreatePage = () => import('@/modules/admin-management/pages/AdminCreatePage.vue')
 const AdminEditPage = () => import('@/modules/admin-management/pages/AdminEditPage.vue')
@@ -260,6 +261,18 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Detail Tagihan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['keuangan'],
+    },
+  },
+  {
+    path: '/admin/keuangan/pendapatan',
+    name: 'admin.keuangan.pendapatan',
+    component: PendapatanPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Pendapatan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['keuangan'],

@@ -232,6 +232,18 @@ export interface DashboardStatusDist {
   jumlah: number
 }
 
+export interface PendapatanRingkasan {
+  filter: { tahun: number; bulan: number | null }
+  stats: {
+    total_pendapatan: string
+    jumlah_pembayaran: number
+    tagihan_dibuat: number
+  }
+  tren: DashboardTrendPoint[]
+  distribusi_pembayaran: DashboardStatusDist[]
+  pembayaran_terbaru: DashboardPembayaranRingkas[]
+}
+
 export interface DashboardAktivitasTeknisi {
   id: number
   teknisi: string

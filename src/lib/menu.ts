@@ -11,6 +11,7 @@ import {
   Globe,
   UserCircle,
   Contact,
+  Wallet,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
 
@@ -43,6 +44,7 @@ const menuTeknisi: MenuItem[] = [
 const menuKeuangan: MenuItem[] = [
   { label: 'Overview', to: '/admin/keuangan/overview', icon: LayoutDashboard },
   { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
+  { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
 ]
 
