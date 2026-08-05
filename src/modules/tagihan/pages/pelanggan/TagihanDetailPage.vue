@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { AxiosError } from 'axios'
 import type { ApiErrorResponse } from '@/types/api'
@@ -17,17 +17,34 @@ import { RefreshCw, ExternalLink, Clock } from 'lucide-vue-next'
 const route = useRoute()
 const id = computed(() => route.params.id as string)
 
-const { data: tagihan, isLoading } = useTagihanSayaDetail(id)
+const { data: tagihan, isLoading, refetch } = useTagihanSayaDetail(id)
 const { mutate: regenerate, isPending: isRegenerating } = useRegenerateInvoice()
 const { mutate: bayar, isPending: isBayarPending } = useBayarTagihan()
 
 const selectedJumlahBulan = ref('1')
 
-watch(tagihan, (newVal) => {
-  if (newVal && newVal.jumlah_bulan) {
-    selectedJumlahBulan.value = String(newVal.jumlah_bulan)
+let intervalId: ReturnType<typeof setInterval> | null = null
+
+watch(tagihan, (baru) => {
+  // Polling terus berjalan selama status masih "belum_bayar"
+  if (baru?.status_pembayaran === 'belum_bayar') {
+    if (!intervalId) {
+      intervalId = setInterval(() => {
+        if (refetch) refetch()
+      }, 3000) // Cek setiap 3 detik
+    }
+  } else {
+    // Hentikan interval jika status sudah "sudah_bayar" atau "kedaluwarsa"
+    if (intervalId) {
+      clearInterval(intervalId)
+      intervalId = null
+    }
   }
-}, { immediate: true })
+}, { immediate: true, deep: true })
+
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId)
+})
 
 const daftarPilihanBulan = computed(() => {
   if (!tagihan.value) return []
