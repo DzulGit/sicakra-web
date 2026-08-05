@@ -43,9 +43,21 @@ httpClient.interceptors.response.use(
 
     if (status === 401) {
       const tipeSebelumnya = authStore.tipePengguna
+      const pathSekarang = router.currentRoute.value.path
+      
       authStore.bersihkanSesi()
+
+      // Cegah redirect dan toast jika memang sudah ada di halaman login
+      if (pathSekarang === '/pelanggan/masuk' || pathSekarang === '/admin/masuk') {
+        return Promise.reject(error)
+      }
+
       toast.error('Sesi berakhir, silakan login kembali.')
-      router.push(tipeSebelumnya === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
+      
+      // Jika tipeSebelumnya null, deteksi dari URL yang sedang aktif
+      const isPelanggan = tipeSebelumnya === 'pelanggan' || pathSekarang.startsWith('/pelanggan')
+      
+      router.push(isPelanggan ? '/pelanggan/masuk' : '/admin/masuk')
     } else if (status === 403) {
       toast.error(error.response?.data?.message ?? 'Anda tidak memiliki izin untuk aksi ini.')
     } else if (status && status >= 500) {
