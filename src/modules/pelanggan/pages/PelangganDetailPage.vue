@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import { toast } from 'vue-sonner'
 import { usePelangganDetail } from '../composables/usePelanggan'
 import { useGenerateTagihanManual } from '@/modules/tagihan/composables/useKeuanganTagihan'
@@ -8,6 +9,10 @@ import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from '@/components/ui/dialog'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, FilePlus2 } from 'lucide-vue-next'
 import type { ApiErrorResponse } from '@/types/api'
 
@@ -18,18 +23,33 @@ const pelangganId = Number(route.params.id)
 const { data: pelanggan, isLoading } = usePelangganDetail(pelangganId)
 const { mutate, isPending } = useGenerateTagihanManual()
 
+const showDialog = ref(false)
+const jumlahBulan = ref('1')
+
 // Hanya Admin Keuangan / Super Admin yang boleh generate tagihan manual
 const bolehGenerateTagihan = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
 
+const opsiBulan = Array.from({ length: 12 }, (_, i) => i + 1)
+
+function bukaDialog() {
+  jumlahBulan.value = '1'
+  showDialog.value = true
+}
+
 function generateTagihan() {
-  mutate(pelangganId, {
-    onSuccess: (tagihan) => {
-      toast.success(`Tagihan ${tagihan.map((t) => t.nomor_tagihan).join(', ')} berhasil dibuat.`)
+  mutate(
+    { pelangganId, jumlahBulan: Number(jumlahBulan.value) },
+    {
+      onSuccess: (tagihan) => {
+        showDialog.value = false
+        toast.success(`Tagihan ${tagihan.map((t) => t.nomor_tagihan).join(', ')} berhasil dibuat.`)
+      },
+      onError: (e: Error) => {
+        const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+        toast.error(pesan ?? 'Gagal membuat tagihan.')
+      },
     },
-    onError: (error: AxiosError<ApiErrorResponse>) => {
-      toast.error(error.response?.data?.message ?? 'Gagal membuat tagihan.')
-    },
-  })
+  )
 }
 
 function formatRupiah(nilai: string | number) {
@@ -43,11 +63,41 @@ function formatRupiah(nilai: string | number) {
       <Button variant="ghost" size="sm" @click="router.back()">
         <ArrowLeft class="size-4 mr-1" /> Kembali
       </Button>
-      <Button v-if="bolehGenerateTagihan" @click="generateTagihan" :disabled="isPending">
+      <Button v-if="bolehGenerateTagihan" @click="bukaDialog" :disabled="isPending">
         <FilePlus2 class="size-4 mr-2" />
         {{ isPending ? 'Membuat...' : 'Generate Tagihan Manual' }}
       </Button>
     </div>
+
+    <Dialog :open="showDialog" @update:open="(v) => (showDialog = v)">
+      <DialogContent class="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Generate Tagihan Manual</DialogTitle>
+          <DialogDescription>
+            Buat tagihan untuk bulan berjalan. Bisa sekaligus beberapa bulan (maksimal 12).
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-2">
+          <p class="text-sm text-muted-foreground">Jumlah bulan</p>
+          <Select v-model="jumlahBulan">
+            <SelectTrigger>
+              <SelectValue placeholder="Pilih jumlah bulan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="b in opsiBulan" :key="b" :value="String(b)">{{ b }} bulan</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="showDialog = false">Batal</Button>
+          <Button :disabled="isPending" @click="generateTagihan">
+            {{ isPending ? 'Membuat...' : 'Generate' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <div v-if="isLoading" class="text-muted-foreground">Memuat...</div>
 

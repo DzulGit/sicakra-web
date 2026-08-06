@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTagihanDetail } from '../../composables/useKeuanganTagihan'
+import { AxiosError } from 'axios'
+import { useTagihanDetail, useRegenerateTagihan } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
@@ -9,13 +10,42 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { ExternalLink, ArrowLeft } from 'lucide-vue-next'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import { toast } from 'vue-sonner'
+import { RefreshCw, ExternalLink, ArrowLeft } from 'lucide-vue-next'
+import type { ApiErrorResponse } from '@/types/api'
 
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => route.params.id as string)
 
-const { data: tagihan, isLoading } = useTagihanDetail(id)
+const { data: tagihan, isLoading, refetch } = useTagihanDetail(id)
+const { mutate: regenerate, isPending: isRegenerating } = useRegenerateTagihan()
+
+const jumlahBulan = ref('1')
+
+const opsiBulan = Array.from({ length: 12 }, (_, i) => i + 1)
+
+const totalBaru = computed(() => {
+  if (!tagihan.value) return 0
+  return Number(tagihan.value.harga_snapshot) * Number(jumlahBulan.value)
+})
+
+function handleRegenerate() {
+  regenerate(
+    { id: id.value, jumlahBulan: Number(jumlahBulan.value) },
+    {
+      onSuccess: () => {
+        toast.success('Tagihan berhasil di-generate ulang.')
+        refetch()
+      },
+      onError: (e: Error) => {
+        const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+        toast.error(pesan ?? 'Gagal generate ulang tagihan.')
+      },
+    },
+  )
+}
 
 function formatRupiah(nilai: string) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
@@ -154,6 +184,42 @@ function waHref(nomor: string) {
               class="w-full"
             >
               <ExternalLink class="mr-2 size-3" /> Buka Invoice
+            </Button>
+          </CardContent>
+        </Card>
+
+        <!-- Generate Ulang -->
+        <Card v-if="tagihan.status_pembayaran !== 'sudah_bayar'">
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2 text-base">
+              <RefreshCw class="size-4 text-muted-foreground" />
+              Generate Ulang
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3 text-sm">
+            <p class="text-muted-foreground">
+              Ubah jumlah bulan tagihan (semula {{ tagihan.jumlah_bulan }} bulan) — misal pelanggan
+              berubah pikiran mau bayar lebih banyak/lebih sedikit bulan.
+            </p>
+            <Select v-model="jumlahBulan">
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih jumlah bulan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="b in opsiBulan" :key="b" :value="String(b)">{{ b }} bulan</SelectItem>
+              </SelectContent>
+            </Select>
+            <div class="flex items-center justify-between">
+              <span class="text-muted-foreground">Total setelah generate ulang</span>
+              <span class="font-semibold">{{ formatRupiah(String(totalBaru)) }}</span>
+            </div>
+            <Button
+              class="w-full"
+              :disabled="isRegenerating || Number(jumlahBulan) === tagihan.jumlah_bulan"
+              @click="handleRegenerate"
+            >
+              <RefreshCw v-if="isRegenerating" class="mr-2 size-4 animate-spin" />
+              {{ isRegenerating ? 'Memproses...' : 'Generate Ulang' }}
             </Button>
           </CardContent>
         </Card>
