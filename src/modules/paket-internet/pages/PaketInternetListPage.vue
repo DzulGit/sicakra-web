@@ -33,6 +33,7 @@ const columns: ColumnDef<PaketInternet, unknown>[] = [
   { accessorKey: 'nama_paket', header: 'Nama Paket' },
   { accessorKey: 'kecepatan_mbps', header: 'Kecepatan', cell: ({ row }) => `${row.original.kecepatan_mbps} Mbps` },
   { accessorKey: 'harga', header: 'Harga', cell: ({ row }) => formatHarga(row.original.harga) },
+  { accessorKey: 'promo_gratis_bulan', header: 'Promo', cell: ({ row }) => `${row.original.promo_gratis_bulan ?? 0} bulan` },
   {
     accessorKey: 'deskripsi',
     header: 'Deskripsi',

@@ -48,8 +48,13 @@ export function useRingkasanOmzet(tahun: MaybeRefOrGetter<number>) {
 export function useGenerateTagihanManual() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ pelangganId }: { pelangganId: number | string }) =>
-      generateTagihanManual(pelangganId).then((res) => res.data.data),
+    mutationFn: ({
+      pelangganId,
+      payload,
+    }: {
+      pelangganId: number | string
+      payload: { periode_bulan: number; periode_tahun: number; jumlah_hari_jatuh_tempo?: number }
+    }) => generateTagihanManual(pelangganId, payload).then((res) => res.data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
       queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })

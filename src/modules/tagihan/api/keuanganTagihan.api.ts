@@ -16,8 +16,8 @@ export function getRingkasanOmzet(tahun: number) {
   return httpClient.get<ApiResponse<RingkasanOmzet[]>>(`${BASE}-ringkasan`, { params: { tahun } })
 }
 
-export function generateTagihanManual(pelangganId: number | string) {
-  return httpClient.post<ApiResponse<Tagihan[]>>(`${BASE}/generate/${pelangganId}`)
+export function generateTagihanManual(pelangganId: number | string, payload: { periode_bulan: number; periode_tahun: number; jumlah_hari_jatuh_tempo?: number }) {
+  return httpClient.post<ApiResponse<Tagihan[]>>(`${BASE}/generate/${pelangganId}`, payload)
 }
 
 export function regenerateTagihan(id: number | string, jumlahBulan: number) {

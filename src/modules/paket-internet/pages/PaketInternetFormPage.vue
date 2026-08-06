@@ -34,6 +34,7 @@ const [namaPaket, namaPaketAttrs] = defineField('nama_paket')
 const [kecepatanMbps, kecepatanMbpsAttrs] = defineField('kecepatan_mbps')
 const [harga, hargaAttrs] = defineField('harga')
 const [jumlahPerangkat, jumlahPerangkatAttrs] = defineField('jumlah_perangkat')
+const [promoGratisBulan, promoGratisBulanAttrs] = defineField('promo_gratis_bulan')
 const [deskripsi, deskripsiAttrs] = defineField('deskripsi')
 const [statusAktif] = defineField('status_aktif')
 
@@ -46,6 +47,7 @@ watch(
       kecepatan_mbps: nilai.kecepatan_mbps,
       harga: Number(nilai.harga),
       jumlah_perangkat: nilai.jumlah_perangkat,
+      promo_gratis_bulan: nilai.promo_gratis_bulan ?? 0,
       deskripsi: nilai.deskripsi ?? '',
       status_aktif: nilai.status_aktif,
     })
@@ -121,6 +123,22 @@ const onSubmit = handleSubmit((values) => {
             <Input id="jumlah_perangkat" v-model="jumlahPerangkat" v-bind="jumlahPerangkatAttrs" type="number" min="1" max="255" />
             <p v-if="errors.jumlah_perangkat" class="text-xs text-destructive">{{ errors.jumlah_perangkat }}</p>
           </div>
+        </div>
+        <div class="space-y-2">
+          <Label for="promo_gratis_bulan">Promo Gratis (bulan)</Label>
+          <Input
+            id="promo_gratis_bulan"
+            v-model="promoGratisBulan"
+            v-bind="promoGratisBulanAttrs"
+            type="number"
+            min="0"
+            max="24"
+            placeholder="0"
+          />
+          <p v-if="errors.promo_gratis_bulan" class="text-xs text-destructive">{{ errors.promo_gratis_bulan }}</p>
+          <p class="text-xs text-muted-foreground">
+            Pelanggan baru dengan paket ini otomatis bebas tagihan pada pemasangan pertama.
+          </p>
         </div>
         <div class="space-y-2">
           <Label for="deskripsi">Deskripsi</Label>

@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { toast } from 'vue-sonner'
-import { RefreshCw, ExternalLink, Clock } from 'lucide-vue-next'
+import { RefreshCw, ExternalLink, Clock, MessageCircleWarning } from 'lucide-vue-next'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -20,6 +20,11 @@ const id = computed(() => route.params.id as string)
 const { data: tagihan, isLoading, refetch } = useTagihanSayaDetail(id)
 const { mutate: regenerate, isPending: isRegenerating } = useRegenerateInvoice()
 const { mutate: bayar, isPending: isBayarPending } = useBayarTagihan()
+
+// Overdue lock: masih ada tagihan lain jatuh tempo terlewati belum lunas →
+// pembayaran diblokir backend, arahkan pelanggan ke Admin via WhatsApp.
+const WA_ADMIN = '6280015555555'
+const overdueTerkunci = ref(false)
 
 const selectedJumlahBulan = ref('1')
 // true saat pelanggan sengaja mengubah pilihan — polling tidak menimpa pilihan tsb.
@@ -31,6 +36,10 @@ watch(tagihan, (baru) => {
   // Sinkronkan jumlah bulan dari server (mis. setelah admin generate ulang / admin ubah)
   if (baru && !userMengubahDurasi.value) {
     selectedJumlahBulan.value = String(baru.jumlah_bulan ?? 1)
+  }
+
+  if (baru) {
+    overdueTerkunci.value = false
   }
 
   // Polling terus berjalan selama status masih "belum_bayar"
@@ -107,8 +116,15 @@ function formatTanggal(iso: string) {
 }
 
 function pesanError(e: unknown) {
-  return e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+  const data = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined) : undefined
+  overdueTerkunci.value = data?.kode === 'OVERDUE_LOCK'
+  return data?.message
 }
+
+const waAdminHref = computed(() => {
+  const pesan = `Halo Admin Sicakra, saya punya tagihan yang belum lunas dan ingin dibantu pembayarannya.`
+  return `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(pesan)}`
+})
 
 function handleRegenerate() {
   regenerate(id.value, {
@@ -151,6 +167,23 @@ function handleUbahDurasi() {
   <div v-if="isLoading"><Skeleton class="h-64 w-full max-w-lg" /></div>
 
   <div v-else-if="tagihan" class="max-w-xl space-y-6">
+    <!-- Overdue lock: hubungi admin via WhatsApp -->
+    <div
+      v-if="overdueTerkunci"
+      class="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3"
+    >
+      <MessageCircleWarning class="mt-0.5 size-5 shrink-0 text-destructive" />
+      <div class="flex-1 text-sm">
+        <p class="font-medium text-destructive">Tagihan lain belum lunas</p>
+        <p class="mt-0.5 text-muted-foreground">
+          Masih ada tagihan yang jatuh temponya terlewati. Silakan hubungi Admin Sicakra via WhatsApp untuk dibantu.
+        </p>
+        <Button as="a" :href="waAdminHref" target="_blank" rel="noopener noreferrer" variant="outline" size="sm" class="mt-3">
+          <MessageCircleWarning class="mr-2 size-4" /> Hubungi Admin via WhatsApp
+        </Button>
+      </div>
+    </div>
+
     <Card>
       <CardHeader class="flex-row items-center justify-between">
         <CardTitle>{{ tagihan.nomor_tagihan }}</CardTitle>
@@ -189,7 +222,7 @@ function handleUbahDurasi() {
 
         <Select
           v-model="selectedJumlahBulan"
-          :disabled="isBayarPending || isRegenerating || retryLimitTercapai"
+          :disabled="isBayarPending || isRegenerating || retryLimitTercapai || overdueTerkunci"
           @update:model-value="userMengubahDurasi = true"
         >
           <SelectTrigger>
@@ -209,7 +242,7 @@ function handleUbahDurasi() {
 
         <Button
           class="w-full"
-          :disabled="isBayarPending || retryLimitTercapai || !durasiDiubah"
+          :disabled="isBayarPending || retryLimitTercapai || !durasiDiubah || overdueTerkunci"
           @click="handleUbahDurasi"
         >
           <RefreshCw v-if="isBayarPending" class="mr-2 size-4 animate-spin" />
@@ -242,6 +275,7 @@ function handleUbahDurasi() {
             target="_blank"
             rel="noopener noreferrer"
             class="w-full"
+            :disabled="overdueTerkunci"
           >
             <ExternalLink class="mr-2 size-4" />
             Bayar Sekarang via Xendit
@@ -279,7 +313,7 @@ function handleUbahDurasi() {
           <Button
             v-if="tagihan.xendit_invoice_retry_count < 3"
             class="w-full"
-            :disabled="isRegenerating || isBayarPending"
+            :disabled="isRegenerating || isBayarPending || overdueTerkunci"
             @click="handleRegenerate"
           >
             <RefreshCw v-if="isRegenerating" class="mr-2 size-4 animate-spin" />

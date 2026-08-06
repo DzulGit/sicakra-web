@@ -7,7 +7,7 @@ import { ArrowLeft, CalendarClock, FilePlus2, Pencil, ReceiptText, UserRound, Lo
 import type { ColumnDef } from '@tanstack/vue-table'
 import { usePelangganDetail, useAturTanggalTagihan } from '../composables/usePelanggan'
 import EditSiklusDialog from '../components/EditSiklusDialog.vue'
-import { useGenerateTagihanManual } from '@/modules/tagihan/composables/useKeuanganTagihan'
+import GenerateTagihanDialog from '../components/GenerateTagihanDialog.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -27,12 +27,12 @@ const authStore = useAuthStore()
 const pelangganId = Number(route.params.id)
 const { data: pelanggan, isLoading, isError } = usePelangganDetail(pelangganId)
 
-const { mutate: generateTagihan, isPending: isGenerating } = useGenerateTagihanManual()
 const { mutate: simpanTanggalTagihan, isPending: isSavingTanggal } = useAturTanggalTagihan()
 
 // Hanya Admin Keuangan / Super Admin yang boleh kelola tagihan & siklus billing.
 const bolehKelolaBilling = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
 
+const generateDialogTerbuka = ref(false)
 const tanggalTagihan = ref('20')
 const editSiklusLayanan = ref<LayananInternetDetail | null>(null)
 
@@ -69,19 +69,11 @@ const columnsTagihan: ColumnDef<BarisTagihan, unknown>[] = [
   },
 ]
 
-function buatTagihan() {
-  generateTagihan(
-    { pelangganId },
-    {
-      onSuccess: (tagihan) => {
-        toast.success(`Tagihan ${tagihan.map((t) => t.nomor_tagihan).join(', ')} berhasil dibuat.`)
-      },
-      onError: (e: Error) => {
-        const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
-        toast.error(pesan ?? 'Gagal membuat tagihan.')
-      },
-    },
-  )
+function formatPeriode(t: Tagihan) {
+  if ((t.jumlah_bulan ?? 1) > 1 && t.periode_akhir_bulan && t.periode_akhir_tahun) {
+    return `${t.periode_bulan}/${t.periode_tahun} – ${t.periode_akhir_bulan}/${t.periode_akhir_tahun}`
+  }
+  return `${t.periode_bulan}/${t.periode_tahun}`
 }
 
 function simpanTanggal() {
@@ -109,13 +101,6 @@ function formatTanggal(iso?: string | null) {
   if (Number.isNaN(d.getTime())) return iso
   return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
 }
-
-function formatPeriode(t: Tagihan) {
-  if ((t.jumlah_bulan ?? 1) > 1 && t.periode_akhir_bulan && t.periode_akhir_tahun) {
-    return `${t.periode_bulan}/${t.periode_tahun} – ${t.periode_akhir_bulan}/${t.periode_akhir_tahun}`
-  }
-  return `${t.periode_bulan}/${t.periode_tahun}`
-}
 </script>
 
 <template>
@@ -125,10 +110,9 @@ function formatPeriode(t: Tagihan) {
       <Button variant="ghost" size="sm" @click="router.back()">
         <ArrowLeft class="size-4" /> Kembali
       </Button>
-      <Button v-if="bolehKelolaBilling" @click="buatTagihan" :disabled="isGenerating">
-        <Loader2 v-if="isGenerating" class="mr-2 size-4 animate-spin" />
-        <FilePlus2 v-else class="mr-2 size-4" />
-        {{ isGenerating ? 'Membuat Tagihan...' : 'Buat Tagihan Bulan Ini' }}
+      <Button v-if="bolehKelolaBilling" @click="generateDialogTerbuka = true">
+        <FilePlus2 class="mr-2 size-4" />
+        Generate Tagihan
       </Button>
     </div>
 
@@ -311,6 +295,14 @@ function formatPeriode(t: Tagihan) {
       :layanan="editSiklusLayanan"
       @update:open="(v) => !v && (editSiklusLayanan = null)"
       @saved="editSiklusLayanan = null"
+    />
+
+    <!-- ===== Dialog Generate Tagihan ===== -->
+    <GenerateTagihanDialog
+      :open="generateDialogTerbuka"
+      :pelanggan="pelanggan ?? null"
+      @update:open="(v) => (generateDialogTerbuka = v)"
+      @saved="generateDialogTerbuka = false"
     />
   </div>
 </template>
