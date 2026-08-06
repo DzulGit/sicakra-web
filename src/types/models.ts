@@ -10,6 +10,7 @@ export interface Pelanggan {
   foto_ktp?: string | null
   foto_selfie_ktp?: string | null
   password_sudah_dibuat?: boolean
+  tanggal_tagihan?: number
   created_at?: string
   updated_at?: string
   layanan_internet?: LayananInternetDetail[]
@@ -132,6 +133,7 @@ export interface Pembayaran {
   id: number
   tagihan_id: number
   metode_pembayaran: string | null
+  dibayar_oleh?: string | null
   jumlah_dibayar: string | null
   referensi_xendit: string | null
   status: 'pending' | 'berhasil' | 'gagal'
@@ -158,6 +160,9 @@ export interface Tagihan {
   xendit_invoice_status: string | null
   xendit_invoice_expires_at: string | null
   xendit_invoice_retry_count: number
+  retry_count: number
+  periode_akhir_bulan?: number
+  periode_akhir_tahun?: number
   dibayar_pada: string | null
   created_at: string
   layanan_internet?: LayananInternetRingkas
@@ -359,6 +364,9 @@ export interface LayananInternetDetail {
   detail_alamat?: string | null
   status: 'aktif' | 'nonaktif'
   tanggal_aktif: string
+  bebas_tagihan_bulan?: number
+  tanggal_mulai_penagihan?: string | null
+  masa_aktif_berakhir?: string | null
   perangkat_count?: number
   paket_internet?: PaketInternet
   perangkat?: Perangkat[]
@@ -387,6 +395,7 @@ export interface DashboardRingkasan {
     kecepatan_mbps: number | null
     status: string
     alamat_pemasangan: string
+    masa_aktif_berakhir?: string | null
   }>
   tagihan_terbaru: Array<{
     id: number

@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import {
   bayarTagihan,
+  bayarTunaiTagihan,
   generateTagihanManual,
   getRingkasanOmzet,
   getTagihanDetail,
@@ -47,8 +48,8 @@ export function useRingkasanOmzet(tahun: MaybeRefOrGetter<number>) {
 export function useGenerateTagihanManual() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ pelangganId, jumlahBulan }: { pelangganId: number | string; jumlahBulan?: number }) =>
-      generateTagihanManual(pelangganId, jumlahBulan).then((res) => res.data.data),
+    mutationFn: ({ pelangganId }: { pelangganId: number | string }) =>
+      generateTagihanManual(pelangganId).then((res) => res.data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
       queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })
@@ -61,6 +62,19 @@ export function useRegenerateTagihan() {
   return useMutation({
     mutationFn: ({ id, jumlahBulan }: { id: number | string; jumlahBulan: number }) =>
       regenerateTagihan(id, jumlahBulan).then((res) => res.data.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'detail', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })
+    },
+  })
+}
+
+export function useBayarTunaiTagihan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, jumlahBulan }: { id: number | string; jumlahBulan: number }) =>
+      bayarTunaiTagihan(id, jumlahBulan).then((res) => res.data.data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'detail', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
