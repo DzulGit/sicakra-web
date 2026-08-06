@@ -22,4 +22,5 @@ export type PaginatedResponse<T> = ApiResponse<PaginatedData<T>>
 export interface ApiErrorResponse {
   message: string
   errors?: Record<string, string[]>
+  kode?: string
 }

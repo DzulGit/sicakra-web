@@ -7,6 +7,7 @@ export const simpanPaketInternetSchema = z.object({
   jumlah_perangkat: z.coerce.number().int().min(1, 'Minimal 1 perangkat').max(255).optional().default(5),
   deskripsi: z.string().optional().default(''),
   status_aktif: z.boolean().optional().default(true),
+  promo_gratis_bulan: z.coerce.number().int().min(0, 'Minimal 0').max(24, 'Maksimal 24 bulan').optional().default(0),
 })
 export type SimpanPaketInternetForm = z.infer<typeof simpanPaketInternetSchema>
 
@@ -17,5 +18,6 @@ export const ubahPaketInternetSchema = z.object({
   jumlah_perangkat: z.coerce.number().int().min(1, 'Minimal 1 perangkat').max(255).optional().default(5),
   deskripsi: z.string().optional().default(''),
   status_aktif: z.boolean(),
+  promo_gratis_bulan: z.coerce.number().int().min(0, 'Minimal 0').max(24, 'Maksimal 24 bulan').optional().default(0),
 })
 export type UbahPaketInternetForm = z.infer<typeof ubahPaketInternetSchema>

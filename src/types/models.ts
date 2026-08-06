@@ -26,6 +26,7 @@ export interface PaketInternet {
   jumlah_perangkat: number
   deskripsi: string | null
   status_aktif: boolean
+  promo_gratis_bulan: number
 }
 
 export interface AdminRingkas {
