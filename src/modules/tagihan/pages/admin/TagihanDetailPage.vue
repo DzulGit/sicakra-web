@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
-import { useTagihanDetail, useRegenerateTagihan } from '../../composables/useKeuanganTagihan'
+import { useTagihanDetail, useRegenerateTagihan, useBayarTunaiTagihan } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
@@ -11,8 +11,9 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'vue-sonner'
-import { RefreshCw, ExternalLink, ArrowLeft } from 'lucide-vue-next'
+import { RefreshCw, ExternalLink, ArrowLeft, HandCoins } from 'lucide-vue-next'
 import type { ApiErrorResponse } from '@/types/api'
 
 const route = useRoute()
@@ -21,14 +22,31 @@ const id = computed(() => route.params.id as string)
 
 const { data: tagihan, isLoading, refetch } = useTagihanDetail(id)
 const { mutate: regenerate, isPending: isRegenerating } = useRegenerateTagihan()
+const { mutate: bayarTunai, isPending: isBayarTunaiPending } = useBayarTunaiTagihan()
 
 const jumlahBulan = ref('1')
-
 const opsiBulan = Array.from({ length: 12 }, (_, i) => i + 1)
+
+const showTunaiDialog = ref(false)
+const jumlahBulanTunai = ref('1')
 
 const totalBaru = computed(() => {
   if (!tagihan.value) return 0
   return Number(tagihan.value.harga_snapshot) * Number(jumlahBulan.value)
+})
+
+const totalTunai = computed(() => {
+  if (!tagihan.value) return 0
+  return Number(tagihan.value.harga_snapshot) * Number(jumlahBulanTunai.value)
+})
+
+const periodeTampilan = computed(() => {
+  const t = tagihan.value
+  if (!t) return ''
+  if (t.jumlah_bulan > 1 && t.periode_akhir_bulan) {
+    return `${t.periode_bulan}/${t.periode_tahun} – ${t.periode_akhir_bulan}/${t.periode_akhir_tahun}`
+  }
+  return `${t.periode_bulan}/${t.periode_tahun}`
 })
 
 function handleRegenerate() {
@@ -42,6 +60,28 @@ function handleRegenerate() {
       onError: (e: Error) => {
         const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
         toast.error(pesan ?? 'Gagal generate ulang tagihan.')
+      },
+    },
+  )
+}
+
+function bukaDialogTunai() {
+  jumlahBulanTunai.value = String(tagihan.value?.jumlah_bulan ?? 1)
+  showTunaiDialog.value = true
+}
+
+function handleBayarTunai() {
+  bayarTunai(
+    { id: id.value, jumlahBulan: Number(jumlahBulanTunai.value) },
+    {
+      onSuccess: () => {
+        showTunaiDialog.value = false
+        toast.success('Pembayaran tunai berhasil dicatat. Tagihan lunas.')
+        refetch()
+      },
+      onError: (e: Error) => {
+        const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+        toast.error(pesan ?? 'Gagal mencatat pembayaran tunai.')
       },
     },
   )
@@ -125,19 +165,24 @@ function waHref(nomor: string) {
           <CardContent class="space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-muted-foreground">Periode</span>
-              <span>{{ tagihan.periode_bulan }}/{{ tagihan.periode_tahun }}</span>
+              <span>{{ periodeTampilan }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-muted-foreground">Paket</span>
               <span>{{ tagihan.nama_paket_snapshot }} — {{ tagihan.kecepatan_snapshot_mbps }} Mbps</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-muted-foreground">Total</span>
-              <span class="font-semibold">{{ formatRupiah(tagihan.total_tagihan) }}</span>
+              <span class="text-muted-foreground">Harga / Bulan</span>
+              <span>{{ formatRupiah(tagihan.harga_snapshot) }}</span>
             </div>
-            <div v-if="tagihan.jumlah_bulan > 1" class="flex justify-between">
+            <div class="flex justify-between">
               <span class="text-muted-foreground">Jumlah Bulan</span>
               <span>{{ tagihan.jumlah_bulan }} bulan</span>
+            </div>
+            <Separator class="my-1" />
+            <div class="flex justify-between">
+              <span class="text-muted-foreground">Total Tagihan</span>
+              <span class="font-semibold">{{ formatRupiah(tagihan.total_tagihan) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-muted-foreground">Jatuh Tempo</span>
@@ -201,6 +246,7 @@ function waHref(nomor: string) {
               Ubah jumlah bulan tagihan (semula {{ tagihan.jumlah_bulan }} bulan) — misal pelanggan
               berubah pikiran mau bayar lebih banyak/lebih sedikit bulan.
             </p>
+
             <Select v-model="jumlahBulan">
               <SelectTrigger>
                 <SelectValue placeholder="Pilih jumlah bulan" />
@@ -223,6 +269,67 @@ function waHref(nomor: string) {
             </Button>
           </CardContent>
         </Card>
+
+        <!-- Bayar Tunai -->
+        <Card v-if="tagihan.status_pembayaran !== 'sudah_bayar'">
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2 text-base">
+              <HandCoins class="size-4 text-muted-foreground" />
+              Pembayaran Tunai
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3 text-sm">
+            <p class="text-muted-foreground">
+              Pelanggan bayar tunai langsung di kantor. Tagihan langsung lunas tanpa Xendit, dan
+              nama admin penerima dicatat.
+            </p>
+            <Button class="w-full" variant="outline" @click="bukaDialogTunai">
+              <HandCoins class="mr-2 size-4" /> Bayar Tunai / Cash
+            </Button>
+          </CardContent>
+        </Card>
+
+        <!-- Dialog Bayar Tunai -->
+        <Dialog :open="showTunaiDialog" @update:open="(v) => (showTunaiDialog = v)">
+          <DialogContent class="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Bayar Tunai / Cash</DialogTitle>
+              <DialogDescription>
+                Pilih berapa bulan yang dibayar tunai. Tagihan langsung LUNAS dan masa aktif layanan bertambah.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div class="space-y-2">
+              <p class="text-sm text-muted-foreground">Jumlah bulan</p>
+              <Select v-model="jumlahBulanTunai">
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih jumlah bulan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="b in opsiBulan" :key="b" :value="String(b)">{{ b }} bulan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div class="rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-muted-foreground">Harga / Bulan</span>
+                <span>{{ formatRupiah(String(tagihan?.harga_snapshot ?? 0)) }}</span>
+              </div>
+              <div class="flex justify-between font-semibold">
+                <span>Total Diterima</span>
+                <span>{{ formatRupiah(String(totalTunai)) }}</span>
+              </div>
+            </div>
+
+            <DialogFooter class="gap-2 sm:gap-0">
+              <Button variant="outline" @click="showTunaiDialog = false" :disabled="isBayarTunaiPending">Batal</Button>
+              <Button :disabled="isBayarTunaiPending" @click="handleBayarTunai">
+                {{ isBayarTunaiPending ? 'Mencatat...' : 'Konfirmasi Pembayaran Tunai' }}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <!-- Riwayat Pembayaran -->

@@ -30,6 +30,7 @@ function formatTanggal(iso: string | null) {
         <tr>
           <th class="px-4 py-3 text-left font-medium text-muted-foreground">Metode</th>
           <th class="px-4 py-3 text-right font-medium text-muted-foreground">Jumlah</th>
+          <th class="px-4 py-3 text-left font-medium text-muted-foreground">Diterima oleh</th>
           <th class="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
           <th class="px-4 py-3 text-left font-medium text-muted-foreground">Tanggal</th>
         </tr>
@@ -38,6 +39,7 @@ function formatTanggal(iso: string | null) {
         <tr v-for="p in pembayaran" :key="p.id" class="border-b last:border-0">
           <td class="px-4 py-3">{{ p.metode_pembayaran ?? '—' }}</td>
           <td class="px-4 py-3 text-right font-medium tabular-nums">{{ formatRupiah(p.jumlah_dibayar) }}</td>
+          <td class="px-4 py-3 text-muted-foreground">{{ p.dibayar_oleh ?? '—' }}</td>
           <td class="px-4 py-3">
             <StatusBadge :value="p.status" :map="statusTransaksiEnum" />
           </td>

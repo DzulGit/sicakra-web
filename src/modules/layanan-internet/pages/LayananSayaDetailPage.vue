@@ -51,6 +51,17 @@ function formatTanggal(iso: string) {
       <p class="text-sm text-muted-foreground">{{ layanan.nomor_layanan }} &middot; Terdaftar {{ formatTanggal(layanan.tanggal_aktif) }}</p>
     </div>
 
+    <div
+      v-if="layanan.status === 'aktif' && layanan.masa_aktif_berakhir"
+      class="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3"
+    >
+      <Wifi class="size-5 shrink-0 text-primary" />
+      <div class="text-sm">
+        <p class="font-medium">Layanan Aktif Sampai: {{ formatTanggal(layanan.masa_aktif_berakhir) }}</p>
+        <p class="text-xs text-muted-foreground">Periode yang sudah dibayar lunas.</p>
+      </div>
+    </div>
+
     <div class="grid gap-4 sm:grid-cols-2">
       <Card class="rounded-xl border shadow-none">
         <CardHeader class="pb-2 pt-4">

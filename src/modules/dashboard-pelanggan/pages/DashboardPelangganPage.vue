@@ -179,6 +179,9 @@ const sapaan = () => {
                   <StatusBadge :value="l.status" :map="statusLayananEnum" />
                 </div>
                 <p class="mt-0.5 truncate text-xs text-muted-foreground">{{ l.nomor_layanan }} &middot; {{ l.alamat_pemasangan }}</p>
+                <p v-if="l.status === 'aktif' && l.masa_aktif_berakhir" class="mt-0.5 text-xs font-medium text-primary">
+                  Layanan Aktif Sampai: {{ formatDate(l.masa_aktif_berakhir) }}
+                </p>
               </div>
               <Button as="RouterLink" :to="`/pelanggan/layanan/${l.id}`" variant="ghost" size="sm" class="shrink-0">
                 <ArrowRight class="size-3.5" />
