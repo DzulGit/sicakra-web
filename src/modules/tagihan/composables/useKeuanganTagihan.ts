@@ -10,6 +10,7 @@ import {
   getTagihanSayaDetail,
   getTagihanSayaList,
   regenerateInvoice,
+  regenerateTagihan,
 } from '../api/keuanganTagihan.api'
 
 export function useTagihanList() {
@@ -46,8 +47,22 @@ export function useRingkasanOmzet(tahun: MaybeRefOrGetter<number>) {
 export function useGenerateTagihanManual() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (pelangganId: number | string) => generateTagihanManual(pelangganId).then((res) => res.data.data),
+    mutationFn: ({ pelangganId, jumlahBulan }: { pelangganId: number | string; jumlahBulan?: number }) =>
+      generateTagihanManual(pelangganId, jumlahBulan).then((res) => res.data.data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })
+    },
+  })
+}
+
+export function useRegenerateTagihan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, jumlahBulan }: { id: number | string; jumlahBulan: number }) =>
+      regenerateTagihan(id, jumlahBulan).then((res) => res.data.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'detail', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
       queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })
     },
