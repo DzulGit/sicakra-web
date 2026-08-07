@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
@@ -27,7 +27,7 @@ const [kategoriKendala, kategoriKendalaAttrs] = defineField('kategori_kendala')
 const [deskripsi, deskripsiAttrs] = defineField('deskripsi')
 
 const fotoInputRef = ref<HTMLInputElement | null>(null)
-const fotoFiles = ref<File[]>([])
+const fotoFiles = shallowRef<File[]>([])
 const previewUrls = ref<string[]>([])
 
 const isImageOpen = ref(false)
@@ -63,15 +63,28 @@ function bukaGambar(url: string) {
 const { mutate, isPending } = useBuatLaporanKendala()
 
 const onSubmit = handleSubmit((values) => {
-  mutate(values, {
+  const formData = new FormData()
+  
+  formData.append('layanan_internet_id', String(values.layanan_internet_id))
+  formData.append('kategori_kendala', values.kategori_kendala)
+  formData.append('deskripsi', values.deskripsi)
+
+  // Masukkan file langsung ke FormData dari state
+  if (fotoFiles.value && fotoFiles.value.length > 0) {
+    fotoFiles.value.forEach((file) => {
+      formData.append('foto[]', file)
+    })
+  }
+
+  // Kirim FormData, bukan objek biasa
+  mutate(formData as any, {
     onSuccess: () => {
-      toast.success('Laporan berhasil dikirim, tim kami akan segera menindaklanjuti.')
+      toast.success('Laporan berhasil dikirim.')
       router.push('/pelanggan/laporan-kendala')
     },
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)
       if (fieldErrors) setErrors(fieldErrors)
-      else toast.error('Terjadi kesalahan, coba lagi.')
     },
   })
 })
