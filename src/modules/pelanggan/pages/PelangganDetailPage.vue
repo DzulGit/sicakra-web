@@ -3,11 +3,14 @@ import { computed, h, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
 import { toast } from 'vue-sonner'
-import { ArrowLeft, CalendarClock, FilePlus2, Pencil, ReceiptText, UserRound, Loader2 } from 'lucide-vue-next'
+import {
+  ArrowLeft, CalendarClock, FilePlus2, KeyRound, Pencil, ReceiptText, UserRound, Loader2,
+} from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { usePelangganDetail, useAturTanggalTagihan } from '../composables/usePelanggan'
 import EditSiklusDialog from '../components/EditSiklusDialog.vue'
 import GenerateTagihanDialog from '../components/GenerateTagihanDialog.vue'
+import ResetPasswordDialog from '../components/ResetPasswordDialog.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,7 +35,11 @@ const { mutate: simpanTanggalTagihan, isPending: isSavingTanggal } = useAturTang
 // Hanya Admin Keuangan / Super Admin yang boleh kelola tagihan & siklus billing.
 const bolehKelolaBilling = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
 
+// Reset password pelanggan untuk Admin Operasional / Super Admin.
+const bolehResetPassword = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
+
 const generateDialogTerbuka = ref(false)
+const resetPasswordTerbuka = ref(false)
 const tanggalTagihan = ref('20')
 const editSiklusLayanan = ref<LayananInternetDetail | null>(null)
 
@@ -113,6 +120,10 @@ function formatTanggal(iso?: string | null) {
       <Button v-if="bolehKelolaBilling" @click="generateDialogTerbuka = true">
         <FilePlus2 class="mr-2 size-4" />
         Generate Tagihan
+      </Button>
+      <Button v-if="bolehResetPassword" variant="outline" @click="resetPasswordTerbuka = true">
+        <KeyRound class="mr-2 size-4" />
+        Reset Username &amp; Password
       </Button>
     </div>
 
@@ -303,6 +314,13 @@ function formatTanggal(iso?: string | null) {
       :pelanggan="pelanggan ?? null"
       @update:open="(v) => (generateDialogTerbuka = v)"
       @saved="generateDialogTerbuka = false"
+    />
+
+    <!-- ===== Dialog Reset Password ===== -->
+    <ResetPasswordDialog
+      :open="resetPasswordTerbuka"
+      :pelanggan="pelanggan ?? null"
+      @update:open="(v) => (resetPasswordTerbuka = v)"
     />
   </div>
 </template>

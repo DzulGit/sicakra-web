@@ -12,6 +12,10 @@ export function getPelangganDetail(id: number | string) {
   return httpClient.get<ApiResponse<Pelanggan>>(`${BASE}/${id}`)
 }
 
+export function resetAkunPelanggan(id: number | string) {
+  return httpClient.patch<ApiResponse<{ username: string; password: string }>>(`${BASE}/${id}/reset-akun`)
+}
+
 export function aturTanggalTagihan(id: number | string, tanggalTagihan: number) {
   return httpClient.patch<ApiResponse<Pelanggan>>(`${BASE}/${id}/tanggal-tagihan`, {
     tanggal_tagihan: tanggalTagihan,

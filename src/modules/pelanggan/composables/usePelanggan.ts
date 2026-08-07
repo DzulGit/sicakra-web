@@ -7,6 +7,7 @@ import {
   bulkAturTanggalTagihan,
   getPelangganDetail,
   getPelangganList,
+  resetAkunPelanggan,
 } from '../api/pelanggan.api'
 
 function useFilterParams() {
@@ -33,6 +34,17 @@ export function usePelangganDetail(id: MaybeRefOrGetter<number | string>) {
   return useQuery({
     queryKey: ['pelanggan', 'detail', id],
     queryFn: () => getPelangganDetail(toValue(id)).then((res) => res.data.data),
+  })
+}
+
+export function useResetAkun() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number | string) => resetAkunPelanggan(id).then((res) => res.data.data),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail', id] })
+      queryClient.invalidateQueries({ queryKey: ['pelanggan', 'list'] })
+    },
   })
 }
 
