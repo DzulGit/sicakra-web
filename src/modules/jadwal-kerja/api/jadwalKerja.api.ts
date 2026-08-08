@@ -1,7 +1,6 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
 import type { JadwalKerja, RingkasanAktivasi } from '@/types/models'
-import type { HasilKerjaForm } from '@/schemas/jadwal-kerja.schema'
 
 const BASE = '/admin/teknisi/jadwal-kerja'
 
@@ -18,6 +17,10 @@ export function getJadwalKerjaDetail(id: number | string) {
   return httpClient.get<ApiResponse<JadwalKerja>>(`${BASE}/${id}`)
 }
 
-export function isiHasilKerja(id: number | string, payload: HasilKerjaForm) {
-  return httpClient.patch<ApiResponse<IsiHasilKerjaResponseData>>(`${BASE}/${id}/hasil`, payload)
+export function isiHasilKerja(id: number | string, formData: FormData) {
+  return httpClient.patch<ApiResponse<IsiHasilKerjaResponseData>>(`${BASE}/${id}/hasil`, formData, {
+    headers: {
+      'Content-Type': undefined,
+    },
+  })
 }

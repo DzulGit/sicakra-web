@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { getJadwalKerjaDetail, getJadwalKerjaList, isiHasilKerja } from '../api/jadwalKerja.api'
-import type { HasilKerjaForm } from '@/schemas/jadwal-kerja.schema'
 
 export function useJadwalKerjaList() {
   const route = useRoute()
@@ -30,7 +29,7 @@ export function useJadwalKerjaDetail(id: MaybeRefOrGetter<number | string>) {
 export function useIsiHasilKerja() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number | string; payload: HasilKerjaForm }) =>
+    mutationFn: ({ id, payload }: { id: number | string; payload: FormData }) =>
       isiHasilKerja(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jadwal-kerja'] })
