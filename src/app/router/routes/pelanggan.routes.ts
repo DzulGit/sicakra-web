@@ -1,5 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 const LoginPelangganPage = () => import('@/modules/auth/pelanggan/pages/LoginPelangganPage.vue')
+const LupaPasswordPage = () => import('@/modules/auth/pelanggan/pages/LupaPasswordPage.vue')
+const ResetPasswordPage = () => import('@/modules/auth/pelanggan/pages/ResetPasswordPage.vue')
 const DashboardPelangganPage = () => import('@/modules/dashboard-pelanggan/pages/DashboardPelangganPage.vue')
 const LayananSayaListPage = () => import('@/modules/layanan-internet/pages/LayananSayaListPage.vue')
 const LayananSayaDetailPage = () => import('@/modules/layanan-internet/pages/LayananSayaDetailPage.vue')
@@ -22,6 +24,18 @@ export const pelangganRoutes: RouteRecordRaw[] = [
     name: 'pelanggan.masuk',
     component: LoginPelangganPage,
     meta: { layout: 'auth', judul: 'Masuk — Pelanggan', fullBleed: true },
+  },
+  {
+    path: '/pelanggan/lupa-password',
+    name: 'pelanggan.lupa-password',
+    component: LupaPasswordPage,
+    meta: { layout: 'auth', judul: 'Lupa Password — Pelanggan' },
+  },
+  {
+    path: '/pelanggan/reset-password',
+    name: 'pelanggan.reset-password',
+    component: ResetPasswordPage,
+    meta: { layout: 'auth', judul: 'Reset Password — Pelanggan' },
   },
   {
     path: '/pelanggan/dashboard',

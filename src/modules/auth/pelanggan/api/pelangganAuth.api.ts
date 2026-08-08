@@ -1,6 +1,6 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse } from '@/types/api'
-import type { LoginPelangganForm } from '@/schemas/auth.schema'
+import type { LoginPelangganForm, ResetPasswordForm } from '@/schemas/auth.schema'
 
 export interface PelangganData {
   id: number
@@ -21,4 +21,12 @@ export function loginPelanggan(payload: LoginPelangganForm) {
 
 export function logoutPelanggan() {
   return httpClient.post('/pelanggan/logout')
+}
+
+export function lupaPasswordPelanggan(payload: { email: string }) {
+  return httpClient.post<ApiResponse<{ message: string }>>('/pelanggan/lupa-password', payload)
+}
+
+export function resetPasswordPelanggan(payload: ResetPasswordForm) {
+  return httpClient.post<ApiResponse<{ message: string }>>('/pelanggan/reset-password', payload)
 }
