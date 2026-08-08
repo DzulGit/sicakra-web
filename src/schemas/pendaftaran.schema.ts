@@ -12,7 +12,7 @@ export const daftarSchema = z
     nama_lengkap: z.string({ required_error: 'Nama lengkap wajib diisi' }).min(1, 'Nama lengkap wajib diisi').max(255),
     nik: z.string({ required_error: 'NIK wajib diisi' }).length(16, 'NIK harus 16 digit'),
     nomor_hp: z.string({ required_error: 'Nomor HP wajib diisi' }).min(1, 'Nomor HP wajib diisi').max(20),
-    email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
+    email: z.string({ required_error: 'Email wajib diisi' }).min(1, 'Email wajib diisi').email('Format email tidak valid'),
 
     alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
     detail_alamat: z.string().optional(),

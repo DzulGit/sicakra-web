@@ -9,6 +9,8 @@ export interface Pelanggan {
   email: string | null
   foto_ktp?: string | null
   foto_selfie_ktp?: string | null
+  foto_ktp_url?: string | null
+  foto_selfie_ktp_url?: string | null
   password_sudah_dibuat?: boolean
   tanggal_tagihan?: number
   created_at?: string
@@ -67,6 +69,9 @@ export interface JadwalKerja {
   tanggal_kerja: string
   hasil: 'selesai' | 'kendala' | null
   catatan_kendala: string | null
+  foto_dokumentasi?: string[] | null
+  latitude_hasil?: string | null
+  longitude_hasil?: string | null
   permohonan_layanan?: PermohonanLayanan
   teknisi?: AdminRingkas[]
   tim_teknisi?: TimTeknisi
@@ -84,6 +89,7 @@ export interface PermohonanLayanan {
   harga_custom: string | null
   catatan_custom: string | null
   alamat_pemasangan: string
+  detail_alamat?: string | null
   rt: string
   rw: string
   kode_pos: string
