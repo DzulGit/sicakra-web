@@ -160,6 +160,12 @@ const submitLogin = form.handleSubmit((values) => {
             <p class="text-xs text-landing-ink/45">
               Belum pernah ganti password? Gunakan nomor pelanggan kamu sebagai password.
             </p>
+            <RouterLink
+              to="/pelanggan/lupa-password"
+              class="mt-1 block text-xs font-medium text-landing-signal hover:underline"
+            >
+              Lupa password?
+            </RouterLink>
           </div>
 
           <Button type="submit"
