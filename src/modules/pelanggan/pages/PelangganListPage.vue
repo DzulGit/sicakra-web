@@ -3,8 +3,9 @@ import { h, ref, computed } from 'vue'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { AxiosError } from 'axios'
 import { toast } from 'vue-sonner'
-import { Search, X, UserCheck, UserPlus, Users, CalendarClock } from 'lucide-vue-next'
+import { Search, X, UserCheck, Users, CalendarClock } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
+import type { Component } from 'vue'
 import { getPelangganList } from '../api/pelanggan.api'
 import { useBulkAturTanggalTagihan } from '../composables/usePelanggan'
 import { getPermohonanLayananList } from '@/modules/permohonan-layanan/api/permohonanLayanan.api'
@@ -20,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import type { ApiErrorResponse } from '@/types/api'
 import type { Pelanggan, PermohonanLayanan } from '@/types/models'
 
-type TabId = 'aktif' | 'terverifikasi' | 'pendaftar_baru'
+type TabId = 'aktif' | 'terverifikasi'
 
 const tabAktif = ref<TabId>('aktif')
 const cariPelanggan = ref('')
@@ -50,10 +51,9 @@ function terapkanSemua() {
   )
 }
 
-const tabs: { id: TabId; label: string; icon: any }[] = [
+const tabs: { id: TabId; label: string; icon: Component }[] = [
   { id: 'aktif', label: 'Pelanggan Aktif', icon: Users },
   { id: 'terverifikasi', label: 'Terverifikasi', icon: UserCheck },
-  { id: 'pendaftar_baru', label: 'Pendaftar Baru', icon: UserPlus },
 ]
 
 const paramsPelanggan = computed(() => {
@@ -76,16 +76,6 @@ const { data: dataTerverifikasi, isLoading: loadingTerverifikasi } = useQuery({
       status: 'DITERIMA,DIJADWALKAN',
     }).then((r) => r.data.data),
   enabled: () => tabAktif.value === 'terverifikasi',
-})
-
-const { data: dataPendaftarBaru, isLoading: loadingPendaftarBaru } = useQuery({
-  queryKey: ['permohonan-layanan', 'list', 'pendaftar_baru'],
-  queryFn: () =>
-    getPermohonanLayananList({
-      jenis_permohonan: 'pemasangan_baru',
-      status: 'MENUNGGU_VERIFIKASI',
-    }).then((r) => r.data.data),
-  enabled: () => tabAktif.value === 'pendaftar_baru',
 })
 
 const columnsPelanggan: ColumnDef<Pelanggan, unknown>[] = [
@@ -252,17 +242,8 @@ const columnsDaftar: ColumnDef<PermohonanLayanan, unknown>[] = [
       empty-judul="Tidak ada yang terverifikasi"
       empty-deskripsi="Permohonan yang sudah diverifikasi akan muncul di sini."
     />
-    <DataTable
-      v-if="tabAktif === 'pendaftar_baru'"
-      :columns="columnsDaftar"
-      :data="(dataPendaftarBaru as any)?.data ?? []"
-      :loading="loadingPendaftarBaru"
-      empty-judul="Tidak ada pendaftar baru"
-      empty-deskripsi="Pendaftar baru akan muncul setelah pelanggan mendaftar."
-    />
 
     <Pagination v-if="tabAktif === 'aktif' && dataPelanggan" :meta="dataPelanggan" />
     <Pagination v-if="tabAktif === 'terverifikasi' && dataTerverifikasi" :meta="dataTerverifikasi" />
-    <Pagination v-if="tabAktif === 'pendaftar_baru' && dataPendaftarBaru" :meta="dataPendaftarBaru" />
   </div>
 </template>

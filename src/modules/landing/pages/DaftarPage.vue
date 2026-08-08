@@ -470,7 +470,7 @@ function lanjutDariCustom() {
               </div>
             </div>
             <div class="space-y-2">
-              <Label for="email">Email <span class="text-muted-foreground">(opsional)</span></Label>
+              <Label for="email">Email</Label>
               <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
               <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
             </div>
