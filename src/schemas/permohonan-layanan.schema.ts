@@ -36,6 +36,7 @@ export const verifikasiDanJadwalkanSchema = z
     teknisi_ids: z.array(z.number()).optional(),
     tim_teknisi_id: z.string().optional(),
     tipe_paket: z.string().optional(), // Bantuan deteksi dari UI
+    jenis_permohonan: z.string().optional(),
     harga_custom: z.coerce.number().min(1, 'Harga wajib diisi').optional(), // Input harga khusus custom
   })
   .superRefine((data, ctx) => {
@@ -50,7 +51,7 @@ export const verifikasiDanJadwalkanSchema = z
         ctx.addIssue({ code: 'custom', message: 'Pilih minimal 1 teknisi', path: ['teknisi_ids'] })
       }
       // Wajibkan pengisian harga jika paket yang disetujui adalah custom
-      if (data.tipe_paket === 'custom' && !data.harga_custom) {
+      if (data.tipe_paket === 'custom' && data.jenis_permohonan !== 'relokasi' && !data.harga_custom) {
         ctx.addIssue({ code: 'custom', message: 'Harga kesepakatan wajib diisi untuk paket custom', path: ['harga_custom'] })
       }
     }

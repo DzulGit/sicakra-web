@@ -31,7 +31,8 @@ const { handleSubmit, errors, defineField, setErrors, setFieldValue, values } = 
   initialValues: {
     status: 'DITERIMA',
     teknisi_ids: [],
-    tipe_paket: props.permohonan.tipe_paket
+    tipe_paket: props.permohonan.tipe_paket,
+    jenis_permohonan: props.permohonan.jenis_permohonan
   },
 })
 
@@ -168,7 +169,8 @@ function salinPesan() {
             <template v-if="butuhJadwal">
               <Separator />
 
-              <div v-if="permohonan.tipe_paket === 'custom'" class="space-y-2 mt-4 mb-4">
+              <div v-if="permohonan.tipe_paket === 'custom' && permohonan.jenis_permohonan !== 'relokasi'"
+                class="space-y-2 mt-4 mb-4">
                 <Label for="harga_custom">Harga Kesepakatan (Rp/Bulan)</Label>
                 <Input id="harga_custom" type="number" v-model="hargaCustom" v-bind="hargaCustomAttrs"
                   placeholder="Mis: 350000" :aria-invalid="!!errors.harga_custom" />

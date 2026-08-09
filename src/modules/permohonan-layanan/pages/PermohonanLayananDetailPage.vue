@@ -16,7 +16,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import RiwayatStatusTimeline from '../components/RiwayatStatusTimeline.vue'
-import VerifikasiDialog from '../components/VerifikasiDialog.vue'
 import JadwalkanKerjaDialog from '../components/JadwalkanKerjaDialog.vue'
 import WhatsappVerifikasiFlow from '../components/WhatsappVerifikasiFlow.vue'
 
@@ -25,7 +24,6 @@ const id = computed(() => Number(route.params.id))
 
 const { data: permohonan, isLoading } = usePermohonanLayananDetail(id)
 
-const dialogVerifikasiTerbuka = ref(false)
 const dialogJadwalkanTerbuka = ref(false)
 const dialogWaTerbuka = ref(false)
 
@@ -38,7 +36,6 @@ const bisaVerifikasi = computed(
 const bisaVerifikasiWa = computed(
   () =>
     !!permohonan.value &&
-    permohonan.value.jenis_permohonan === 'pemasangan_baru' &&
     permohonan.value.status === 'MENUNGGU_VERIFIKASI',
 )
 
@@ -249,9 +246,6 @@ function bukaGambar(url: string) {
           <Button v-if="bisaVerifikasiWa" class="w-full" @click="dialogWaTerbuka = true">
             Verifikasi via WhatsApp
           </Button>
-          <Button v-if="bisaVerifikasi && !bisaVerifikasiWa" class="w-full" @click="dialogVerifikasiTerbuka = true">
-            Verifikasi
-          </Button>
           <Button v-if="bisaJadwalkanKerja" class="w-full" variant="outline" @click="dialogJadwalkanTerbuka = true">
             <CalendarDays class="size-4" /> {{ labelTombolJadwalkan }}
           </Button>
@@ -262,7 +256,6 @@ function bukaGambar(url: string) {
       </Card>
     </div>
 
-    <VerifikasiDialog v-model:open="dialogVerifikasiTerbuka" :permohonan-id="permohonan.id" />
     <JadwalkanKerjaDialog v-model:open="dialogJadwalkanTerbuka" :permohonan-id="permohonan.id" />
 
     <Dialog :open="dialogWaTerbuka" @update:open="dialogWaTerbuka = $event">

@@ -63,11 +63,21 @@ const isImageOpen = ref(false)
 const selectedImage = ref<string | null>(null)
 
 function bukaGambar(foto: string) {
-  selectedImage.value = foto.startsWith('http') 
-    ? foto 
+  selectedImage.value = foto.startsWith('http')
+    ? foto
     : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`
   isImageOpen.value = true
 }
+
+const parsedPhotos = computed(() => {
+  if (!laporan.value?.foto) return []
+  if (Array.isArray(laporan.value.foto)) return laporan.value.foto
+  try {
+    return JSON.parse(laporan.value.foto as string)
+  } catch (e) {
+    return [laporan.value.foto]
+  }
+})
 </script>
 
 <template>
@@ -127,17 +137,14 @@ function bukaGambar(foto: string) {
               <p>{{ laporan.hasil_penanganan }}</p>
             </div>
           </div>
-          <div v-if="laporan.foto" class="space-y-1.5 mt-4">
+          <div v-if="parsedPhotos.length > 0" class="space-y-1.5 mt-4">
             <p class="text-xs text-muted-foreground">Foto Kendala</p>
             <div class="flex flex-wrap gap-4 mt-2">
-              <img 
-                v-for="(foto, index) in (Array.isArray(laporan.foto) ? laporan.foto : [laporan.foto])" 
-                :key="index"
-                :src="foto.startsWith('http') ? foto : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`" 
-                alt="Foto Laporan" 
+              <img v-for="(foto, index) in parsedPhotos" :key="index"
+                :src="foto.startsWith('http') ? foto : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`"
+                alt="Foto Laporan"
                 class="h-32 w-32 rounded-md border object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                @click="bukaGambar(foto)"
-              />
+                @click="bukaGambar(foto)" />
             </div>
           </div>
         </CardContent>
@@ -156,12 +163,7 @@ function bukaGambar(foto: string) {
           <Button v-if="bisaTeruskan" class="w-full" variant="outline" @click="dialogTeruskanTerbuka = true">
             Teruskan ke Teknisi
           </Button>
-          <Button
-            v-if="bisaTutup"
-            class="w-full"
-            variant="destructive"
-            @click="dialogTutupTerbuka = true"
-          >
+          <Button v-if="bisaTutup" class="w-full" variant="destructive" @click="dialogTutupTerbuka = true">
             Tutup Laporan
           </Button>
           <p v-if="!bisaTerima && !bisaTeruskan && !bisaTutup" class="text-sm text-muted-foreground">
@@ -172,26 +174,15 @@ function bukaGambar(foto: string) {
     </div>
 
     <TeruskanKeTeknisiDialog v-model:open="dialogTeruskanTerbuka" :laporan-id="laporan.id" />
-    <ConfirmDialog
-      v-model:open="dialogTutupTerbuka"
-      judul="Tutup laporan ini?"
+    <ConfirmDialog v-model:open="dialogTutupTerbuka" judul="Tutup laporan ini?"
       deskripsi="Pastikan pelanggan sudah puas dengan penanganannya sebelum menutup laporan."
-      label-konfirmasi="Tutup Laporan"
-      variant-konfirmasi="destructive"
-      :loading="isPendingTutup"
-      @confirm="handleTutup"
-    />
+      label-konfirmasi="Tutup Laporan" variant-konfirmasi="destructive" :loading="isPendingTutup"
+      @confirm="handleTutup" />
     <Teleport to="body">
-      <div 
-        v-if="isImageOpen && selectedImage" 
+      <div v-if="isImageOpen && selectedImage"
         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-zoom-out"
-        @click="isImageOpen = false; selectedImage = null"
-      >
-        <img 
-          :src="selectedImage" 
-          alt="Foto Laporan Full" 
-          class="max-h-[90vh] max-w-[90vw] rounded-md object-contain" 
-        />
+        @click="isImageOpen = false; selectedImage = null">
+        <img :src="selectedImage" alt="Foto Laporan Full" class="max-h-[90vh] max-w-[90vw] rounded-md object-contain" />
       </div>
     </Teleport>
   </div>
