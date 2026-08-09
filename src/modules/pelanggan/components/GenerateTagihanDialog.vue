@@ -53,14 +53,12 @@ watch(
 
 const layananAktif = computed(() => props.pelanggan?.layanan_internet?.filter((l) => l.status === 'aktif') ?? [])
 
-const [bulanPeriode, tahunPeriode] = computed(() => {
-  const [b, t] = bulanTerpilih.value.split('-').map(Number)
-  return [b ?? 1, t ?? new Date().getFullYear()]
-}).value
+const bulanPeriode = computed(() => Number(bulanTerpilih.value.split('-')[0]) || 1)
+const tahunPeriode = computed(() => Number(bulanTerpilih.value.split('-')[1]) || new Date().getFullYear())
 
 const namaBulan = computed(() => {
   if (!bulanTerpilih.value) return '-'
-  return new Date(tahunPeriode, bulanPeriode - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  return new Date(tahunPeriode.value, bulanPeriode.value - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
 })
 
 const tanggalJatuhTempo = computed(() => {
@@ -89,8 +87,8 @@ function konfirmasi() {
     {
       pelangganId: props.pelanggan!.id,
       payload: {
-        periode_bulan: bulanPeriode,
-        periode_tahun: tahunPeriode,
+        periode_bulan: bulanPeriode.value,
+        periode_tahun: tahunPeriode.value,
         jumlah_hari_jatuh_tempo: hari,
       },
     },
