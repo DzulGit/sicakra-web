@@ -3,10 +3,10 @@ import { useRoute } from 'vue-router'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { getJadwalKerjaDetail, getJadwalKerjaList, isiHasilKerja } from '../api/jadwalKerja.api'
 
-export function useJadwalKerjaList() {
+export function useJadwalKerjaList(forcedParams?: Record<string, string>) {
   const route = useRoute()
   const params = computed(() => {
-    const p: Record<string, string> = {}
+    const p: Record<string, string> = { ...forcedParams }
     for (const [key, value] of Object.entries(route.query)) {
       if (typeof value === 'string') p[key] = value
     }

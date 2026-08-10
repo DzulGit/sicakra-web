@@ -16,8 +16,8 @@ export const daftarSchema = z
 
     alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
     detail_alamat: z.string().optional(),
-    latitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-90).max(90),
-    longitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-180).max(180),
+    latitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-90, 'Latitude tidak valid').max(90, 'Latitude tidak valid'),
+    longitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-180, 'Longitude tidak valid').max(180, 'Longitude tidak valid'),
 
     tipe_paket: z.enum(['reguler', 'custom'], { message: 'Pilih tipe paket' }),
     paket_internet_id: z.string().optional(),
@@ -29,7 +29,7 @@ export const daftarSchema = z
       .instanceof(File, { message: 'Foto KTP wajib diunggah' })
       .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB'),
     foto_selfie_ktp: z
-      .instanceof(File)
+      .instanceof(File, { message: 'Foto selfie wajib berupa berkas' })
       .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
       .optional(),
   })

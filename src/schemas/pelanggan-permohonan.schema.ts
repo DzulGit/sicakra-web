@@ -1,7 +1,9 @@
 import { z } from 'zod'
 
 export const buatPermohonanPelangganSchema = z.object({
-  jenis_permohonan: z.enum(['tambah_paket', 'ganti_paket', 'relokasi']),
+  jenis_permohonan: z.enum(['tambah_paket', 'ganti_paket', 'relokasi'], {
+    message: 'Pilih jenis permohonan',
+  }),
   layanan_internet_id: z.number({ required_error: 'Pilih layanan' }),
   paket_internet_id: z.number().optional(),
   alasan: z.string().optional(),
