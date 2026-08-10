@@ -17,7 +17,7 @@ export const buatLaporanSchema = z.object({
   foto: z
   .array(
     z
-      .instanceof(File)
+      .instanceof(File, { message: 'Berkas foto tidak valid' })
       .refine((file) => file.size <= 4 * 1024 * 1024, 'Ukuran foto maksimal 4MB')
       .refine(
         (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type),
