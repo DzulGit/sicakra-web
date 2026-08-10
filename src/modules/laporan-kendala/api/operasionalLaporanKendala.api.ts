@@ -1,7 +1,8 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
 import type { LaporanKendala } from '@/types/models'
-import type { TeruskanKeTeknisiForm } from '@/schemas/laporan-kendala.schema'
+import type { TindakLanjutLaporanForm } from '@/schemas/laporan-kendala.schema'
+// import type { TeruskanKeTeknisiForm } from '@/schemas/laporan-kendala.schema'
 
 const BASE = '/admin/operasional/laporan-kendala'
 
@@ -13,14 +14,18 @@ export function getLaporanKendalaDetail(id: number | string) {
   return httpClient.get<ApiResponse<LaporanKendala>>(`${BASE}/${id}`)
 }
 
-export function terimaLaporan(id: number | string) {
-  return httpClient.patch<ApiResponse<LaporanKendala>>(`${BASE}/${id}/terima`)
-}
+// export function terimaLaporan(id: number | string) {
+//   return httpClient.patch<ApiResponse<LaporanKendala>>(`${BASE}/${id}/terima`)
+// }
 
-export function teruskanKeTeknisi(id: number | string, payload: TeruskanKeTeknisiForm) {
-  return httpClient.patch<ApiResponse<LaporanKendala>>(`${BASE}/${id}/teruskan-ke-teknisi`, payload)
-}
+// export function teruskanKeTeknisi(id: number | string, payload: TeruskanKeTeknisiForm) {
+//   return httpClient.patch<ApiResponse<LaporanKendala>>(`${BASE}/${id}/teruskan-ke-teknisi`, payload)
+// }
 
 export function tutupLaporan(id: number | string) {
   return httpClient.patch<ApiResponse<LaporanKendala>>(`${BASE}/${id}/tutup`)
+}
+
+export function tindakLanjutLaporan(id: number | string, payload: TindakLanjutLaporanForm) {
+  return httpClient.patch<ApiResponse<LaporanKendala>>(`${BASE}/${id}/tindak-lanjut`, payload)
 }

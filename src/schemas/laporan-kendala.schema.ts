@@ -28,3 +28,24 @@ export const buatLaporanSchema = z.object({
   .optional(),
 })
 export type BuatLaporanForm = z.infer<typeof buatLaporanSchema>
+
+export const tindakLanjutLaporanSchema = z.object({
+  keputusan: z.enum(['SELESAI_REMOTE', 'TERUSKAN_TEKNISI']),
+  teknisi_ids: z.array(z.number()).optional(),
+  tim_teknisi_id: z.string().optional(),
+  tanggal_kerja: z.string().optional(),
+  hasil_penanganan: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.keputusan === 'SELESAI_REMOTE' && !data.hasil_penanganan?.trim()) {
+    ctx.addIssue({ code: 'custom', message: 'Hasil penanganan wajib diisi', path: ['hasil_penanganan'] })
+  }
+  if (data.keputusan === 'TERUSKAN_TEKNISI') {
+    if (!data.teknisi_ids?.length) {
+      ctx.addIssue({ code: 'custom', message: 'Pilih minimal 1 teknisi', path: ['teknisi_ids'] })
+    }
+    if (!data.tanggal_kerja) {
+      ctx.addIssue({ code: 'custom', message: 'Tanggal kunjungan wajib diisi', path: ['tanggal_kerja'] })
+    }
+  }
+})
+export type TindakLanjutLaporanForm = z.infer<typeof tindakLanjutLaporanSchema>

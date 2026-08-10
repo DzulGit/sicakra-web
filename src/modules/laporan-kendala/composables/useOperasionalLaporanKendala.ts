@@ -4,11 +4,13 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import {
   getLaporanKendalaDetail,
   getLaporanKendalaList,
-  terimaLaporan,
-  teruskanKeTeknisi,
+  // terimaLaporan,
+  // teruskanKeTeknisi,
   tutupLaporan,
+  tindakLanjutLaporan,  
 } from '../api/operasionalLaporanKendala.api'
-import type { TeruskanKeTeknisiForm } from '@/schemas/laporan-kendala.schema'
+import type { TindakLanjutLaporanForm } from '@/schemas/laporan-kendala.schema'
+// import type { TeruskanKeTeknisiForm } from '@/schemas/laporan-kendala.schema'
 
 function useFilterParams() {
   const route = useRoute()
@@ -44,27 +46,36 @@ function useInvalidasiLaporan() {
   }
 }
 
-export function useTerimaLaporan() {
-  const invalidasi = useInvalidasiLaporan()
-  return useMutation({
-    mutationFn: (id: number | string) => terimaLaporan(id),
-    onSuccess: (_, id) => invalidasi(id),
-  })
-}
+// export function useTerimaLaporan() {
+//   const invalidasi = useInvalidasiLaporan()
+//   return useMutation({
+//     mutationFn: (id: number | string) => terimaLaporan(id),
+//     onSuccess: (_, id) => invalidasi(id),
+//   })
+// }
 
-export function useTeruskanKeTeknisi() {
-  const invalidasi = useInvalidasiLaporan()
-  return useMutation({
-    mutationFn: ({ id, payload }: { id: number | string; payload: TeruskanKeTeknisiForm }) =>
-      teruskanKeTeknisi(id, payload),
-    onSuccess: (_, { id }) => invalidasi(id),
-  })
-}
+// export function useTeruskanKeTeknisi() {
+//   const invalidasi = useInvalidasiLaporan()
+//   return useMutation({
+//     mutationFn: ({ id, payload }: { id: number | string; payload: TeruskanKeTeknisiForm }) =>
+//       teruskanKeTeknisi(id, payload),
+//     onSuccess: (_, { id }) => invalidasi(id),
+//   })
+// }
 
 export function useTutupLaporan() {
   const invalidasi = useInvalidasiLaporan()
   return useMutation({
     mutationFn: (id: number | string) => tutupLaporan(id),
     onSuccess: (_, id) => invalidasi(id),
+  })
+}
+
+export function useTindakLanjutLaporan() {
+  const invalidasi = useInvalidasiLaporan()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number | string; payload: TindakLanjutLaporanForm }) =>
+      tindakLanjutLaporan(id, payload), 
+    onSuccess: (_, { id }) => invalidasi(id),
   })
 }

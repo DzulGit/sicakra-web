@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
 import {
   useLaporanKendalaDetail,
-  useTerimaLaporan,
   useTutupLaporan,
 } from '../../composables/useOperasionalLaporanKendala'
 import { statusLaporanEnum } from '@/lib/enums'
@@ -12,31 +11,24 @@ import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import ConfirmDialog from '@/components/feedback/ConfirmDialog.vue'
-import TeruskanKeTeknisiDialog from '../../components/TeruskanKeTeknisiDialog.vue'
+import WhatsappTindakLanjutFlow from '../../components/WhatsappTindakLanjutFlow.vue'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
 
 const { data: laporan, isLoading } = useLaporanKendalaDetail(id)
 
-const dialogTeruskanTerbuka = ref(false)
+const dialogWaTerbuka = ref(false)
 const dialogTutupTerbuka = ref(false)
 
-const { mutate: terima, isPending: isPendingTerima } = useTerimaLaporan()
 const { mutate: tutup, isPending: isPendingTutup } = useTutupLaporan()
-
-function handleTerima() {
-  terima(id.value, {
-    onSuccess: () => toast.success('Laporan diterima, status jadi Diproses.'),
-    onError: () => toast.error('Gagal menerima laporan.'),
-  })
-}
 
 function handleTutup() {
   tutup(id.value, {
     onSuccess: () => {
-      toast.success('Laporan ditutup.')
+      toast.success('Laporan ditutup secara manual.')
       dialogTutupTerbuka.value = false
     },
     onError: () => toast.error('Gagal menutup laporan.'),
@@ -53,11 +45,11 @@ function formatTanggal(iso: string) {
 }
 
 const pelanggan = computed(() => laporan.value?.layanan_internet?.pelanggan)
-const bisaTerima = computed(() => laporan.value?.status === 'menunggu')
-const bisaTeruskan = computed(() => laporan.value?.status === 'diproses')
-const bisaTutup = computed(() =>
-  ['menunggu', 'diproses', 'selesai'].includes(laporan.value?.status ?? ''),
-)
+
+// Tombol WA Tindak Lanjut hanya muncul saat baru masuk (menunggu)
+const bisaTindakLanjutWa = computed(() => laporan.value?.status === 'menunggu')
+// Tutup Manual untuk laporan yang udah dikerjakan teknisi
+const bisaTutup = computed(() => laporan.value?.status === 'selesai')
 
 const isImageOpen = ref(false)
 const selectedImage = ref<string | null>(null)
@@ -157,27 +149,38 @@ const parsedPhotos = computed(() => {
           <CardTitle class="text-base">Aksi</CardTitle>
         </CardHeader>
         <CardContent class="space-y-2">
-          <Button v-if="bisaTerima" class="w-full" :disabled="isPendingTerima" @click="handleTerima">
-            Terima Laporan
-          </Button>
-          <Button v-if="bisaTeruskan" class="w-full" variant="outline" @click="dialogTeruskanTerbuka = true">
-            Teruskan ke Teknisi
+          <Button v-if="bisaTindakLanjutWa" class="w-full" @click="dialogWaTerbuka = true">
+            Tindak Lanjut via WhatsApp
           </Button>
           <Button v-if="bisaTutup" class="w-full" variant="destructive" @click="dialogTutupTerbuka = true">
             Tutup Laporan
           </Button>
-          <p v-if="!bisaTerima && !bisaTeruskan && !bisaTutup" class="text-sm text-muted-foreground">
-            Tidak ada aksi yang tersedia.
+          <p v-if="!bisaTindakLanjutWa && !bisaTutup" class="text-sm text-muted-foreground">
+            Laporan sedang ditangani teknisi. Tunggu statusnya Selesai.
           </p>
         </CardContent>
       </Card>
     </div>
 
-    <TeruskanKeTeknisiDialog v-model:open="dialogTeruskanTerbuka" :laporan-id="laporan.id" />
+    <!-- Dialog WA 2 Tahap -->
+    <Dialog :open="dialogWaTerbuka" @update:open="dialogWaTerbuka = $event">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Tindak Lanjut Laporan Kendala</DialogTitle>
+          <DialogDescription>
+            Hubungi pelanggan melalui WhatsApp untuk verifikasi awal.
+          </DialogDescription>
+        </DialogHeader>
+        <WhatsappTindakLanjutFlow :laporan="laporan" @close="dialogWaTerbuka = false" />
+      </DialogContent>
+    </Dialog>
+
+    <!-- Dialog Penutupan Akhir (setelah teknisi bekerja) -->
     <ConfirmDialog v-model:open="dialogTutupTerbuka" judul="Tutup laporan ini?"
-      deskripsi="Pastikan pelanggan sudah puas dengan penanganannya sebelum menutup laporan."
+      deskripsi="Pastikan pelanggan sudah mengonfirmasi bahwa layanannya telah kembali normal."
       label-konfirmasi="Tutup Laporan" variant-konfirmasi="destructive" :loading="isPendingTutup"
       @confirm="handleTutup" />
+
     <Teleport to="body">
       <div v-if="isImageOpen && selectedImage"
         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-zoom-out"
