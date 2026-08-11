@@ -47,3 +47,12 @@ export type UbahPasswordForm = {
   password: string
   password_confirmation: string
 }
+
+export const ubahFotoProfilSchema = z.object({
+  foto: z.instanceof(File)
+    .refine((file) => file.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
+    .refine(
+      (file) => ['image/jpeg', 'image/jpg', 'image/png'].includes(file.type),
+      'Format foto harus JPG atau PNG'
+    )
+})

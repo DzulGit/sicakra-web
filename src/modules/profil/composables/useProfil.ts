@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { getProfil, ubahProfil, ubahUsername, ubahPassword } from '../api/profil.api'
+import { getProfil, ubahProfil, ubahUsername, ubahPassword, ubahFotoProfil } from '../api/profil.api'
 import { useAuthStore } from '@/stores/auth.store'
 import type { UbahProfilForm, UbahUsernameForm, UbahPasswordForm } from '@/schemas/profil.schema'
 
@@ -47,6 +47,19 @@ export function useUbahPassword() {
       // update sesi lokal supaya banner di dashboard langsung hilang
       // tanpa perlu refetch/reload.
       authStore.perbaruiPengguna({ password_sudah_dibuat: true })
+    },
+  })
+}
+
+export function useUbahFotoProfil() {
+  const queryClient = useQueryClient()
+  const authStore = useAuthStore()
+
+  return useMutation({
+    mutationFn: (payload: FormData) => ubahFotoProfil(payload),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['profil'] })
+      authStore.perbaruiPengguna({ foto_profil: res.data.data.foto_profil })
     },
   })
 }

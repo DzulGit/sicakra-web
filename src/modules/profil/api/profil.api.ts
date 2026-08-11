@@ -20,3 +20,10 @@ export function ubahUsername(payload: UbahUsernameForm) {
 export function ubahPassword(payload: UbahPasswordForm) {
   return httpClient.patch<ApiResponse<{ message: string }>>('/pelanggan/profil/password', payload)
 }
+
+export function ubahFotoProfil(payload: FormData) {
+  // Gunakan POST untuk pengiriman multipart/form-data
+  return httpClient.post<ApiResponse<Pelanggan>>('/pelanggan/profil/foto', payload, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}

@@ -17,6 +17,7 @@ export interface SesiPengguna {
   tipe: TipePengguna
   peran?: PeranAdmin // hanya ada kalau tipe === 'admin'
   password_sudah_dibuat?: boolean // hanya relevan kalau tipe === 'pelanggan'
+  foto_profil?: string | null;
 }
 
 /**

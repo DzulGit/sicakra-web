@@ -18,6 +18,7 @@ export interface Pelanggan {
   layanan_internet?: LayananInternetDetail[]
   permohonan_layanan?: PermohonanLayanan[]
   username?: string
+  foto_profil?: string | null;
 }
 
 export interface PaketInternet {
