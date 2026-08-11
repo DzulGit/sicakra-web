@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Bell, LogOut, UserCircle } from 'lucide-vue-next'
+import { Bell, LogOut, UserCircle, ChevronDown } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLogoutAdmin } from '@/modules/auth/admin/composables/useAdminAuth'
 import { useLogoutPelanggan } from '@/modules/auth/pelanggan/composables/usePelangganAuth'
@@ -34,6 +34,13 @@ function inisial(nama: string) {
     .toUpperCase()
 }
 
+function getFotoUrl(foto?: string | null) {
+  if (!foto) return ''
+  return foto.startsWith('http')
+    ? foto
+    : `https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/${foto}`
+}
+
 function logout() {
   const tipe = authStore.tipePengguna
   const mutasiLogout = tipe === 'pelanggan' ? logoutPelanggan : logoutAdmin
@@ -41,7 +48,7 @@ function logout() {
   // Bersihkan sesi lokal & redirect SEGERA (jangan tunggu response server) —
   // pengalaman logout harus terasa instan. Kalau call API gagal (mis. token
   // sudah invalid duluan), tidak masalah, tujuan akhirnya sama: keluar.
-  mutasiLogout(undefined, { onSettled: () => {} })
+  mutasiLogout(undefined, { onSettled: () => { } })
   authStore.bersihkanSesi()
   router.push(tipe === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
 }
@@ -64,12 +71,19 @@ function bukaProfil() {
 
       <DropdownMenu>
         <DropdownMenuTrigger as-child :disabled="isNative && authStore.tipePengguna === 'pelanggan'">
-          <button type="button" class="flex items-center gap-2 rounded-md p-1 hover:bg-accent" @click="bukaProfil">
-            <Avatar class="size-8">
-              <AvatarFallback>{{
+          <button type="button" class="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent"
+            @click="bukaProfil">
+            <Avatar class="size-8 overflow-hidden">
+              <img v-if="authStore.pengguna?.foto_profil" :src="getFotoUrl(authStore.pengguna.foto_profil)"
+                alt="Foto Profil" class="h-full w-full object-cover" />
+              <AvatarFallback v-else>{{
                 inisial(authStore.pengguna?.nama_lengkap ?? '?')
-              }}</AvatarFallback>
+                }}</AvatarFallback>
             </Avatar>
+            <span class="text-sm font-medium hidden md:inline-block">
+              {{ authStore.pengguna?.nama_lengkap }}
+            </span>
+            <ChevronDown class="size-4 text-muted-foreground hidden md:inline-block" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-56">
