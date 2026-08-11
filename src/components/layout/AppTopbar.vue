@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Bell, LogOut, UserCircle } from 'lucide-vue-next'
+import { LogOut, UserCircle } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLogoutAdmin } from '@/modules/auth/admin/composables/useAdminAuth'
 import { useLogoutPelanggan } from '@/modules/auth/pelanggan/composables/usePelangganAuth'
+import NotificationBell from '@/modules/notifikasi/components/NotificationBell.vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,9 +58,7 @@ function bukaProfil() {
     <AppBreadcrumb :items="breadcrumb" />
 
     <div class="flex items-center gap-2">
-      <Button variant="ghost" size="icon" aria-label="Notifikasi">
-        <Bell class="size-4" />
-      </Button>
+      <NotificationBell />
 
       <DropdownMenu>
         <DropdownMenuTrigger as-child :disabled="isNative && authStore.tipePengguna === 'pelanggan'">
