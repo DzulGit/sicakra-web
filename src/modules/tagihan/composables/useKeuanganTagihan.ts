@@ -10,6 +10,7 @@ import {
   getTagihanList,
   getTagihanSayaDetail,
   getTagihanSayaList,
+  perbaruiLinkTagihan,
   regenerateInvoice,
   regenerateTagihan,
 } from '../api/keuanganTagihan.api'
@@ -71,6 +72,17 @@ export function useRegenerateTagihan() {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'detail', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
       queryClient.invalidateQueries({ queryKey: ['pelanggan', 'detail'] })
+    },
+  })
+}
+
+export function usePerbaruiLinkTagihan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number | string) => perbaruiLinkTagihan(id).then((res) => res.data.data),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'detail', id] })
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
     },
   })
 }

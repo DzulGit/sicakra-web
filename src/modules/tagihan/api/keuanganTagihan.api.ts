@@ -26,6 +26,10 @@ export function regenerateTagihan(id: number | string, jumlahBulan: number) {
   })
 }
 
+export function perbaruiLinkTagihan(id: number | string) {
+  return httpClient.post<ApiResponse<Tagihan>>(`${BASE}/${id}/perbarui-link`)
+}
+
 export function bayarTunaiTagihan(id: number | string, jumlahBulan: number) {
   return httpClient.post<ApiResponse<Tagihan>>(`${BASE}/${id}/bayar-tunai`, {
     jumlah_bulan: jumlahBulan,

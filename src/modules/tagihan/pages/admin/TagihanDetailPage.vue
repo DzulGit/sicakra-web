@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
-import { useTagihanDetail, useRegenerateTagihan, useBayarTunaiTagihan } from '../../composables/useKeuanganTagihan'
+import { useTagihanDetail, useRegenerateTagihan, useBayarTunaiTagihan, usePerbaruiLinkTagihan } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
@@ -23,6 +23,7 @@ const id = computed(() => route.params.id as string)
 const { data: tagihan, isLoading, refetch } = useTagihanDetail(id)
 const { mutate: regenerate, isPending: isRegenerating } = useRegenerateTagihan()
 const { mutate: bayarTunai, isPending: isBayarTunaiPending } = useBayarTunaiTagihan()
+const { mutate: perbaruiLink, isPending: isPerbaruiLinkPending } = usePerbaruiLinkTagihan()
 
 const jumlahBulan = ref('1')
 const opsiBulan = Array.from({ length: 12 }, (_, i) => i + 1)
@@ -63,6 +64,19 @@ function handleRegenerate() {
       },
     },
   )
+}
+
+function handlePerbaruiLink() {
+  perbaruiLink(id.value, {
+    onSuccess: () => {
+      toast.success('Link pembayaran berhasil diperbarui.')
+      refetch()
+    },
+    onError: (e: Error) => {
+      const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
+      toast.error(pesan ?? 'Gagal memperbarui link pembayaran.')
+    },
+  })
 }
 
 function bukaDialogTunai() {
@@ -229,6 +243,16 @@ function waHref(nomor: string) {
               class="w-full"
             >
               <ExternalLink class="mr-2 size-3" /> Buka Invoice
+            </Button>
+            <Button
+              v-if="tagihan.status_pembayaran !== 'sudah_bayar'"
+              size="sm"
+              class="w-full"
+              :disabled="isPerbaruiLinkPending"
+              @click="handlePerbaruiLink"
+            >
+              <RefreshCw v-if="isPerbaruiLinkPending" class="mr-2 size-3 animate-spin" />
+              {{ isPerbaruiLinkPending ? 'Memperbarui...' : 'Perbarui Link Pembayaran' }}
             </Button>
           </CardContent>
         </Card>
