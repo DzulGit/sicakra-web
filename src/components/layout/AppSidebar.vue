@@ -16,14 +16,25 @@ const menuGroups = computed(() => getMenuGroups(authStore.tipePengguna, authStor
 function isAktif(to: string) {
   return route.path.startsWith(to)
 }
+
+function tutupDiMobile() {
+  if (window.innerWidth < 768) {
+    uiStore.sidebarCollapsed = true
+  }
+}
 </script>
 
 <template>
   <aside
     :class="
       cn(
-        'flex h-screen flex-col border-r bg-background transition-all duration-200',
-        uiStore.sidebarCollapsed ? 'w-16' : 'w-64',
+        'flex h-screen flex-col border-r bg-background transition-all duration-300',
+        // Mobile: Overlay Fixed, tertutup (-translate-x-full) atau terbuka
+        'fixed inset-y-0 left-0 z-50 w-64',
+        uiStore.sidebarCollapsed ? '-translate-x-full' : 'translate-x-0',
+        // Desktop (md): Kembali nempel ke layout (relative), ciut jadi w-16
+        'md:relative md:translate-x-0',
+        uiStore.sidebarCollapsed ? 'md:w-16' : 'md:w-64'
       )
     "
   >
@@ -48,6 +59,7 @@ function isAktif(to: string) {
           v-for="item in grup.items"
           :key="item.to"
           :to="item.to"
+          @click="tutupDiMobile"
           :class="
             cn(
               'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors',

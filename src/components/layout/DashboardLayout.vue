@@ -8,6 +8,7 @@ import SkipToContent from '@/components/feedback/SkipToContent.vue'
 import type { BreadcrumbItem } from './AppBreadcrumb.vue'
 import BottomNavigation from "./BottomNavigation.vue";
 import { usePlatform } from "@/composables/usePlatform";
+import { useUiStore } from '@/stores/ui.store'
 
 /**
  * Layout bersama Dashboard Admin & Pelanggan — satu komponen, menu beda
@@ -35,15 +36,19 @@ const authStore = useAuthStore();
 
 const tanpaSidebar = computed(() => authStore.peranAdmin === 'super_admin')
 
+const uiStore = useUiStore()
 </script>
 
 <template>
   <SkipToContent />
   <div class="flex h-screen overflow-hidden">
     <AppSidebar v-if="!isNative && !tanpaSidebar" />
+    <div v-if="!isNative && !tanpaSidebar && !uiStore.sidebarCollapsed"
+      class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity md:hidden"
+      @click="uiStore.sidebarCollapsed = true"></div>
     <div class="flex flex-1 flex-col overflow-hidden">
       <AppTopbar :breadcrumb="breadcrumb" />
-      <main class="flex-1 overflow-y-auto p-6" :class="{'pb-32': isNative}">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6" :class="{'pb-24': isNative}">
         <slot />
       </main>
     </div>
