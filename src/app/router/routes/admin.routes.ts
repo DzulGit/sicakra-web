@@ -24,6 +24,7 @@ const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListP
 const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
 const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
 const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
+const NotifikasiPage = () => import('@/modules/notifikasi/pages/NotifikasiPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth), Fase 5-8 (Operasional/Teknisi/
@@ -350,6 +351,19 @@ export const adminRoutes: RouteRecordRaw[] = [
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional'],
+    },
+  },
+
+  // ----- Notifikasi (semua peran admin) -----
+  {
+    path: '/admin/notifikasi',
+    name: 'admin.notifikasi',
+    component: NotifikasiPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Notifikasi',
+      requiresAuth: true,
+      guard: 'admin',
     },
   },
 ]

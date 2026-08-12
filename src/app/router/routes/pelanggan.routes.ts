@@ -11,6 +11,7 @@ const LaporanKendalaSayaListPage = () => import('@/modules/laporan-kendala/pages
 const LaporanKendalaSayaDetailPage = () => import('@/modules/laporan-kendala/pages/pelanggan/LaporanKendalaSayaDetailPage.vue')
 const LaporanKendalaSayaCreatePage = () => import('@/modules/laporan-kendala/pages/pelanggan/LaporanKendalaSayaCreatePage.vue')
 const ProfilPage = () => import('@/modules/profil/pages/ProfilPage.vue')
+const NotifikasiPage = () => import('@/modules/notifikasi/pages/NotifikasiPage.vue')
 
 /**
  * Route Pelanggan — dibangun Fase 3 (auth) & Fase 9 (dashboard).
@@ -132,6 +133,17 @@ export const pelangganRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Profil',
+      requiresAuth: true,
+      guard: 'pelanggan',
+    },
+  },
+  {
+    path: '/pelanggan/notifikasi',
+    name: 'pelanggan.notifikasi',
+    component: NotifikasiPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Notifikasi',
       requiresAuth: true,
       guard: 'pelanggan',
     },

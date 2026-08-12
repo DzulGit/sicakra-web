@@ -6,6 +6,7 @@ import {
   Wallet,
   TriangleAlert,
   UserRound,
+  Bell,
 } from "lucide-vue-next";
 
 const router = useRouter();
@@ -21,6 +22,11 @@ const menus = [
     title: "Riwayat",
     icon: Receipt,
     to: "/pelanggan/tagihan",
+  },
+  {
+    title: "Notifikasi",
+    icon: Bell,
+    to: "/pelanggan/notifikasi",
   },
   {
     title: "Bayar",
