@@ -21,7 +21,7 @@ const id = computed(() => route.params.id as string | undefined)
 const modeEdit = computed(() => !!id.value)
 
 const { data: paket, isLoading: isLoadingDetail } = modeEdit.value
-  ? useAdminPaketInternetDetail(id)
+  ? useAdminPaketInternetDetail(id as any)
   : { data: computed(() => null), isLoading: computed(() => false) }
 
 const schema = computed(() => (modeEdit.value ? ubahPaketInternetSchema : simpanPaketInternetSchema))
@@ -62,7 +62,7 @@ const isPending = computed(() => isPendingSimpan.value || isPendingUbah.value)
 const onSubmit = handleSubmit((values) => {
   if (modeEdit.value) {
     ubah(
-      { id: id.value, payload: values },
+      { id: id.value as string, payload: values },
       {
         onSuccess: () => {
           toast.success('Paket internet berhasil diperbarui.')

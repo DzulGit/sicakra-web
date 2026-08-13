@@ -11,7 +11,7 @@ import { useDashboardTeknisi } from '../composables/useDashboardTeknisi'
 
 const { data, isLoading } = useDashboardTeknisi()
 
-const activityItems = data?.riwayat_pekerjaan?.map(j => ({
+const activityItems = data.value?.riwayat_pekerjaan?.map((j: any) => ({
   id: j.id,
   teknisi: j.pelanggan,
   aktivitas: j.jenis_pekerjaan,

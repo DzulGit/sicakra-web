@@ -90,3 +90,13 @@ export const peranAdminEnum: EnumMap = {
   teknisi: { label: 'Teknisi', badgeVariant: 'outline' },
   keuangan: { label: 'Keuangan', badgeVariant: 'outline' },
 }
+
+export const hasilPemasanganEnum: Record<string, { label: string; badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  sukses: { label: 'Sukses', badgeVariant: 'default' },
+  gagal: { label: 'Gagal', badgeVariant: 'destructive' },
+}
+
+export const hasilSurveyEnum: Record<string, { label: string; badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  bisa: { label: 'Bisa', badgeVariant: 'default' },
+  tidak_bisa: { label: 'Tidak Bisa', badgeVariant: 'destructive' },
+}

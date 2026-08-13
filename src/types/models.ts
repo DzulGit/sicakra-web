@@ -81,7 +81,7 @@ export interface PermohonanLayanan {
   id: number
   nomor_permohonan: string
   pelanggan_id: number
-  jenis_permohonan: 'pemasangan_baru' | 'relokasi'
+  jenis_permohonan: string
   layanan_internet_id: number | null
   paket_internet_id: number | null
   tipe_paket: 'reguler' | 'custom'
@@ -105,6 +105,7 @@ export interface PermohonanLayanan {
   paket_internet?: PaketInternet
   riwayat_status?: RiwayatStatusPermohonan[]
   jadwal_kerja?: JadwalKerja[]
+  alasan?: string | null
 }
 
 export interface LayananInternetRingkas {
@@ -427,4 +428,14 @@ export interface DashboardRingkasan {
     status_permohonan: string
     created_at: string
   }>
+}
+
+export interface JadwalPemasangan { 
+  id: number
+  [key: string]: any;
+}
+
+export interface JadwalSurvey { 
+  id: number
+  [key: string]: any
 }

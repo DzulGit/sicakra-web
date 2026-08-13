@@ -33,7 +33,7 @@ export function useLaporanKendalaSayaDetail(id: MaybeRefOrGetter<number | string
 export function useBuatLaporanKendala() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: BuatLaporanForm) => buatLaporanKendala(payload),
+    mutationFn: (payload: BuatLaporanForm) => buatLaporanKendala(payload as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['laporan-kendala', 'saya'] })
     },

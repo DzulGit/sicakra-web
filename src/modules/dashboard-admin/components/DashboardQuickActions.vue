@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Component } from 'vue'
-import { FileText, UserPlus, Wifi, MessageSquareWarning, UsersRound, Calendar, Receipt, DollarSign, ClipboardList, CheckCircle, Activity } from 'lucide-vue-next'
+import { FileText, UserPlus, Wifi, MessageSquareWarning, UsersRound, Calendar, Receipt, DollarSign, Activity } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 

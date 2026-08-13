@@ -7,9 +7,9 @@ import { z } from 'zod'
  */
 export function pasangZodErrorMap() {
   z.setErrorMap((issue, ctx) => {
-    const minimal = issue.minimum
-    const maksimal = issue.maximum
-    const tipe = issue.type
+    const minimal = (issue as any).minimum
+    const maksimal = (issue as any).maximum
+    const tipe = (issue as any).type
     const fallback = issue.message || ctx.defaultError
 
     switch (issue.code) {

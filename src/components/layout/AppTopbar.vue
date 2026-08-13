@@ -75,15 +75,14 @@ function bukaProfil() {
       <NotificationBell />
 
       <DropdownMenu>
-        <DropdownMenuTrigger as-child :disabled="isNative && authStore.tipePengguna === 'pelanggan'">
-          <button type="button" class="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent"
-            @click="bukaProfil">
+        <DropdownMenuTrigger as-child>
+          <button type="button" class="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent" @click="bukaProfil">
             <Avatar class="size-8 overflow-hidden">
               <img v-if="authStore.pengguna?.foto_profil" :src="getFotoUrl(authStore.pengguna.foto_profil)"
                 alt="Foto Profil" class="h-full w-full object-cover" />
               <AvatarFallback v-else>{{
                 inisial(authStore.pengguna?.nama_lengkap ?? '?')
-              }}</AvatarFallback>
+                }}</AvatarFallback>
             </Avatar>
             <span class="text-sm font-medium hidden md:inline-block">
               {{ authStore.pengguna?.nama_lengkap }}

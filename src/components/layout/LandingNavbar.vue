@@ -64,12 +64,6 @@ const tautan = [
         </RouterLink>
         <div class="mt-2 flex flex-col gap-2 border-t border-landing-ink/10 pt-4">
           <RouterLink
-            to="/admin/masuk"
-            class="rounded-full border border-landing-ink/20 px-5 py-2 text-center text-sm text-landing-ink"
-          >
-            Masuk
-          </RouterLink>
-          <RouterLink
             to="/daftar"
             class="rounded-full bg-landing-ink px-5 py-2 text-center text-sm font-medium text-landing-mist"
           >

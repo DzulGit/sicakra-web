@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => route.params.id as string)
-const { data: admin, isLoading } = useAdminDetail(id)
+const { data: isLoading } = useAdminDetail(id)
 const { handleSubmit, errors, defineField, setErrors } = useForm({ validationSchema: toTypedSchema(ubahAdminSchema) })
 const [email, emailAttrs] = defineField('email')
 const [passwordLama, passwordLamaAttrs] = defineField('password_lama')

@@ -6,6 +6,7 @@ import { pelangganRoutes } from './routes/pelanggan.routes'
 import { setupRouterGuards } from './guards'
 import './types' // augmentasi RouteMeta
 import { Capacitor } from '@capacitor/core'
+import { useAuthStore } from '@/stores/auth.store'
 
 
 const HalamanPlaceholder = () => import('@/components/feedback/HalamanPlaceholder.vue')
@@ -37,8 +38,14 @@ const router = createRouter({
 
 if (Capacitor.isNativePlatform()) {
   router.beforeEach((to, _from, next) => {
+    const authStore = useAuthStore()
+
     if (!to.path.startsWith('/pelanggan')) {
-      next('/pelanggan/masuk')
+      if (authStore.sudahLogin) {
+        next('/pelanggan/dashboard')
+      } else {
+        next('/pelanggan/masuk')
+      }
     } else {
       next()
     }
