@@ -1,28 +1,56 @@
-# Logs
-logs
+# =========================
+# Node & Dependencies
+# =========================
+node_modules/
+
+# =========================
+# Logs & Cache
+# =========================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.eslintcache
 
-node_modules
-dist
-dist-ssr
+# =========================
+# Build & Production
+# =========================
+dist/
+dist-ssr/
+.output/
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.local
+.env.*.local
 *.local
 
-# Editor directories and files
+# =========================
+# Editor & OS Files
+# =========================
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-.env
-
-android/app/build
+# =========================
+# Android & Capacitor Build
+# =========================
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+android/.gradle/
+android/app/.cxx/
