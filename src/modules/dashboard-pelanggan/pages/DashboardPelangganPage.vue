@@ -104,7 +104,7 @@ const sapaan = () => {
         </p>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div class="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4">
         <Card class="rounded-xl border shadow-none">
           <CardContent class="flex items-center gap-3 p-4">
             <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -161,7 +161,7 @@ const sapaan = () => {
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
-        <Card class="rounded-xl border shadow-none">
+        <Card class="rounded-xl border shadow-none min-w-0">
           <div class="flex items-center justify-between border-b px-5 py-3.5">
             <div class="flex items-center gap-2">
               <Wifi class="size-4 text-primary" />
@@ -174,7 +174,7 @@ const sapaan = () => {
           <div class="divide-y px-5">
             <div v-for="l in ringkasan.layanan_terbaru" :key="l.id" class="flex items-center justify-between gap-3 py-3">
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2 overflow-hidden">
                   <p class="truncate text-sm font-medium">{{ l.nama_paket }}</p>
                   <StatusBadge :value="l.status" :map="statusLayananEnum" />
                 </div>
@@ -193,7 +193,7 @@ const sapaan = () => {
           </div>
         </Card>
 
-        <Card class="rounded-xl border shadow-none">
+        <Card class="rounded-xl border shadow-none min-w-0">
           <div class="flex items-center justify-between border-b px-5 py-3.5">
             <div class="flex items-center gap-2">
               <Receipt class="size-4 text-amber-600" />
@@ -206,7 +206,7 @@ const sapaan = () => {
           <div class="divide-y px-5">
             <div v-for="t in ringkasan.tagihan_terbaru" :key="t.id" class="flex items-center justify-between gap-3 py-3">
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2 overflow-hidden">
                   <p class="truncate text-sm font-medium">{{ formatCurrency(t.total) }}</p>
                   <StatusBadge :value="t.status_pembayaran" :map="statusPembayaranEnum" />
                 </div>
@@ -227,7 +227,7 @@ const sapaan = () => {
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
-        <Card class="rounded-xl border shadow-none">
+        <Card class="rounded-xl border shadow-none min-w-0">
           <div class="flex items-center justify-between border-b px-5 py-3.5">
             <div class="flex items-center gap-2">
               <MessageSquareWarning class="size-4 text-rose-600" />
@@ -240,7 +240,7 @@ const sapaan = () => {
           <div class="divide-y px-5">
             <div v-for="k in ringkasan.kendala_terbaru" :key="k.id" class="flex items-center justify-between gap-3 py-3">
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2 overflow-hidden">
                   <p class="truncate text-sm font-medium">{{ k.kategori_kendala }}</p>
                   <StatusBadge :value="k.status" :map="statusLaporanEnum" />
                 </div>
@@ -256,7 +256,7 @@ const sapaan = () => {
           </div>
         </Card>
 
-        <Card class="rounded-xl border shadow-none">
+        <Card class="rounded-xl border shadow-none min-w-0">
           <div class="flex items-center justify-between border-b px-5 py-3.5">
             <div class="flex items-center gap-2">
               <FileText class="size-4 text-blue-600" />
@@ -269,7 +269,7 @@ const sapaan = () => {
           <div class="divide-y px-5">
             <div v-for="p in ringkasan.permohonan_terbaru" :key="p.id" class="flex items-center justify-between gap-3 py-3">
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2 overflow-hidden">
                   <p class="truncate text-sm font-medium capitalize">{{ p.jenis_permohonan.replace(/_/g, ' ') }}</p>
                   <StatusBadge :value="p.status_permohonan" :map="statusPermohonanEnum" />
                 </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { LogOut, UserCircle, ChevronDown } from 'lucide-vue-next'
+import { Menu, LogOut, UserCircle, ChevronDown } from 'lucide-vue-next'
+import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLogoutAdmin } from '@/modules/auth/admin/composables/useAdminAuth'
 import { useLogoutPelanggan } from '@/modules/auth/pelanggan/composables/usePelangganAuth'
@@ -20,6 +21,7 @@ import { usePlatform } from '@/composables/usePlatform'
 defineProps<{ breadcrumb: BreadcrumbItem[] }>()
 
 const authStore = useAuthStore()
+const uiStore = useUiStore()
 const router = useRouter()
 const { mutate: logoutAdmin } = useLogoutAdmin()
 const { mutate: logoutPelanggan } = useLogoutPelanggan()
@@ -62,7 +64,12 @@ function bukaProfil() {
 
 <template>
   <header class="flex h-14 items-center justify-between border-b bg-background px-4">
-    <AppBreadcrumb :items="breadcrumb" />
+    <div class="flex items-center gap-2">
+      <Button v-if="!isNative" variant="ghost" size="icon" class="md:hidden mr-1" @click="uiStore.toggleSidebar">
+        <Menu class="size-5" />
+      </Button>
+      <AppBreadcrumb :items="breadcrumb" />
+    </div>
 
     <div class="flex items-center gap-2">
       <NotificationBell />
@@ -76,7 +83,7 @@ function bukaProfil() {
                 alt="Foto Profil" class="h-full w-full object-cover" />
               <AvatarFallback v-else>{{
                 inisial(authStore.pengguna?.nama_lengkap ?? '?')
-                }}</AvatarFallback>
+              }}</AvatarFallback>
             </Avatar>
             <span class="text-sm font-medium hidden md:inline-block">
               {{ authStore.pengguna?.nama_lengkap }}
