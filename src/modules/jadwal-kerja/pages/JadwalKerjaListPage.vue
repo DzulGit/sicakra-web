@@ -13,6 +13,7 @@ import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
 import type { FilterFieldConfig } from '@/types/filter'
 import type { JadwalKerja } from '@/types/models'
+import { RouterLink } from 'vue-router';
 
 const route = useRoute()
 const router = useRouter()
@@ -84,7 +85,7 @@ const columns: ColumnDef<JadwalKerja, unknown>[] = [
     cell: ({ row }) =>
       h(
         Button,
-        { as: 'RouterLink', to: `/admin/teknisi/jadwal-kerja/${row.original.id}`, variant: 'outline', size: 'sm' },
+        { as: RouterLink, to: `/admin/teknisi/jadwal-kerja/${row.original.id}`, variant: 'outline', size: 'sm' },
         () => 'Buka',
       ),
   },
