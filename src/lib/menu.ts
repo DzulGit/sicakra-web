@@ -12,6 +12,7 @@ import {
   UserCircle,
   Contact,
   Wallet,
+  Bell,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
 
@@ -33,12 +34,14 @@ const menuOperasional: MenuItem[] = [
   { label: 'Paket Internet', to: '/admin/operasional/paket-internet', icon: Globe },
   { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },
   { label: 'Tim Teknisi', to: '/admin/operasional/tim-teknisi', icon: UsersRound },
+  { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
 ]
 
 const menuTeknisi: MenuItem[] = [
   { label: 'Overview', to: '/admin/teknisi/overview', icon: LayoutDashboard },
   { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar },
   { label: 'Laporan Kendala', to: '/admin/teknisi/laporan-kendala', icon: MessageSquareWarning },
+  { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
 ]
 
 const menuKeuangan: MenuItem[] = [
@@ -46,6 +49,7 @@ const menuKeuangan: MenuItem[] = [
   { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
   { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
+  { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
 ]
 
 const menuSuperAdmin: MenuItem[] = [

@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Menu, LogOut, UserCircle, ChevronDown } from 'lucide-vue-next'
+import { Menu, LogOut, UserCircle, ChevronDown, Bell } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLogoutAdmin } from '@/modules/auth/admin/composables/useAdminAuth'
 import { useLogoutPelanggan } from '@/modules/auth/pelanggan/composables/usePelangganAuth'
-import NotificationBell from '@/modules/notifikasi/components/NotificationBell.vue'
+import { useNotifikasiList } from '@/modules/notifikasi/composables/useNotifikasi'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -26,6 +27,9 @@ const router = useRouter()
 const { mutate: logoutAdmin } = useLogoutAdmin()
 const { mutate: logoutPelanggan } = useLogoutPelanggan()
 const { isNative } = usePlatform()
+
+const { data: notifikasiResponse } = useNotifikasiList()
+const unreadCount = computed(() => notifikasiResponse.value?.meta.unread_count ?? 0)
 
 function inisial(nama: string) {
   return nama
@@ -72,7 +76,19 @@ function bukaProfil() {
     </div>
 
     <div class="flex items-center gap-2">
-      <NotificationBell />
+      <RouterLink
+        v-if="authStore.tipePengguna === 'admin'"
+        to="/admin/notifikasi"
+        class="relative flex size-9 items-center justify-center rounded-md hover:bg-accent"
+      >
+        <Bell class="size-4" />
+        <span
+          v-if="unreadCount > 0"
+          class="pointer-events-none absolute -right-1 -top-1 rounded-full bg-destructive px-1 text-[10px] font-bold leading-4 text-white"
+        >
+          {{ unreadCount > 99 ? '99+' : unreadCount }}
+        </span>
+      </RouterLink>
 
       <DropdownMenu>
         <DropdownMenuTrigger as-child :disabled="isNative && authStore.tipePengguna === 'pelanggan'">
