@@ -7,6 +7,7 @@ import Pagination from '@/components/data/Pagination.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { RouterLink } from 'vue-router'
 
 const { data: hasil, isLoading } = useTagihanSayaList()
 
@@ -40,9 +41,11 @@ function formatRupiah(nilai: string) {
           </div>
           <div class="flex items-center gap-3">
             <StatusBadge :value="tagihan.status_pembayaran" :map="statusPembayaranEnum" />
-            <Button as="RouterLink" :to="`/pelanggan/tagihan/${tagihan.id}`" variant="outline" size="sm">
-              Detail
-            </Button>
+            <RouterLink :to="`/pelanggan/tagihan/${tagihan.id}`">
+              <Button variant="outline" size="sm">
+                Detail
+              </Button>
+            </RouterLink>
           </div>
         </CardContent>
       </Card>

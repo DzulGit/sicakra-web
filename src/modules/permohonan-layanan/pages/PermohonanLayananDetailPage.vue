@@ -41,7 +41,7 @@ const bisaVerifikasiWa = computed(
 
 const bisaJadwalkanKerja = computed(
   () =>
-    !!permohonan.value && ['DITERIMA', 'DITUNDA'].includes(permohonan.value.status),
+    !!permohonan.value && ['MENUNGGU_PENJADWALAN', 'DITUNDA'].includes(permohonan.value.status),
 )
 
 const labelTombolJadwalkan = computed(() =>

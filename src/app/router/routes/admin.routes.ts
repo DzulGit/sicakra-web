@@ -255,6 +255,18 @@ export const adminRoutes: RouteRecordRaw[] = [
       peran: ['teknisi'],
     },
   },
+  {
+    path: '/admin/teknisi/antrean-pengecekan',
+    name: 'admin.teknisi.antrean-pengecekan',
+    component: () => import('@/modules/laporan-kendala/pages/teknisi/AntreanPengecekanPage.vue'),
+    meta: {
+      layout: 'dashboard',
+      judul: 'Antrean Pengecekan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['teknisi'],
+    },
+  },
 
   // ----- Keuangan -----
   {
