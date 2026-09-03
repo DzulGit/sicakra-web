@@ -22,6 +22,7 @@ const TimTeknisiCreatePage = () => import('@/modules/tim-teknisi/pages/TimTeknis
 const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiEditPage.vue')
 const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListPage.vue')
 const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
+const BuatPelangganPage = () => import('@/modules/buat-pelanggan/pages/BuatPelangganPage.vue')
 const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
 const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
 const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
@@ -203,6 +204,18 @@ export const adminRoutes: RouteRecordRaw[] = [
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional', 'keuangan', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/pelanggan/baru',
+    name: 'admin.operasional.pelanggan.create',
+    component: BuatPelangganPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Buat Pelanggan Baru',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
     },
   },
 
