@@ -16,6 +16,8 @@ export const daftarSchema = z
 
     alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
     detail_alamat: z.string().optional(),
+    provinsi: z.string().optional(),
+    kota: z.string().optional(),
     latitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-90, 'Latitude tidak valid').max(90, 'Latitude tidak valid'),
     longitude: z.number({ required_error: 'Pilih lokasi di peta' }).min(-180, 'Longitude tidak valid').max(180, 'Longitude tidak valid'),
 

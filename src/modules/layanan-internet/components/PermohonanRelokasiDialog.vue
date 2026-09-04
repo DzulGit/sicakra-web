@@ -11,7 +11,7 @@ import type { LayananInternetDetail } from '@/types/models'
 const props = defineProps<{ layanan: LayananInternetDetail }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
-const lokasiPeta = ref<{ lat: number; lng: number; address?: string } | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
 const alamatPemasangan = ref('')
 const detailAlamat = ref('')
 const isSubmitting = ref(false)
@@ -32,6 +32,8 @@ async function kirim() {
       layanan_internet_id: props.layanan.id,
       alamat_pemasangan: alamatPemasangan.value || lokasiPeta.value.address || `${lokasiPeta.value.lat}, ${lokasiPeta.value.lng}`,
       detail_alamat: detailAlamat.value || undefined,
+      provinsi: lokasiPeta.value.provinsi ?? undefined,
+      kota: lokasiPeta.value.kota ?? undefined,
       latitude: lokasiPeta.value.lat,
       longitude: lokasiPeta.value.lng,
     } as any)

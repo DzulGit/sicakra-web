@@ -12,6 +12,13 @@ export interface PelangganList {
   id: number
   nama_lengkap: string
   nomor_pelanggan: string
+  provinsi?: string
+  kota?: string
+}
+
+export interface DaerahItem {
+  provinsi: string
+  kota: string
 }
 
 function serializeParams(params: PendapatanFilterParams): string {
@@ -30,6 +37,10 @@ export function getPendapatan(params: PendapatanFilterParams) {
 
 export function getPelangganList() {
   return httpClient.get<ApiResponse<PelangganList[]>>('/admin/keuangan/pendapatan/pelanggan-list')
+}
+
+export function getDaerahList() {
+  return httpClient.get<ApiResponse<DaerahItem[]>>('/admin/keuangan/pendapatan/daerah')
 }
 
 export function getLaporanPendapatanPdf(params: PendapatanFilterParams) {

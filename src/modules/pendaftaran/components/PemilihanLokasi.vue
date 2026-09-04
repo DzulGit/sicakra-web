@@ -13,9 +13,9 @@ delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow })
 
 const props = defineProps<{
-  modelValue: { lat: number; lng: number; address?: string } | null
+  modelValue: { lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null
 }>()
-const emit = defineEmits<{ (e: 'update:modelValue', value: { lat: number; lng: number; address?: string }): void }>()
+const emit = defineEmits<{   (e: 'update:modelValue', value: { lat: number; lng: number; address?: string; provinsi?: string; kota?: string }): void }>()
 
 const DEFAULT_CENTER: [number, number] = [-7.8031634, 110.3336448]
 const DEFAULT_ZOOM = 13
@@ -49,7 +49,7 @@ async function cariAlamat(lat: number, lng: number) {
     const address = [jalan, [rt, rw].filter(Boolean).join('/'), desa, kec, kota, prov, kodepos, 'Indonesia']
       .filter(Boolean)
       .join(', ') || data.display_name || ''
-    emit('update:modelValue', { lat, lng, address })
+    emit('update:modelValue', { lat, lng, address, provinsi: prov || undefined, kota: kota || undefined })
   } catch {
     emit('update:modelValue', { lat, lng })
   } finally {

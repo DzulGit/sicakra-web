@@ -23,6 +23,8 @@ export function buatPelangganBaru(payload: BuatPelangganForm) {
 
   formData.append('alamat_pemasangan', payload.alamat_pemasangan)
   if (payload.detail_alamat) formData.append('detail_alamat', payload.detail_alamat)
+  if (payload.provinsi) formData.append('provinsi', payload.provinsi)
+  if (payload.kota) formData.append('kota', payload.kota)
   formData.append('latitude', String(payload.latitude))
   formData.append('longitude', String(payload.longitude))
 

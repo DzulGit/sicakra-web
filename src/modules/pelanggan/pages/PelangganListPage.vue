@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { AxiosError } from 'axios'
 import { toast } from 'vue-sonner'
-import { Search, X, UserCheck, Users, CalendarClock } from 'lucide-vue-next'
+import { Search, X, UserCheck, Users, CalendarClock, UserPlus } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Component } from 'vue'
 import { getPelangganList } from '../api/pelanggan.api'
@@ -117,7 +118,7 @@ const columnsPelanggan: ColumnDef<Pelanggan, unknown>[] = [
     id: 'aksi',
     header: '',
     cell: ({ row }) =>
-      h(Button, { as: 'RouterLink', to: `/admin/operasional/pelanggan/${row.original.id}`, variant: 'outline', size: 'sm' }, () => 'Detail'),
+      h(Button, { as: RouterLink, to: `/admin/operasional/pelanggan/${row.original.id}`, variant: 'outline', size: 'sm' }, () => 'Detail'),
   },
 ]
 
@@ -156,7 +157,7 @@ const columnsDaftar: ColumnDef<PermohonanLayanan, unknown>[] = [
     id: 'aksi',
     header: '',
     cell: ({ row }) =>
-      h(Button, { as: 'RouterLink', to: `/admin/operasional/permohonan-layanan/${row.original.id}`, variant: 'outline', size: 'sm' }, () => 'Detail'),
+      h(Button, { as: RouterLink, to: `/admin/operasional/permohonan-layanan/${row.original.id}`, variant: 'outline', size: 'sm' }, () => 'Detail'),
   },
 ]
 </script>
@@ -165,9 +166,16 @@ const columnsDaftar: ColumnDef<PermohonanLayanan, unknown>[] = [
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Pelanggan</h1>
-      <Button v-if="bolehBulkTanggal" variant="outline" size="sm" class="gap-1.5" @click="showBulkDialog = true">
-        <CalendarClock class="size-4" /> Terapkan Tanggal Tagihan (Semua)
-      </Button>
+      <div class="flex gap-2">
+        <RouterLink :to="'/admin/operasional/pelanggan/baru'">
+          <Button size="sm" class="gap-1.5">
+            <UserPlus class="size-4" /> Buat Pelanggan Baru
+          </Button>
+        </RouterLink>
+        <Button v-if="bolehBulkTanggal" variant="outline" size="sm" class="gap-1.5" @click="showBulkDialog = true">
+          <CalendarClock class="size-4" /> Terapkan Tanggal Tagihan (Semua)
+        </Button>
+      </div>
     </div>
 
     <Dialog :open="showBulkDialog" @update:open="(v) => (showBulkDialog = v)">

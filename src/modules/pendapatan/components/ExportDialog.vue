@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Search, Users, Calendar, FileDown, Loader2 } from 'lucide-vue-next'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -52,15 +52,32 @@ const bulanButtonLabel = computed(() => {
 
 // ─── Pelanggan Multi-Select ────────────────────────────────
 const daftarPelanggan = ref<PelangganList[]>([])
+const loadingPelanggan = ref(false)
 const pelangganOpen = ref(false)
 const pelangganSearch = ref('')
+const selectedProvinsi = ref('')
+const selectedKota = ref('')
 const selectedPelangganIds = ref<number[]>([])
+
+const daftarProvinsi = computed(() =>
+  [...new Set(daftarPelanggan.value.map((p) => p.provinsi).filter(Boolean))].sort(),
+)
+
+const daftarKota = computed(() => {
+  const pool = selectedProvinsi.value
+    ? daftarPelanggan.value.filter((p) => p.provinsi === selectedProvinsi.value)
+    : daftarPelanggan.value
+  return [...new Set(pool.map((p) => p.kota).filter(Boolean))].sort()
+})
 
 const filteredPelanggan = computed(() => {
   const q = pelangganSearch.value.toLowerCase()
-  return daftarPelanggan.value.filter(
-    (p) => p.nama_lengkap.toLowerCase().includes(q) || p.nomor_pelanggan.toLowerCase().includes(q),
-  )
+  return daftarPelanggan.value.filter((p) => {
+    if (selectedProvinsi.value && p.provinsi !== selectedProvinsi.value) return false
+    if (selectedKota.value && p.kota !== selectedKota.value) return false
+    if (!q) return true
+    return p.nama_lengkap.toLowerCase().includes(q) || p.nomor_pelanggan.toLowerCase().includes(q)
+  })
 })
 
 function togglePelanggan(id: number) {
@@ -76,6 +93,11 @@ function removePelanggan(id: number) {
   selectedPelangganIds.value = selectedPelangganIds.value.filter((i) => i !== id)
 }
 
+function aturProvinsi(p: string) {
+  selectedProvinsi.value = p
+  selectedKota.value = ''
+}
+
 const selectedPelangganLabels = computed(() =>
   selectedPelangganIds.value
     .map((id) => daftarPelanggan.value.find((p) => p.id === id))
@@ -86,9 +108,11 @@ const selectedPelangganLabels = computed(() =>
 // ─── Load Pelanggan ────────────────────────────────────────
 watch(() => props.open, (v) => {
   if (v && daftarPelanggan.value.length === 0) {
+    loadingPelanggan.value = true
     getPelangganList()
       .then((res) => { daftarPelanggan.value = res.data.data })
       .catch(() => {})
+      .finally(() => { loadingPelanggan.value = false })
   }
 })
 
@@ -213,7 +237,25 @@ async function unduhLaporan() {
                 </span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent class="w-[280px] p-0" align="start">
+            <PopoverContent class="w-[320px] p-0" align="start">
+              <!-- Filter Provinsi/Kota -->
+              <div class="grid grid-cols-2 gap-2 border-b p-3">
+                <select
+                  :value="selectedProvinsi"
+                  class="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  @change="aturProvinsi(($event.target as HTMLSelectElement).value)"
+                >
+                  <option value="">Semua Provinsi</option>
+                  <option v-for="p in daftarProvinsi" :key="p" :value="p">{{ p }}</option>
+                </select>
+                <select
+                  v-model="selectedKota"
+                  class="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="">Semua Kota</option>
+                  <option v-for="k in daftarKota" :key="k" :value="k">{{ k }}</option>
+                </select>
+              </div>
               <div class="flex items-center border-b px-3 py-2">
                 <Search class="mr-2 size-4 shrink-0 opacity-50" />
                 <Input
@@ -222,7 +264,11 @@ async function unduhLaporan() {
                   class="h-8 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
-              <div class="max-h-[220px] overflow-y-auto p-1">
+              <div v-if="loadingPelanggan" class="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+                <Loader2 class="size-4 animate-spin" />
+                Memuat pelanggan...
+              </div>
+              <div v-else class="max-h-[220px] overflow-y-auto p-1">
                 <div
                   v-for="p in filteredPelanggan"
                   :key="p.id"
@@ -238,7 +284,7 @@ async function unduhLaporan() {
                     <span class="ml-1 text-xs text-muted-foreground">{{ p.nomor_pelanggan }}</span>
                   </div>
                 </div>
-                <div v-if="filteredPelanggan.length === 0" class="py-4 text-center text-sm text-muted-foreground">
+                <div v-if="!loadingPelanggan && filteredPelanggan.length === 0" class="py-4 text-center text-sm text-muted-foreground">
                   Tidak ditemukan.
                 </div>
               </div>
