@@ -1,18 +1,16 @@
 import { z } from 'zod'
 
-// app/Http/Requests/Pendaftaran/SimpanPendaftaranRequest.php
-//
-// PENTING: pakai z.string({ required_error: '...' }).min(1, '...') — BUKAN
-// cuma z.string().min(1, '...'). Kalau field belum pernah disentuh user,
-// value-nya `undefined` (bukan ''), dan .min() TIDAK menangkap kasus itu —
-// Zod jatuh ke pesan default bahasa Inggris ("Required") sebelum .min()
-// sempat jalan. required_error menutup celah itu.
-export const daftarSchema = z
+/**
+ * Schema untuk form "Buat Pelanggan Baru" (Admin Operasional).
+ * Sama dengan daftarSchema tapi foto_ktp & foto_selfie_ktp opsional
+ * (admin bisa upload nanti atau belum punya file).
+ */
+export const buatPelangganSchema = z
   .object({
     nama_lengkap: z.string({ required_error: 'Nama lengkap wajib diisi' }).min(1, 'Nama lengkap wajib diisi').max(255),
     nik: z.string({ required_error: 'NIK wajib diisi' }).length(16, 'NIK harus 16 digit'),
     nomor_hp: z.string({ required_error: 'Nomor HP wajib diisi' }).min(1, 'Nomor HP wajib diisi').max(20),
-    email: z.string({ required_error: 'Email wajib diisi' }).min(1, 'Email wajib diisi').email('Format email tidak valid'),
+    email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
 
     alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
     detail_alamat: z.string().optional(),
@@ -28,10 +26,11 @@ export const daftarSchema = z
     catatan_custom: z.string().optional(),
 
     foto_ktp: z
-      .instanceof(File, { message: 'Foto KTP wajib diunggah' })
-      .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB'),
+      .instanceof(File, { message: 'Foto KTP harus berupa berkas' })
+      .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
+      .optional(),
     foto_selfie_ktp: z
-      .instanceof(File, { message: 'Foto selfie wajib berupa berkas' })
+      .instanceof(File, { message: 'Foto selfie harus berupa berkas' })
       .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
       .optional(),
   })
@@ -48,4 +47,4 @@ export const daftarSchema = z
     path: ['kecepatan_custom_mbps'],
   })
 
-export type DaftarForm = z.infer<typeof daftarSchema>
+export type BuatPelangganForm = z.infer<typeof buatPelangganSchema>

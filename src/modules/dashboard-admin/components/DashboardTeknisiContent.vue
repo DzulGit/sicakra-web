@@ -7,10 +7,13 @@ import DashboardScheduleList from './DashboardScheduleList.vue'
 import DashboardTechnicianActivity from './DashboardTechnicianActivity.vue'
 import DashboardActiveTickets from './DashboardActiveTickets.vue'
 import DashboardQuickActions from './DashboardQuickActions.vue'
+import DashboardAntreanPengecekan from './DashboardAntreanPengecekan.vue'
 import { useDashboardTeknisi } from '../composables/useDashboardTeknisi'
+import { computed } from 'vue'
 
 const { data, isLoading } = useDashboardTeknisi()
 
+<<<<<<< HEAD
 const activityItems = data.value?.riwayat_pekerjaan?.map((j: any) => ({
   id: j.id,
   teknisi: j.pelanggan,
@@ -18,6 +21,18 @@ const activityItems = data.value?.riwayat_pekerjaan?.map((j: any) => ({
   waktu: j.waktu,
   status: j.status,
 })) ?? []
+=======
+const activityItems = computed(() => {
+  // Tambahkan (j: any) untuk menghindari error implicit 'any'
+  return data.value?.riwayat_pekerjaan?.map((j: any) => ({
+    id: j.id,
+    teknisi: j.pelanggan,
+    aktivitas: j.jenis_pekerjaan,
+    waktu: j.waktu,
+    status: j.status,
+  })) ?? []
+})
+>>>>>>> web-development
 </script>
 
 <template>
@@ -51,6 +66,8 @@ const activityItems = data.value?.riwayat_pekerjaan?.map((j: any) => ({
       />
     </div>
   </DashboardSection>
+
+  <DashboardAntreanPengecekan />
 
   <div class="grid gap-6 lg:grid-cols-2">
     <DashboardScheduleList :data="data?.jadwal_hari_ini" :loading="isLoading" />

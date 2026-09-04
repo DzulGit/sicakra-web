@@ -13,6 +13,7 @@ import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
 import type { FilterFieldConfig } from '@/types/filter'
 import type { PermohonanLayanan } from '@/types/models'
+import { RouterLink } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -62,12 +63,27 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
   {
     id: 'aksi',
     header: '',
-    cell: ({ row }) =>
-      h(
+    cell: ({ row }) => {
+      // Ambil status dari baris data saat ini
+      const isMenungguTeknis = row.original.status === 'MENUNGGU_PENGECEKAN_TEKNIS';
+      
+      return h(
         Button,
-        { as: 'RouterLink', to: `/admin/operasional/permohonan-layanan/${row.original.id}`, variant: 'outline', size: 'sm' },
-        () => 'Detail',
-      ),
+        { 
+          // Hapus tanda kutip pada RouterLink jika terjadi error kursor teks seperti sebelumnya
+          as: RouterLink, 
+          to: `/admin/operasional/permohonan-layanan/${row.original.id}`, 
+          variant: 'outline', 
+          size: 'sm',
+          // Nonaktifkan tombol jika masih di tahap pengecekan teknis
+          disabled: isMenungguTeknis,
+          // Tambahkan class penjelas jika tombol dinonaktifkan
+          class: isMenungguTeknis ? 'opacity-50 cursor-not-allowed' : '' 
+        },
+        // Ubah teks tombol sesuai dengan status
+        () => isMenungguTeknis ? 'Menunggu Teknis' : 'Detail',
+      )
+    },
   },
 ]
 </script>

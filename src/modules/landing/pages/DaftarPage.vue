@@ -155,7 +155,7 @@ const [detailAlamat, detailAlamatAttrs] = defineField('detail_alamat')
 
 const fotoKtp = ref<File | null>(null)
 const fotoSelfieKtp = ref<File | null>(null)
-const lokasiPeta = ref<{ lat: number; lng: number; address?: string } | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
 
 watch(fotoKtp, (f) => setFieldValue('foto_ktp', f ?? undefined))
 watch(fotoSelfieKtp, (f) => setFieldValue('foto_selfie_ktp', f ?? undefined))
@@ -163,6 +163,8 @@ watch(lokasiPeta, (l) => {
   setFieldValue('latitude', l?.lat)
   setFieldValue('longitude', l?.lng)
   if (l?.address) setFieldValue('alamat_pemasangan', l.address)
+  setFieldValue('provinsi', l?.provinsi ?? undefined)
+  setFieldValue('kota', l?.kota ?? undefined)
 })
 
 const { mutate, isPending } = useDaftar()

@@ -1,16 +1,19 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse } from '@/types/api'
-import type { DaftarForm } from '@/schemas/pendaftaran.schema'
+import type { Pelanggan } from '@/types/models'
+import type { BuatPelangganForm } from '@/schemas/buat-pelanggan.schema'
 
-interface DaftarResponseData {
-  nomor_permohonan: string
+interface BuatPelangganResponseData {
+  pelanggan: Pelanggan
+  username: string
+  password: string
 }
 
 /**
- * Endpoint publik multipart/form-data — payload dirakit manual jadi FormData
- * (bukan JSON) karena ada 2 file upload (foto_ktp, foto_selfie_ktp).
+ * Admin Operasional membuat pelanggan baru (pendaftaran offline/telepon).
+ * Payload dikirim sebagai FormData karena ada optional file upload.
  */
-export function daftar(payload: DaftarForm) {
+export function buatPelangganBaru(payload: BuatPelangganForm) {
   const formData = new FormData()
 
   formData.append('nama_lengkap', payload.nama_lengkap)
@@ -37,10 +40,10 @@ export function daftar(payload: DaftarForm) {
     if (payload.catatan_custom) formData.append('catatan_custom', payload.catatan_custom)
   }
 
-  formData.append('foto_ktp', payload.foto_ktp)
+  if (payload.foto_ktp) formData.append('foto_ktp', payload.foto_ktp)
   if (payload.foto_selfie_ktp) formData.append('foto_selfie_ktp', payload.foto_selfie_ktp)
 
-  return httpClient.post<ApiResponse<DaftarResponseData>>('/pendaftaran', formData, {
+  return httpClient.post<ApiResponse<BuatPelangganResponseData>>('/admin/operasional/pelanggan/buat-baru', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }

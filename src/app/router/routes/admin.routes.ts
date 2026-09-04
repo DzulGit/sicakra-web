@@ -22,9 +22,10 @@ const TimTeknisiCreatePage = () => import('@/modules/tim-teknisi/pages/TimTeknis
 const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiEditPage.vue')
 const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListPage.vue')
 const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
+const BuatPelangganPage = () => import('@/modules/buat-pelanggan/pages/BuatPelangganPage.vue')
 const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
 const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
-const NotifikasiPage = () => import('@/modules/notifikasi/pages/NotifikasiPage.vue')
+const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
 
 /**
  * Route Admin — dibangun Fase 3 (auth), Fase 5-8 (Operasional/Teknisi/
@@ -37,6 +38,20 @@ export const adminRoutes: RouteRecordRaw[] = [
     name: 'admin.masuk',
     component: LoginAdminPage,
     meta: { layout: 'auth', judul: 'Masuk — Admin', fullBleed: true },
+  },
+
+  // ----- Notifikasi (shared by all admin roles) -----
+  {
+    path: '/admin/notifikasi',
+    name: 'admin.notifikasi',
+    component: NotifikasiListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Notifikasi',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'teknisi', 'keuangan', 'super_admin'],
+    },
   },
 
   // ----- Operasional Overview -----
@@ -191,6 +206,18 @@ export const adminRoutes: RouteRecordRaw[] = [
       peran: ['operasional', 'keuangan', 'super_admin'],
     },
   },
+  {
+    path: '/admin/operasional/pelanggan/baru',
+    name: 'admin.operasional.pelanggan.create',
+    component: BuatPelangganPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Buat Pelanggan Baru',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
 
   // ----- Teknisi -----
   {
@@ -236,6 +263,18 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Detail Laporan Kendala',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['teknisi'],
+    },
+  },
+  {
+    path: '/admin/teknisi/antrean-pengecekan',
+    name: 'admin.teknisi.antrean-pengecekan',
+    component: () => import('@/modules/laporan-kendala/pages/teknisi/AntreanPengecekanPage.vue'),
+    meta: {
+      layout: 'dashboard',
+      judul: 'Antrean Pengecekan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['teknisi'],
@@ -358,7 +397,7 @@ export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/notifikasi',
     name: 'admin.notifikasi',
-    component: NotifikasiPage,
+    component: NotifikasiListPage,
     meta: {
       layout: 'dashboard',
       judul: 'Notifikasi',

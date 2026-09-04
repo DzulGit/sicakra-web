@@ -25,7 +25,7 @@ const paketId = ref<number | null>(null)
 const namaPaketCustom = ref('')
 const kecepatanCustom = ref<number | ''>('')
 
-const lokasiPeta = ref<{ lat: number; lng: number; address?: string } | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
 const alamatPemasangan = ref('')
 const detailAlamat = ref('')
 const isSubmitting = ref(false)
@@ -57,6 +57,8 @@ async function kirim() {
       kecepatan_custom_mbps: tipePaket.value === 'custom' ? kecepatanCustom.value : undefined,
       alamat_pemasangan: alamatPemasangan.value || lokasiPeta.value.address || `${lokasiPeta.value.lat}, ${lokasiPeta.value.lng}`,
       detail_alamat: detailAlamat.value || undefined,
+      provinsi: lokasiPeta.value.provinsi ?? undefined,
+      kota: lokasiPeta.value.kota ?? undefined,
       latitude: lokasiPeta.value.lat,
       longitude: lokasiPeta.value.lng,
     } as any)
