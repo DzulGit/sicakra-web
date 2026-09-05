@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Banknote, FileDown, Receipt, ClipboardList } from 'lucide-vue-next'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import DashboardStatCard from '@/modules/dashboard-admin/components/DashboardStatCard.vue'
 import DashboardRevenueTrendChart from '@/modules/dashboard-admin/components/DashboardRevenueTrendChart.vue'

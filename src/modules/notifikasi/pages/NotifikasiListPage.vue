@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, CheckCheck, Inbox } from 'lucide-vue-next'
+import { CheckCheck, Inbox } from 'lucide-vue-next'
 import {
   useNotifikasiList,
   useTandaiDibaca,
