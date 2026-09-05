@@ -13,15 +13,6 @@ import { computed } from 'vue'
 
 const { data, isLoading } = useDashboardTeknisi()
 
-<<<<<<< HEAD
-const activityItems = data.value?.riwayat_pekerjaan?.map((j: any) => ({
-  id: j.id,
-  teknisi: j.pelanggan,
-  aktivitas: j.jenis_pekerjaan,
-  waktu: j.waktu,
-  status: j.status,
-})) ?? []
-=======
 const activityItems = computed(() => {
   // Tambahkan (j: any) untuk menghindari error implicit 'any'
   return data.value?.riwayat_pekerjaan?.map((j: any) => ({
@@ -32,7 +23,6 @@ const activityItems = computed(() => {
     status: j.status,
   })) ?? []
 })
->>>>>>> web-development
 </script>
 
 <template>
