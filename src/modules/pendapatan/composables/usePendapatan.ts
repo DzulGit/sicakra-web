@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/vue-query'
-import { useRoute } from 'vue-router'
+import { useRoute, type LocationQueryValue } from 'vue-router'
 import { computed } from 'vue'
 import { getPendapatan, type PendapatanFilterParams } from '../api/pendapatan.api'
 
-function parseIntArray(raw: string | string[] | undefined): number[] {
+function parseIntArray(raw: LocationQueryValue | LocationQueryValue[] | undefined): number[] {
   if (!raw) return []
   const arr = Array.isArray(raw) ? raw : [raw]
   return arr.map(Number).filter((n) => !isNaN(n) && n >= 1 && n <= 12)
 }
 
-function parsePelangganIds(raw: string | string[] | undefined): number[] {
+function parsePelangganIds(raw: LocationQueryValue | LocationQueryValue[] | undefined): number[] {
   if (!raw) return []
   const arr = Array.isArray(raw) ? raw : [raw]
   return arr.map(Number).filter((n) => !isNaN(n) && n > 0)
