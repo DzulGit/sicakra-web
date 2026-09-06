@@ -9,6 +9,7 @@ export const simpanAdminSchema = z.object({
 export type SimpanAdminForm = z.infer<typeof simpanAdminSchema>
 
 export const ubahAdminSchema = z.object({
+  nama_lengkap: z.string().min(1, 'Nama lengkap wajib diisi').max(255, 'Nama lengkap maksimal 255 karakter'),
   email: z.string().min(1, 'Email wajib diisi').email('Format email tidak valid'),
   password_lama: z.string().optional(),
   password_baru: z.string().min(8, 'Password minimal 8 karakter').optional().or(z.literal('')),

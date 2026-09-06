@@ -18,6 +18,7 @@ import {
 import RiwayatStatusTimeline from '../components/RiwayatStatusTimeline.vue'
 import JadwalkanKerjaDialog from '../components/JadwalkanKerjaDialog.vue'
 import WhatsappVerifikasiFlow from '../components/WhatsappVerifikasiFlow.vue'
+import WhatsappKendalaFlow from '../components/WhatsappKendalaFlow.vue'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
@@ -26,6 +27,7 @@ const { data: permohonan, isLoading } = usePermohonanLayananDetail(id)
 
 const dialogJadwalkanTerbuka = ref(false)
 const dialogWaTerbuka = ref(false)
+const dialogWaKendalaTerbuka = ref(false)
 
 const bisaVerifikasi = computed(
   () =>
@@ -41,7 +43,14 @@ const bisaVerifikasiWa = computed(
 
 const bisaJadwalkanKerja = computed(
   () =>
-    !!permohonan.value && ['MENUNGGU_PENJADWALAN', 'DITUNDA'].includes(permohonan.value.status),
+    !!permohonan.value &&
+    permohonan.value.status === 'DITUNDA',
+)
+
+const bisaKonfirmasiKendalaWa = computed(
+  () =>
+    !!permohonan.value &&
+    permohonan.value.status === 'DITUNDA',
 )
 
 const labelTombolJadwalkan = computed(() =>
@@ -246,6 +255,9 @@ function bukaGambar(url: string) {
           <Button v-if="bisaVerifikasiWa" class="w-full" @click="dialogWaTerbuka = true">
             Verifikasi via WhatsApp
           </Button>
+          <Button v-if="bisaKonfirmasiKendalaWa" class="w-full" variant="outline" @click="dialogWaKendalaTerbuka = true">
+            Konfirmasi Kendala via WhatsApp
+          </Button>
           <Button v-if="bisaJadwalkanKerja" class="w-full" variant="outline" @click="dialogJadwalkanTerbuka = true">
             <CalendarDays class="size-4" /> {{ labelTombolJadwalkan }}
           </Button>
@@ -267,6 +279,18 @@ function bukaGambar(url: string) {
           </DialogDescription>
         </DialogHeader>
         <WhatsappVerifikasiFlow :permohonan="permohonan" @close="dialogWaTerbuka = false" />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog :open="dialogWaKendalaTerbuka" @update:open="dialogWaKendalaTerbuka = $event">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Konfirmasi Kendala via WhatsApp</DialogTitle>
+          <DialogDescription>
+            Hubungi pelanggan mengenai kendala kunjungan sebelumnya sebelum menjadwalkan ulang.
+          </DialogDescription>
+        </DialogHeader>
+        <WhatsappKendalaFlow :permohonan="permohonan" @close="dialogWaKendalaTerbuka = false" />
       </DialogContent>
     </Dialog>
   </div>

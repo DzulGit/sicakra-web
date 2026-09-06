@@ -2,15 +2,15 @@ import { z } from 'zod'
 
 /**
  * Schema untuk form "Buat Pelanggan Baru" (Admin Operasional).
- * Sama dengan daftarSchema tapi foto_ktp & foto_selfie_ktp opsional
- * (admin bisa upload nanti atau belum punya file).
+ * Hampir sama dengan daftarSchema; hanya foto selfie KTP yang boleh opsional
+ * (admin bisa minta upload foto selfie belakangan).
  */
 export const buatPelangganSchema = z
   .object({
     nama_lengkap: z.string({ required_error: 'Nama lengkap wajib diisi' }).min(1, 'Nama lengkap wajib diisi').max(255),
     nik: z.string({ required_error: 'NIK wajib diisi' }).length(16, 'NIK harus 16 digit'),
     nomor_hp: z.string({ required_error: 'Nomor HP wajib diisi' }).min(1, 'Nomor HP wajib diisi').max(20),
-    email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
+    email: z.string({ required_error: 'Email wajib diisi' }).min(1, 'Email wajib diisi').email('Format email tidak valid'),
 
     alamat_pemasangan: z.string({ required_error: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
     detail_alamat: z.string().optional(),
@@ -26,9 +26,8 @@ export const buatPelangganSchema = z
     catatan_custom: z.string().optional(),
 
     foto_ktp: z
-      .instanceof(File, { message: 'Foto KTP harus berupa berkas' })
-      .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
-      .optional(),
+      .instanceof(File, { message: 'Foto KTP wajib diunggah' })
+      .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB'),
     foto_selfie_ktp: z
       .instanceof(File, { message: 'Foto selfie harus berupa berkas' })
       .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')

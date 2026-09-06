@@ -5,8 +5,8 @@ import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import {
-  ArrowLeft, ArrowRight, CheckCircle2, Copy, MapPin,
-  Package, User, FileText, FileImage, UserPlus,
+  ArrowLeft, ArrowRight, CheckCircle2, MapPin,
+  Package, User, FileText, FileImage,
 } from 'lucide-vue-next'
 import { buatPelangganSchema } from '@/schemas/buat-pelanggan.schema'
 import { mapValidationErrors } from '@/lib/errors'
@@ -32,7 +32,7 @@ const currentStep = ref(1)
 const selectedPaket = ref<PaketInternet | null>(null)
 const isModalPaketOpen = ref(false)
 const isModalCustomOpen = ref(false)
-const credentialModalOpen = ref(false)
+const pendaftaran = ref<{ id: number; nomor_permohonan: string; nama_lengkap: string } | null>(null)
 
 const { handleSubmit, errors, defineField, setErrors, setFieldValue } = useForm({
   validationSchema: toTypedSchema(buatPelangganSchema),
@@ -63,8 +63,6 @@ watch(lokasiPeta, (l) => {
   setFieldValue('provinsi', l?.provinsi ?? undefined)
   setFieldValue('kota', l?.kota ?? undefined)
 })
-
-const generatedCredentials = ref<{ username: string; password: string } | null>(null)
 
 const { mutate, isPending } = useBuatanPelanggan()
 
@@ -104,11 +102,10 @@ function lanjutKeReview() {
 // ── Submit ──
 const onSubmit = handleSubmit((fv) => {
   mutate(
-    { ...fv, foto_ktp: fotoKtp.value ?? undefined, foto_selfie_ktp: fotoSelfieKtp.value ?? undefined },
+    { ...fv, foto_ktp: fotoKtp.value as File, foto_selfie_ktp: fotoSelfieKtp.value ?? undefined },
     {
       onSuccess: (data) => {
-        generatedCredentials.value = { username: data.username, password: data.password }
-        credentialModalOpen.value = true
+        pendaftaran.value = data
         currentStep.value = 5
       },
       onError: (e) => {
@@ -119,18 +116,6 @@ const onSubmit = handleSubmit((fv) => {
     },
   )
 })
-
-// ── Copy to clipboard ──
-async function salinKredensial() {
-  if (!generatedCredentials.value) return
-  const text = `Username: ${generatedCredentials.value.username}\nPassword: ${generatedCredentials.value.password}`
-  try {
-    await navigator.clipboard.writeText(text)
-    toast.success('Kredensial berhasil disalin!')
-  } catch {
-    toast.error('Gagal menyalin ke clipboard.')
-  }
-}
 
 // ── Ringkasan preview ──
 const ringkasan = computed(() => {
@@ -274,12 +259,12 @@ const steps = [
               </div>
             </div>
             <div class="space-y-2">
-              <Label for="email">Email <span class="text-muted-foreground">(opsional)</span></Label>
+              <Label for="email">Email</Label>
               <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
               <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
-              <FileInputFoto v-model="fotoKtp" label="Foto KTP" hint="Opsional" :error="errors.foto_ktp" />
+              <FileInputFoto v-model="fotoKtp" label="Foto KTP" hint="Wajib" :error="errors.foto_ktp" />
               <FileInputFoto v-model="fotoSelfieKtp" label="Foto Selfie dengan KTP" hint="Opsional" :error="errors.foto_selfie_ktp" />
             </div>
           </div>
@@ -365,9 +350,24 @@ const steps = [
       <Card>
         <CardContent class="py-10">
           <CheckCircle2 class="mx-auto size-12 text-green-500" />
-          <h2 class="mt-3 text-xl font-bold">Pelanggan Berhasil Dibuat!</h2>
-          <p class="mt-2 text-sm text-muted-foreground">Kredensial telah ditampilkan di bawah. Silakan informasikan ke pelanggan.</p>
-          <Button class="mt-4" @click="router.push('/admin/operasional/pelanggan')">Lihat Daftar Pelanggan</Button>
+          <h2 class="mt-3 text-xl font-bold">Pendaftaran Diterima!</h2>
+          <p v-if="pendaftaran" class="mt-2 text-sm text-muted-foreground">
+            Pelanggan <span class="font-medium text-foreground">{{ pendaftaran.nama_lengkap }}</span> berhasil
+            didaftarkan dengan nomor permohonan <span class="font-semibold text-foreground">{{ pendaftaran.nomor_permohonan }}</span>.
+            Akun pelanggan belum dibuat.
+          </p>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Lanjutkan prosesnya: konfirmasi via WhatsApp, verifikasi data, lalu jadwalkan
+            survey/pemasangan ke teknisi. Akun pelanggan otomatis aktif setelah layanan terpasang.
+          </p>
+          <div class="mt-5 flex flex-col gap-2">
+            <Button v-if="pendaftaran" @click="router.push(`/admin/operasional/permohonan-layanan/${pendaftaran.id}`)">
+              Lanjut Proses Permohonan
+            </Button>
+            <Button variant="outline" @click="router.push('/admin/operasional/pelanggan')">
+              Kembali ke Daftar Pelanggan
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -417,40 +417,6 @@ const steps = [
           <Button variant="outline" class="flex-1" @click="isModalCustomOpen = false">Batal</Button>
           <Button class="flex-1" :disabled="!namaPaketCustom || !kecepatanCustomMbps" @click="lanjutDariCustom">
             Lanjut Atur Lokasi
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-
-    <!-- ===== Modal: Kredensial ===== -->
-    <Dialog :open="credentialModalOpen" @update:open="credentialModalOpen = $event">
-      <DialogContent class="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
-            <UserPlus class="size-5 text-primary" />
-            Kredensial Pelanggan
-          </DialogTitle>
-          <DialogDescription>Simpan informasi ini dan informasikan ke pelanggan.</DialogDescription>
-        </DialogHeader>
-        <div v-if="generatedCredentials" class="space-y-4 py-2">
-          <div class="rounded-lg border bg-muted/50 p-4 space-y-3">
-            <div>
-              <p class="text-xs text-muted-foreground">Username</p>
-              <p class="font-mono text-lg font-bold tracking-wide">{{ generatedCredentials.username }}</p>
-            </div>
-            <Separator />
-            <div>
-              <p class="text-xs text-muted-foreground">Password</p>
-              <p class="font-mono text-lg font-bold tracking-wide">{{ generatedCredentials.password }}</p>
-            </div>
-          </div>
-          <p class="text-xs text-muted-foreground text-center">Username dan password sama. Pelanggan bisa mengubahnya setelah login.</p>
-        </div>
-        <div class="flex gap-3 mt-2">
-          <Button variant="outline" class="flex-1" @click="credentialModalOpen = false">Tutup</Button>
-          <Button class="flex-1" @click="salinKredensial">
-            <Copy class="mr-1.5 size-4" />
-            Salin ke Clipboard
           </Button>
         </div>
       </DialogContent>

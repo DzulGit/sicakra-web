@@ -15,6 +15,7 @@ import PermohonanGantiPaketDialog from '../components/PermohonanGantiPaketDialog
 import PermohonanRelokasiDialog from '../components/PermohonanRelokasiDialog.vue'
 import PermohonanTambahPaketDialog from '../components/PermohonanTambahPaketDialog.vue'
 import type { LayananInternetDetail } from '@/types/models'
+import { RouterLink } from 'vue-router'
 
 const { data: hasil, isLoading } = useLayananSayaList()
 
@@ -129,7 +130,7 @@ function formatTanggal(iso: string) {
                 {{ layanan.nomor_layanan }} &middot; {{ formatTanggal(layanan.tanggal_aktif) }}
               </p>
             </div>
-            <Button as="RouterLink" :to="`/pelanggan/layanan/${layanan.id}`" variant="ghost" size="sm" class="shrink-0 gap-1 text-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
+            <Button :as="RouterLink" :to="`/pelanggan/layanan/${layanan.id}`" variant="ghost" size="sm" class="shrink-0 gap-1 text-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
               Detail <ArrowRight class="size-3.5" />
             </Button>
           </div>

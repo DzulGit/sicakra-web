@@ -30,6 +30,8 @@ const cariPelanggan = ref('')
 const authStore = useAuthStore()
 const queryClient = useQueryClient()
 const bolehBulkTanggal = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
+const bolehTerverifikasi = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
+const bolehBuatPelanggan = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
 
 const showBulkDialog = ref(false)
 const tanggalTagihanBulk = ref('20')
@@ -52,10 +54,13 @@ function terapkanSemua() {
   )
 }
 
-const tabs: { id: TabId; label: string; icon: Component }[] = [
-  { id: 'aktif', label: 'Pelanggan Aktif', icon: Users },
-  { id: 'terverifikasi', label: 'Terverifikasi', icon: UserCheck },
-]
+const tabs = computed<{ id: TabId; label: string; icon: Component }[]>(() => {
+  const daftar: { id: TabId; label: string; icon: Component }[] = [
+    { id: 'aktif', label: 'Pelanggan Aktif', icon: Users },
+    { id: 'terverifikasi', label: 'Terverifikasi', icon: UserCheck },
+  ]
+  return bolehTerverifikasi ? daftar : daftar.filter((t) => t.id !== 'terverifikasi')
+})
 
 const paramsPelanggan = computed(() => {
   const p: Record<string, string> = { jenis: 'aktif' }
@@ -167,7 +172,7 @@ const columnsDaftar: ColumnDef<PermohonanLayanan, unknown>[] = [
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Pelanggan</h1>
       <div class="flex gap-2">
-        <RouterLink :to="'/admin/operasional/pelanggan/baru'">
+        <RouterLink v-if="bolehBuatPelanggan" :to="'/admin/operasional/pelanggan/baru'">
           <Button size="sm" class="gap-1.5">
             <UserPlus class="size-4" /> Buat Pelanggan Baru
           </Button>

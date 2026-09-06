@@ -6,6 +6,7 @@ import DataTable from '@/components/data/DataTable.vue'
 import Pagination from '@/components/data/Pagination.vue'
 import { Button } from '@/components/ui/button'
 import type { JadwalSurvey } from '@/types/models'
+import { RouterLink } from 'vue-router'
 
 const { data: hasil, isLoading } = useJadwalSurveyList()
 
@@ -35,7 +36,7 @@ const columns: ColumnDef<JadwalSurvey, unknown>[] = [
     cell: ({ row }) =>
       h(
         Button,
-        { as: 'RouterLink', to: `/admin/teknisi/jadwal-survey/${row.original.id}`, variant: 'outline', size: 'sm' },
+        { as: RouterLink, to: `/admin/teknisi/jadwal-survey/${row.original.id}`, variant: 'outline', size: 'sm' },
         () => 'Isi Hasil',
       ),
   },

@@ -57,8 +57,8 @@ const columns = [
   }),
 ]
 
-function formatRupiah(nilai: string) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(nilai))
+function formatAngka(nilai: string) {
+  return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number(nilai))
 }
 </script>
 
@@ -67,7 +67,7 @@ function formatRupiah(nilai: string) {
     <div>
       <h1 class="text-xl font-semibold">Tagihan</h1>
       <p v-if="hasil" class="text-sm text-muted-foreground">
-        {{ formatRupiah(String(hasil.total)) }} total tagihan
+        {{ formatAngka(String(hasil.total)) }} Total tagihan
       </p>
     </div>
 

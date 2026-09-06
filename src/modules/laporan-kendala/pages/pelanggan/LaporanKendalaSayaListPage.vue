@@ -7,6 +7,7 @@ import Pagination from '@/components/data/Pagination.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { RouterLink } from 'vue-router'
 
 const { data: hasil, isLoading } = useLaporanKendalaSayaList()
 </script>
@@ -15,7 +16,7 @@ const { data: hasil, isLoading } = useLaporanKendalaSayaList()
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Laporan Kendala Saya</h1>
-      <Button as="RouterLink" to="/pelanggan/laporan-kendala/baru">Buat Laporan</Button>
+      <Button :as="RouterLink" to="/pelanggan/laporan-kendala/baru">Buat Laporan</Button>
     </div>
 
     <div v-if="isLoading" class="space-y-3">
@@ -38,7 +39,7 @@ const { data: hasil, isLoading } = useLaporanKendalaSayaList()
           </div>
           <div class="flex items-center gap-3">
             <StatusBadge :value="laporan.status" :map="statusLaporanEnum" />
-            <Button as="RouterLink" :to="`/pelanggan/laporan-kendala/${laporan.id}`" variant="outline" size="sm">
+            <Button :as="RouterLink" :to="`/pelanggan/laporan-kendala/${laporan.id}`" variant="outline" size="sm">
               Detail
             </Button>
           </div>

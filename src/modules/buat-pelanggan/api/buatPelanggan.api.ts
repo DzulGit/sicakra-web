@@ -1,17 +1,17 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse } from '@/types/api'
-import type { Pelanggan } from '@/types/models'
 import type { BuatPelangganForm } from '@/schemas/buat-pelanggan.schema'
 
 interface BuatPelangganResponseData {
-  pelanggan: Pelanggan
-  username: string
-  password: string
+  id: number
+  nomor_permohonan: string
+  nama_lengkap: string
 }
 
 /**
- * Admin Operasional membuat pelanggan baru (pendaftaran offline/telepon).
- * Payload dikirim sebagai FormData karena ada optional file upload.
+ * Admin Operasional mendaftarkan pelanggan baru (pendaftaran offline/telepon).
+ * Hanya mendaftarkan — akun pelanggan belum dibuat; diaktifkan belakangan saat
+ * permohonan dibangun. Payload dikirim sebagai FormData karena ada file upload.
  */
 export function buatPelangganBaru(payload: BuatPelangganForm) {
   const formData = new FormData()

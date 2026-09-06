@@ -10,6 +10,7 @@ import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
 import type { FilterFieldConfig } from '@/types/filter'
 import type { LaporanKendala } from '@/types/models'
+import { RouterLink } from 'vue-router'
 
 const { data: hasil, isLoading } = useLaporanKendalaList()
 
@@ -41,7 +42,7 @@ const columns: ColumnDef<LaporanKendala, unknown>[] = [
       h(
         Button,
         {
-          as: 'RouterLink',
+          as: RouterLink,
           to: `/admin/operasional/laporan-kendala/${row.original.id}`,
           variant: 'outline',
           size: 'sm',
