@@ -2,7 +2,7 @@
 import { useHead } from '@unhead/vue'
 import { useRoute } from 'vue-router'
 import { computed, ref, onMounted } from 'vue'
-import { Toaster } from 'vue-sonner'
+import { Toaster } from '@/components/ui/sonner'
 import LandingLayout from '@/components/layout/LandingLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
@@ -41,7 +41,7 @@ onMounted(async () => {
       <RouterView />
     </component>
   </Transition>
-  <Toaster richColors position="top-right" />
+  <Toaster position="top-center" richColors />
 </template>
 
 <style>
