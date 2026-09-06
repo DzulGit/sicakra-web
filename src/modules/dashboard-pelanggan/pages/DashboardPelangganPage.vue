@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useProfil } from '@/modules/profil/composables/useProfil'
+import { RouterLink } from 'vue-router'
 const { data: profil } = useProfil()
 const { data: ringkasan, isLoading } = useDashboardRingkasan()
 
@@ -64,7 +65,7 @@ const sapaan = () => {
           kamu lebih aman — bisa dilakukan kapan saja lewat halaman Profil.
         </p>
         <Button
-          as="RouterLink"
+          :as="RouterLink"
           to="/pelanggan/profil"
           size="sm"
           variant="outline"
@@ -167,7 +168,7 @@ const sapaan = () => {
               <Wifi class="size-4 text-primary" />
               <h2 class="text-sm font-medium">Layanan Terbaru</h2>
             </div>
-            <Button as="RouterLink" to="/pelanggan/layanan" variant="ghost" size="sm" class="gap-1 text-xs">
+            <Button :as="RouterLink" to="/pelanggan/layanan" variant="ghost" size="sm" class="gap-1 text-xs">
               Semua <ArrowRight class="size-3.5" />
             </Button>
           </div>
@@ -183,7 +184,7 @@ const sapaan = () => {
                   Layanan Aktif Sampai: {{ formatDate(l.masa_aktif_berakhir) }}
                 </p>
               </div>
-              <Button as="RouterLink" :to="`/pelanggan/layanan/${l.id}`" variant="ghost" size="sm" class="shrink-0">
+              <Button :as="RouterLink" :to="`/pelanggan/layanan/${l.id}`" variant="ghost" size="sm" class="shrink-0">
                 <ArrowRight class="size-3.5" />
               </Button>
             </div>
@@ -199,7 +200,7 @@ const sapaan = () => {
               <Receipt class="size-4 text-amber-600" />
               <h2 class="text-sm font-medium">Tagihan Terbaru</h2>
             </div>
-            <Button as="RouterLink" to="/pelanggan/tagihan" variant="ghost" size="sm" class="gap-1 text-xs">
+            <Button :as="RouterLink" to="/pelanggan/tagihan" variant="ghost" size="sm" class="gap-1 text-xs">
               Semua <ArrowRight class="size-3.5" />
             </Button>
           </div>
@@ -215,7 +216,7 @@ const sapaan = () => {
                   <span v-if="t.tenggat"> &middot; Jatuh tempo {{ formatDate(t.tenggat) }}</span>
                 </p>
               </div>
-              <Button as="RouterLink" :to="`/pelanggan/tagihan/${t.id}`" variant="ghost" size="sm" class="shrink-0">
+              <Button :as="RouterLink" :to="`/pelanggan/tagihan/${t.id}`" variant="ghost" size="sm" class="shrink-0">
                 <ArrowRight class="size-3.5" />
               </Button>
             </div>
@@ -233,7 +234,7 @@ const sapaan = () => {
               <MessageSquareWarning class="size-4 text-rose-600" />
               <h2 class="text-sm font-medium">Kendala Aktif</h2>
             </div>
-            <Button as="RouterLink" to="/pelanggan/laporan-kendala" variant="ghost" size="sm" class="gap-1 text-xs">
+            <Button :as="RouterLink" to="/pelanggan/laporan-kendala" variant="ghost" size="sm" class="gap-1 text-xs">
               Semua <ArrowRight class="size-3.5" />
             </Button>
           </div>
@@ -246,7 +247,7 @@ const sapaan = () => {
                 </div>
                 <p class="mt-0.5 truncate text-xs text-muted-foreground">{{ k.nomor_laporan }} &middot; {{ formatDate(k.created_at) }}</p>
               </div>
-              <Button as="RouterLink" :to="`/pelanggan/laporan-kendala/${k.id}`" variant="ghost" size="sm" class="shrink-0">
+              <Button :as="RouterLink" :to="`/pelanggan/laporan-kendala/${k.id}`" variant="ghost" size="sm" class="shrink-0">
                 <ArrowRight class="size-3.5" />
               </Button>
             </div>
@@ -262,7 +263,7 @@ const sapaan = () => {
               <FileText class="size-4 text-blue-600" />
               <h2 class="text-sm font-medium">Permohonan Diproses</h2>
             </div>
-            <Button as="RouterLink" to="/pelanggan/layanan" variant="ghost" size="sm" class="gap-1 text-xs">
+            <Button :as="RouterLink" to="/pelanggan/layanan" variant="ghost" size="sm" class="gap-1 text-xs">
               Lihat <ArrowRight class="size-3.5" />
             </Button>
           </div>
