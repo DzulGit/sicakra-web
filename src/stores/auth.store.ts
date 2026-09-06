@@ -32,8 +32,23 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   const sudahLogin = computed(() => !!token.value && !!pengguna.value)
-  const tipePengguna = computed<TipePengguna | null>(() => pengguna.value?.tipe ?? (pengguna.value as any)?.tipe_pengguna ?? null)
+  const tipePengguna = computed<TipePengguna | null>(
+  () => pengguna.value?.tipe ?? ((pengguna.value as { tipe_pengguna?: TipePengguna } | null)?.tipe_pengguna ?? null),
+)
   const peranAdmin = computed<PeranAdmin | null>(() => pengguna.value?.peran ?? null)
+
+  // Halaman "home" setelah login — dipakai auto-redirect dari halaman login
+  // dan navigasi default. Cermin rute default per peran di LoginAdminPage.
+  const rutePerPeran: Record<string, string> = {
+    super_admin: '/admin/super-admin/admin',
+    operasional: '/admin/operasional/overview',
+    teknisi: '/admin/teknisi/overview',
+    keuangan: '/admin/keuangan/overview',
+  }
+  const ruteHome = computed(() => {
+    if (tipePengguna.value === 'pelanggan') return '/pelanggan/dashboard'
+    return rutePerPeran[pengguna.value?.peran ?? ''] ?? '/admin/masuk'
+  })
   const wajibBuatPassword = computed(
     () => pengguna.value?.tipe === 'pelanggan' && pengguna.value.password_sudah_dibuat === false,
   )
@@ -59,6 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
     sudahLogin,
     tipePengguna,
     peranAdmin,
+    ruteHome,
     wajibBuatPassword,
     setSesi,
     perbaruiPengguna,

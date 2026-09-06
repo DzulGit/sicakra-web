@@ -10,6 +10,12 @@ export function setupRouterGuards(router: Router) {
   router.beforeEach((to) => {
     const authStore = useAuthStore()
 
+    // Halaman login (hanyaGuest): sesi valid -> jangan tampilkan form login,
+    // langsung lompat ke dashboard sesuai tipe/peran pengguna.
+    if (to.meta.hanyaGuest && authStore.sudahLogin) {
+      return authStore.ruteHome
+    }
+
     // Route publik (tidak butuh auth) -> selalu boleh lewat
     if (!to.meta.requiresAuth) return true
 

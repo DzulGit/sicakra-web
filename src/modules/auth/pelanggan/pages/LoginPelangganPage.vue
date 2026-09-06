@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import { toTypedSchema } from '@vee-validate/zod'
+import { useQueryClient } from '@tanstack/vue-query'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -14,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
 const authStore = useAuthStore()
+const queryClient = useQueryClient()
 const router = useRouter()
 
 // Catatan: form "login pertama kali tanpa password" (nomor pelanggan + nomor HP)
@@ -35,6 +37,11 @@ const submitLogin = form.handleSubmit((values) => {
   login(values, {
     onSuccess: ({ data }) => {
       const { pelanggan, token } = data.data
+
+      // Bersihkan cache data akun sebelumnya (switch account) biar tidak
+      // ada data lama yang nyangkut setelah login akun berbeda.
+      queryClient.clear()
+
       authStore.setSesi(token, {
         id: pelanggan.id,
         nama_lengkap: pelanggan.nama_lengkap,
@@ -43,7 +50,7 @@ const submitLogin = form.handleSubmit((values) => {
         password_sudah_dibuat: pelanggan.password_sudah_dibuat ?? true,
       })
       toast.success(`Selamat datang, ${pelanggan.nama_lengkap}`)
-      router.push('/pelanggan/dashboard')
+      router.push(authStore.ruteHome)
     },
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)

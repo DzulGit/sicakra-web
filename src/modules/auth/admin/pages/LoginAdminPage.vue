@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/zod'
+import { useQueryClient } from '@tanstack/vue-query'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -14,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
 const authStore = useAuthStore()
+const queryClient = useQueryClient()
 const router = useRouter()
 
 const { handleSubmit, errors, defineField, setErrors } = useForm({
@@ -26,18 +28,15 @@ const [password, passwordAttrs] = defineField('password')
 const { mutate: login, isPending } = useLoginAdmin()
 const showPassword = ref(false)
 
-// Halaman default per peran setelah login — cermin rute Fase-5-9.
-const rutePerPeran: Record<string, string> = {
-  super_admin: '/admin/super-admin/admin',
-  operasional: '/admin/operasional/overview',
-  teknisi: '/admin/teknisi/overview',
-  keuangan: '/admin/keuangan/overview',
-}
-
 const onSubmit = handleSubmit((values) => {
   login(values, {
     onSuccess: ({ data }) => {
       const { admin, token } = data.data
+
+      // Bersihkan cache data akun sebelumnya (switch account) biar tidak
+      // ada data lama yang nyangkut setelah login akun berbeda.
+      queryClient.clear()
+
       authStore.setSesi(token, {
         id: admin.id,
         nama_lengkap: admin.nama_lengkap,
@@ -45,7 +44,7 @@ const onSubmit = handleSubmit((values) => {
         peran: admin.peran,
       })
       toast.success(`Selamat datang, ${admin.nama_lengkap}`)
-      router.push(rutePerPeran[admin.peran] ?? '/admin/masuk')
+      router.push(authStore.ruteHome)
     },
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)

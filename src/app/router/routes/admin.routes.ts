@@ -15,8 +15,6 @@ const TagihanListPage = () => import('@/modules/tagihan/pages/admin/TagihanListP
 const TagihanDetailPage = () => import('@/modules/tagihan/pages/admin/TagihanDetailPage.vue')
 const PendapatanPage = () => import('@/modules/pendapatan/pages/PendapatanPage.vue')
 const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
-const AdminCreatePage = () => import('@/modules/admin-management/pages/AdminCreatePage.vue')
-const AdminEditPage = () => import('@/modules/admin-management/pages/AdminEditPage.vue')
 const TimTeknisiListPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiListPage.vue')
 const TimTeknisiCreatePage = () => import('@/modules/tim-teknisi/pages/TimTeknisiCreatePage.vue')
 const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiEditPage.vue')
@@ -37,7 +35,7 @@ export const adminRoutes: RouteRecordRaw[] = [
     path: '/admin/masuk',
     name: 'admin.masuk',
     component: LoginAdminPage,
-    meta: { layout: 'auth', judul: 'Masuk — Admin', fullBleed: true },
+    meta: { layout: 'auth', judul: 'Masuk — Admin', fullBleed: true, hanyaGuest: true },
   },
 
   // ----- Notifikasi (shared by all admin roles) -----
@@ -268,18 +266,6 @@ export const adminRoutes: RouteRecordRaw[] = [
       peran: ['teknisi'],
     },
   },
-  {
-    path: '/admin/teknisi/antrean-pengecekan',
-    name: 'admin.teknisi.antrean-pengecekan',
-    component: () => import('@/modules/laporan-kendala/pages/teknisi/AntreanPengecekanPage.vue'),
-    meta: {
-      layout: 'dashboard',
-      judul: 'Antrean Pengecekan',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['teknisi'],
-    },
-  },
 
   // ----- Keuangan -----
   {
@@ -327,30 +313,6 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Kelola Admin',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['super_admin'],
-    },
-  },
-  {
-    path: '/admin/super-admin/admin/baru',
-    name: 'admin.super-admin.admin.create',
-    component: AdminCreatePage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Tambah Admin',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['super_admin'],
-    },
-  },
-  {
-    path: '/admin/super-admin/admin/:id/ubah',
-    name: 'admin.super-admin.admin.edit',
-    component: AdminEditPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Ubah Admin',
       requiresAuth: true,
       guard: 'admin',
       peran: ['super_admin'],

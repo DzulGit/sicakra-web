@@ -9,6 +9,8 @@ declare module 'vue-router' {
   interface RouteMeta {
     /** Wajib login untuk akses route ini? Default: false (publik). */
     requiresAuth?: boolean
+    /** Hanya boleh diakses saat BELUM login (halaman login). Kalau sudah login, di-redirect ke dashboard. */
+    hanyaGuest?: boolean
     /** Kalau requiresAuth, harus tipe pengguna apa yang login. */
     guard?: TipePengguna
     /** Kalau guard === 'admin', batasi lebih lanjut ke peran tertentu. Kosong = semua peran admin boleh. */
