@@ -13,7 +13,6 @@ import {
   Contact,
   Wallet,
   Bell,
-  ClipboardCheck,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
 
@@ -43,7 +42,6 @@ const menuTeknisi: MenuItem[] = [
   { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar },
   { label: 'Laporan Kendala', to: '/admin/teknisi/laporan-kendala', icon: MessageSquareWarning },
   { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
-  { label: 'Antrean Pengecekan', to: '/admin/teknisi/antrean-pengecekan', icon: ClipboardCheck }
 ]
 
 const menuKeuangan: MenuItem[] = [

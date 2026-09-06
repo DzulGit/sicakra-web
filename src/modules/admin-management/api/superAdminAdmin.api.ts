@@ -9,10 +9,6 @@ export function getAdminList(params: Record<string, string>) {
   return httpClient.get<PaginatedResponse<AdminLengkap>>(BASE, { params })
 }
 
-export function getAdminDetail(id: number | string) {
-  return httpClient.get<ApiResponse<AdminLengkap>>(`${BASE}/${id}`)
-}
-
 export function simpanAdmin(payload: SimpanAdminForm) {
   return httpClient.post<ApiResponse<AdminLengkap>>(BASE, payload)
 }

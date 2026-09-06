@@ -8,6 +8,7 @@ import { h } from 'vue'
 import { Receipt } from 'lucide-vue-next'
 import type { DashboardPembayaranRingkas } from '@/types/models'
 import { statusTransaksiEnum } from '@/lib/enums'
+import { RouterLink } from 'vue-router'
 
 const columns: ColumnDef<DashboardPembayaranRingkas, unknown>[] = [
   { accessorKey: 'nomor_tagihan', header: 'Tagihan' },
@@ -42,7 +43,7 @@ defineProps<{
         <Receipt class="size-4 text-muted-foreground" />
         {{ title ?? 'Pembayaran Terbaru' }}
       </CardTitle>
-      <Button v-if="linkTo" as="RouterLink" :to="linkTo" variant="ghost" size="sm">
+      <Button v-if="linkTo" :as="RouterLink" :to="linkTo" variant="ghost" size="sm">
         Lihat Semua
       </Button>
     </CardHeader>

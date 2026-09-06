@@ -15,7 +15,6 @@ export type EnumMap = Record<string, EnumMeta>
  */
 
 export const statusPermohonanEnum: EnumMap = {
-  MENUNGGU_PENGECEKAN_TEKNIS: { label: 'Menunggu Pengecekan Lokasi', badgeVariant: 'warning' },
   MENUNGGU_VERIFIKASI: { label: 'Menunggu Verifikasi', badgeVariant: 'warning' },
   PERLU_REVISI: { label: 'Perlu Revisi', badgeVariant: 'warning' },
   DITERIMA: { label: 'Diterima', badgeVariant: 'info' },

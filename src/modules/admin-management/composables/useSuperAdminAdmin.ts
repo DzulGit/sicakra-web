@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
-import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { computed } from 'vue'
 import {
-  getAdminDetail,
   getAdminList,
   nonaktifkanAdmin,
   simpanAdmin,
@@ -22,13 +21,6 @@ export function useAdminList() {
   return useQuery({
     queryKey: ['admin', 'super-admin', 'list', params],
     queryFn: () => getAdminList(params.value).then((res) => res.data.data),
-  })
-}
-
-export function useAdminDetail(id: MaybeRefOrGetter<number | string>) {
-  return useQuery({
-    queryKey: ['admin', 'super-admin', 'detail', id],
-    queryFn: () => getAdminDetail(toValue(id)).then((res) => res.data.data),
   })
 }
 

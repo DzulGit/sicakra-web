@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import EmptyState from '@/components/data/EmptyState.vue'
 import { Button } from '@/components/ui/button'
 import type { Tagihan } from '@/types/models'
+import { RouterLink } from 'vue-router'
 
 withDefaults(defineProps<{ data?: Tagihan[]; loading?: boolean }>(), {
   data: () => [],
@@ -45,7 +46,7 @@ function tanggal(t: string) {
           </div>
           <div class="flex shrink-0 items-center gap-3">
             <span class="text-sm font-semibold">{{ rupiah(tagihan.total_tagihan) }}</span>
-            <Button as="RouterLink" :to="`/admin/keuangan/tagihan/${tagihan.id}`" variant="outline" size="sm">
+            <Button :as="RouterLink" :to="`/admin/keuangan/tagihan/${tagihan.id}`" variant="outline" size="sm">
               Detail
             </Button>
           </div>

@@ -56,7 +56,7 @@ defineProps<{
         <FileText class="size-4 text-muted-foreground" />
         Permohonan Terbaru
       </CardTitle>
-      <Button as="RouterLink" to="/admin/operasional/permohonan-layanan" variant="ghost" size="sm">
+      <Button :as="RouterLink" to="/admin/operasional/permohonan-layanan" variant="ghost" size="sm">
         Lihat Semua
       </Button>
     </CardHeader>

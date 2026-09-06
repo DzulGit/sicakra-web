@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Component } from 'vue'
 import { FileText, UserPlus, Wifi, MessageSquareWarning, UsersRound, Calendar, Receipt, DollarSign, Activity } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
 
 const authStore = useAuthStore()
 
@@ -58,7 +59,7 @@ const actions = computed(() => roleActions[authStore.peranAdmin ?? 'operasional'
         <Button
           v-for="action in actions"
           :key="action.to"
-          as="RouterLink"
+          :as="RouterLink"
           :to="action.to"
           :variant="action.variant"
           class="justify-start gap-2 h-auto py-2.5 px-3 text-xs"

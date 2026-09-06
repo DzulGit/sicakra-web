@@ -159,7 +159,7 @@ const menuSections = computed(() => [
           <component :is="section.icon" class="size-4 text-muted-foreground" />
           {{ section.title }}
         </CardTitle>
-        <Button as="RouterLink" :to="section.link" variant="ghost" size="sm" class="text-xs">
+        <Button :as="RouterLink" :to="section.link" variant="ghost" size="sm" class="text-xs">
           Lihat Semua
         </Button>
       </CardHeader>
