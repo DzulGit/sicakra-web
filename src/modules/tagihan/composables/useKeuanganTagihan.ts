@@ -5,6 +5,7 @@ import {
   bayarTagihan,
   bayarTunaiTagihan,
   generateTagihanManual,
+  getPendaftarBaru,
   getRingkasanOmzet,
   getTagihanDetail,
   getTagihanList,
@@ -13,6 +14,8 @@ import {
   perbaruiLinkTagihan,
   regenerateInvoice,
   regenerateTagihan,
+  previewTagihanPertama,
+  generateTagihanPertama,
 } from '../api/keuanganTagihan.api'
 
 export function useTagihanList() {
@@ -28,6 +31,70 @@ export function useTagihanList() {
   return useQuery({
     queryKey: ['tagihan', 'keuangan', 'list', params],
     queryFn: () => getTagihanList(params.value).then((res) => res.data.data),
+  })
+}
+
+export function usePendaftarBaru() {
+  const route = useRoute()
+
+  const params = computed(() => {
+    const p: Record<string, string> = {}
+
+    for (const [key, value] of Object.entries(route.query)) {
+      if (typeof value === 'string') p[key] = value
+    }
+
+    return p
+  })
+
+  return useQuery({
+    queryKey: ['tagihan', 'keuangan', 'pendaftar-baru', params],
+    queryFn: () => getPendaftarBaru(params.value).then((res) => res.data),
+  })
+}
+
+export function usePreviewTagihanPertama() {
+  return useMutation({
+    mutationFn: (pelangganId: number | string) =>
+      previewTagihanPertama(pelangganId).then(
+        (res) => res.data.data,
+      ),
+  })
+}
+
+export function useGenerateTagihanPertama() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      pelangganId,
+      payload,
+    }: {
+      pelangganId: number | string
+      payload: {
+        layanan_internet_id: number
+        mode: 'prorata' | 'full'
+        nominal_manual?: number
+        jumlah_hari_jatuh_tempo?: number
+      }
+    }) =>
+      generateTagihanPertama(pelangganId, payload).then(
+        (res) => res.data.data,
+      ),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['tagihan', 'keuangan', 'list'],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ['tagihan', 'keuangan', 'pendaftar-baru'],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ['pelanggan', 'detail', variables.pelangganId],
+      })
+    },
   })
 }
 

@@ -12,6 +12,7 @@ const JadwalKerjaDetailPage = () => import('@/modules/jadwal-kerja/pages/JadwalK
 const LaporanKendalaListPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaListPage.vue')
 const LaporanKendalaDetailPageTeknisi = () => import('@/modules/laporan-kendala/pages/teknisi/LaporanKendalaDetailPage.vue')
 const TagihanListPage = () => import('@/modules/tagihan/pages/admin/TagihanListPage.vue')
+const PendaftarBaruPage = () => import('@/modules/tagihan/pages/admin/PendaftarBaruPage.vue')
 const TagihanDetailPage = () => import('@/modules/tagihan/pages/admin/TagihanDetailPage.vue')
 const PendapatanPage = () => import('@/modules/pendapatan/pages/PendapatanPage.vue')
 const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
@@ -275,6 +276,18 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Tagihan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['keuangan'],
+    },
+  },
+  {
+    path: '/admin/keuangan/pendaftar-baru',
+    name: 'admin.keuangan.pendaftar-baru',
+    component: PendaftarBaruPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Pendaftar Baru',
       requiresAuth: true,
       guard: 'admin',
       peran: ['keuangan'],

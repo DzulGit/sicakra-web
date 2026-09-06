@@ -9,6 +9,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import type { Component } from 'vue'
 import { getPelangganList } from '../api/pelanggan.api'
 import { useBulkAturTanggalTagihan } from '../composables/usePelanggan'
+import { usePendaftarBaru } from '@/modules/tagihan/composables/useKeuanganTagihan'
 import { getPermohonanLayananList } from '@/modules/permohonan-layanan/api/permohonanLayanan.api'
 import { statusPermohonanEnum } from '@/lib/enums'
 import { useAuthStore } from '@/stores/auth.store'
@@ -20,9 +21,10 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import type { ApiErrorResponse } from '@/types/api'
-import type { Pelanggan, PermohonanLayanan } from '@/types/models'
+import type { Pelanggan, PermohonanLayanan } from '@/types/models'  
+import type { PendaftarBaru } from '@/modules/tagihan/api/keuanganTagihan.api'
 
-type TabId = 'aktif' | 'terverifikasi'
+type TabId = 'aktif' | 'terverifikasi' | 'pendaftar-baru'
 
 const tabAktif = ref<TabId>('aktif')
 const cariPelanggan = ref('')
@@ -32,6 +34,7 @@ const queryClient = useQueryClient()
 const bolehBulkTanggal = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
 const bolehTerverifikasi = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
 const bolehBuatPelanggan = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
+const bolehPendaftarBaru = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
 
 const showBulkDialog = ref(false)
 const tanggalTagihanBulk = ref('20')
@@ -58,8 +61,14 @@ const tabs = computed<{ id: TabId; label: string; icon: Component }[]>(() => {
   const daftar: { id: TabId; label: string; icon: Component }[] = [
     { id: 'aktif', label: 'Pelanggan Aktif', icon: Users },
     { id: 'terverifikasi', label: 'Terverifikasi', icon: UserCheck },
+    { id: 'pendaftar-baru', label: 'Pendaftar Baru', icon: UserPlus },
   ]
-  return bolehTerverifikasi ? daftar : daftar.filter((t) => t.id !== 'terverifikasi')
+
+  return daftar.filter((tab) => {
+    if (tab.id === 'terverifikasi') return bolehTerverifikasi
+    if (tab.id === 'pendaftar-baru') return bolehPendaftarBaru
+    return true
+  })
 })
 
 const paramsPelanggan = computed(() => {
@@ -83,6 +92,11 @@ const { data: dataTerverifikasi, isLoading: loadingTerverifikasi } = useQuery({
     }).then((r) => r.data.data),
   enabled: () => tabAktif.value === 'terverifikasi',
 })
+
+const {
+  data: dataPendaftarBaru,
+  isLoading: loadingPendaftarBaru,
+} = usePendaftarBaru()
 
 const columnsPelanggan: ColumnDef<Pelanggan, unknown>[] = [
   { accessorKey: 'nomor_pelanggan', header: 'Nomor Pelanggan' },
@@ -163,6 +177,56 @@ const columnsDaftar: ColumnDef<PermohonanLayanan, unknown>[] = [
     header: '',
     cell: ({ row }) =>
       h(Button, { as: RouterLink, to: `/admin/operasional/permohonan-layanan/${row.original.id}`, variant: 'outline', size: 'sm' }, () => 'Detail'),
+  },
+]
+
+const columnsPendaftarBaru: ColumnDef<PendaftarBaru, unknown>[] = [
+  { accessorKey: 'nama_lengkap', header: 'Nama' },
+  { accessorKey: 'nik', header: 'NIK' },
+  { accessorKey: 'nomor_hp', header: 'No. HP' },
+  {
+    id: 'paket',
+    header: 'Paket',
+    cell: ({ row }) => {
+      const layanan = row.original.layanan_internet?.[0]
+
+      if (!layanan) return '-'
+
+      if (layanan.tipe_paket === 'custom') {
+        return layanan.nama_paket_custom ?? 'Custom'
+      }
+
+      return layanan.paket_internet?.nama_paket ?? '-'
+    },
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    cell: () =>
+      h(StatusBadge, {
+        value: 'aktif',
+        map: {
+          aktif: {
+            label: 'Belum Ditagihkan',
+            badgeVariant: 'warning',
+          },
+        },
+      }),
+  },
+  {
+    id: 'aksi',
+    header: '',
+    cell: ({ row }) =>
+      h(
+        Button,
+        {
+          as: RouterLink,
+          to: `/admin/operasional/pelanggan/${row.original.id}`,
+          variant: 'outline',
+          size: 'sm',
+        },
+        () => 'Detail',
+      ),
   },
 ]
 </script>
@@ -255,8 +319,20 @@ const columnsDaftar: ColumnDef<PermohonanLayanan, unknown>[] = [
       empty-judul="Tidak ada yang terverifikasi"
       empty-deskripsi="Permohonan yang sudah diverifikasi akan muncul di sini."
     />
+    <DataTable
+      v-if="tabAktif === 'pendaftar-baru'"
+      :columns="columnsPendaftarBaru"
+      :data="dataPendaftarBaru?.data ?? []"
+      :loading="loadingPendaftarBaru"
+      empty-judul="Tidak ada pendaftar baru"
+      empty-deskripsi="Pelanggan aktif yang belum memiliki tagihan akan muncul di sini."
+    />
 
     <Pagination v-if="tabAktif === 'aktif' && dataPelanggan" :meta="dataPelanggan" />
     <Pagination v-if="tabAktif === 'terverifikasi' && dataTerverifikasi" :meta="dataTerverifikasi" />
+    <Pagination
+      v-if="tabAktif === 'pendaftar-baru' && dataPendaftarBaru"
+      :meta="dataPendaftarBaru"
+    />
   </div>
 </template>

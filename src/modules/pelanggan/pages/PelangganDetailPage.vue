@@ -10,6 +10,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { usePelangganDetail, useAturTanggalTagihan } from '../composables/usePelanggan'
 import EditSiklusDialog from '../components/EditSiklusDialog.vue'
 import GenerateTagihanDialog from '../components/GenerateTagihanDialog.vue'
+import GenerateTagihanPertamaDialog from '../components/GenerateTagihanPertamaDialog.vue'
 import ResetPasswordDialog from '../components/ResetPasswordDialog.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -39,6 +40,7 @@ const bolehKelolaBilling = authStore.peranAdmin === 'keuangan' || authStore.pera
 const bolehResetPassword = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
 
 const generateDialogTerbuka = ref(false)
+const generateTagihanPertamaTerbuka = ref(false)
 const resetPasswordTerbuka = ref(false)
 const tanggalTagihan = ref('20')
 const editSiklusLayanan = ref<LayananInternetDetail | null>(null)
@@ -61,6 +63,26 @@ const tagihanList = computed<BarisTagihan[]>(() => {
     for (const t of l.tagihan ?? []) list.push({ ...t, layananNomor: l.nomor_layanan })
   }
   return list.sort((a, b) => b.periode_tahun - a.periode_tahun || b.periode_bulan - a.periode_bulan)
+})
+
+const bisaBuatTagihanPertama = computed(() => {
+  const layananAktif = layananList.value.filter(
+    (layanan) => layanan.status === 'aktif',
+  )
+
+  return layananAktif.some(
+    (layanan) => !layanan.tagihan?.length,
+  )
+})
+
+const bisaGenerateTagihan = computed(() => {
+  const layananAktif = layananList.value.filter(
+    (layanan) => layanan.status === 'aktif',
+  )
+
+  return layananAktif.some(
+    (layanan) => layanan.tagihan?.length,
+  )
 })
 
 const columnsTagihan: ColumnDef<BarisTagihan, unknown>[] = [
@@ -117,9 +139,17 @@ function formatTanggal(iso?: string | null) {
       <Button variant="ghost" size="sm" @click="router.back()">
         <ArrowLeft class="size-4" /> Kembali
       </Button>
-      <Button v-if="bolehKelolaBilling" @click="generateDialogTerbuka = true">
+      <Button v-if="bolehKelolaBilling && bisaGenerateTagihan" @click="generateDialogTerbuka = true">
         <FilePlus2 class="mr-2 size-4" />
         Generate Tagihan
+      </Button>
+      <Button
+        v-if="bolehKelolaBilling && bisaBuatTagihanPertama"
+        variant="outline"
+        @click="generateTagihanPertamaTerbuka = true"
+      >
+        <ReceiptText class="mr-2 size-4" />
+        Buat Tagihan Pertama
       </Button>
       <Button v-if="bolehResetPassword" variant="outline" @click="resetPasswordTerbuka = true">
         <KeyRound class="mr-2 size-4" />
@@ -314,6 +344,15 @@ function formatTanggal(iso?: string | null) {
       :pelanggan="pelanggan ?? null"
       @update:open="(v) => (generateDialogTerbuka = v)"
       @saved="generateDialogTerbuka = false"
+    />
+
+    <!-- ===== Dialog Generate Tagihan Pertama ===== -->
+    <GenerateTagihanPertamaDialog
+      :open="generateTagihanPertamaTerbuka"
+      :pelanggan-id="pelangganId"
+      :nama-pelanggan="pelanggan?.nama_lengkap"
+      @update:open="(v) => (generateTagihanPertamaTerbuka = v)"
+      @saved="generateTagihanPertamaTerbuka = false"
     />
 
     <!-- ===== Dialog Reset Password ===== -->
