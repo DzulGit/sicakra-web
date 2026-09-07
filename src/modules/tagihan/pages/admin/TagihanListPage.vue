@@ -19,6 +19,11 @@ const col = createColumnHelper<TagihanRow>()
 
 const columns = [
   col.accessor('nomor_tagihan', { header: 'Nomor' }),
+  col.accessor((row) => row.layanan_internet?.pelanggan?.nama_lengkap, {
+    id: 'nama_pelanggan',
+    header: 'Nama Pelanggan',
+    cell: ({ getValue }) => getValue() || '—',
+  }),
   col.accessor('periode_bulan', {
     header: 'Periode',
     cell: ({ row }) => `${row.original.periode_bulan}/${row.original.periode_tahun}`,
