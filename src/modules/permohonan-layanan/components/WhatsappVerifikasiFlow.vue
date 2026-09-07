@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { toast } from 'vue-sonner'
@@ -7,7 +7,6 @@ import { verifikasiDanJadwalkanSchema } from '@/schemas/permohonan-layanan.schem
 import { mapValidationErrors } from '@/lib/errors'
 import { useDaftarTeknisi, useVerifikasiDanJadwalkan, generateWaMessage } from '../composables/usePermohonanLayanan'
 import { useTimTeknisiAktif } from '@/modules/tim-teknisi/composables/useTimTeknisi'
-import TeknisiChecklist from '@/components/data/TeknisiChecklist.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -49,6 +48,77 @@ function pilihTim(timId: string) {
     setFieldValue('teknisi_ids', (tim.anggota ?? []).map((a) => a.id))
   }
 }
+
+const teknisiDropdownOpen = ref(false)
+const teknisiSearch = ref('')
+const teknisiDropdownRef = ref<HTMLElement | null>(null)
+
+const teknisiTerfilter = computed(() => {
+  const keyword = teknisiSearch.value.trim().toLowerCase()
+
+  if (!keyword) return daftarTeknisi.value ?? []
+
+  return (daftarTeknisi.value ?? []).filter((teknisi) =>
+    teknisi.nama_lengkap.toLowerCase().includes(keyword),
+  )
+})
+
+const teknisiTerpilih = computed(() => {
+  const selectedIds = values.teknisi_ids ?? []
+
+  return (daftarTeknisi.value ?? []).filter((teknisi) =>
+    selectedIds.some((id) => String(id) === String(teknisi.id)),
+  )
+})
+
+function teknisiTerpilihCheck(id: string | number) {
+  return (values.teknisi_ids ?? []).some((selectedId) => String(selectedId) === String(id))
+}
+
+function toggleTeknisi(id: string | number) {
+  const currentIds = [...(values.teknisi_ids ?? [])]
+  const index = currentIds.findIndex((selectedId) => String(selectedId) === String(id))
+
+  if (index >= 0) {
+    currentIds.splice(index, 1)
+  } else {
+    const teknisi = (daftarTeknisi.value ?? []).find((item) => String(item.id) === String(id))
+    if (teknisi) currentIds.push(teknisi.id)
+  }
+
+  setFieldValue('teknisi_ids', currentIds)
+}
+
+function hapusTeknisi(id: string | number) {
+  setFieldValue(
+    'teknisi_ids',
+    (values.teknisi_ids ?? []).filter((selectedId) => String(selectedId) !== String(id)),
+  )
+}
+
+function bukaDropdownTeknisi() {
+  teknisiDropdownOpen.value = true
+}
+
+function tutupDropdownTeknisi() {
+  teknisiDropdownOpen.value = false
+  teknisiSearch.value = ''
+}
+
+function handleTeknisiOutsideClick(event: MouseEvent) {
+  const target = event.target as Node
+  if (teknisiDropdownRef.value && !teknisiDropdownRef.value.contains(target)) {
+    tutupDropdownTeknisi()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleTeknisiOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleTeknisiOutsideClick)
+})
 
 const { mutate, isPending } = useVerifikasiDanJadwalkan()
 
@@ -193,10 +263,102 @@ function salinPesan() {
                 </Select>
               </div>
 
-              <div class="space-y-2">
+              <div ref="teknisiDropdownRef" class="space-y-2">
                 <Label>Teknisi Ditugaskan</Label>
-                <TeknisiChecklist :daftar-teknisi="daftarTeknisi ?? []" :model-value="values.teknisi_ids ?? []"
-                  @update:model-value="(v) => setFieldValue('teknisi_ids', v)" />
+
+                <div class="relative">
+                  <button
+                    type="button"
+                    class="flex min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-left text-sm shadow-sm transition-colors hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    :aria-expanded="teknisiDropdownOpen"
+                    aria-haspopup="listbox"
+                    @click="bukaDropdownTeknisi"
+                  >
+                    <span
+                      v-if="teknisiTerpilih.length === 0"
+                      class="text-muted-foreground"
+                    >
+                      Pilih teknisi...
+                    </span>
+
+                    <div
+                      v-else
+                      class="min-w-0 flex-1 max-h-[68px] overflow-y-auto pr-1"
+                    >
+                      <div class="flex flex-wrap items-center gap-1.5">
+                        <span
+                          v-for="teknisi in teknisiTerpilih"
+                          :key="teknisi.id"
+                          class="inline-flex max-w-[180px] items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium"
+                        >
+                          <span class="truncate">
+                            {{ teknisi.nama_lengkap }}
+                          </span>
+
+                          <span
+                            role="button"
+                            tabindex="0"
+                            class="cursor-pointer text-muted-foreground hover:text-foreground"
+                            @click.stop="hapusTeknisi(teknisi.id)"
+                            @keydown.enter.stop="hapusTeknisi(teknisi.id)"
+                          >
+                            ×
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <span class="ml-2 shrink-0 text-muted-foreground">⌄</span>
+                  </button>
+
+                  <div
+                    v-if="teknisiDropdownOpen"
+                    class="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
+                  >
+                    <div class="border-b p-2">
+                      <Input
+                        v-model="teknisiSearch"
+                        placeholder="Cari nama teknisi..."
+                        autocomplete="off"
+                        @keydown.esc="tutupDropdownTeknisi"
+                      />
+                    </div>
+
+                    <div class="max-h-56 overflow-y-auto p-1">
+                      <button
+                        v-for="teknisi in teknisiTerfilter"
+                        :key="teknisi.id"
+                        type="button"
+                        role="option"
+                        :aria-selected="teknisiTerpilihCheck(teknisi.id)"
+                        class="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                        @click="toggleTeknisi(teknisi.id)"
+                      >
+                        <span
+                          class="flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px]"
+                          :class="
+                            teknisiTerpilihCheck(teknisi.id)
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-input bg-background'
+                          "
+                        >
+                          {{ teknisiTerpilihCheck(teknisi.id) ? '✓' : '' }}
+                        </span>
+                        <span class="truncate">{{ teknisi.nama_lengkap }}</span>
+                      </button>
+
+                      <div
+                        v-if="teknisiTerfilter.length === 0"
+                        class="px-2 py-6 text-center text-sm text-muted-foreground"
+                      >
+                        Teknisi tidak ditemukan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="text-xs text-muted-foreground">
+                  Pilih satu atau beberapa teknisi. Gunakan pencarian untuk menemukan teknisi dengan cepat.
+                </p>
                 <p v-if="errors.teknisi_ids" class="text-xs text-destructive">{{ errors.teknisi_ids }}</p>
               </div>
 

@@ -61,7 +61,7 @@ const tabs = computed<{ id: TabId; label: string; icon: Component }[]>(() => {
   const daftar: { id: TabId; label: string; icon: Component }[] = [
     { id: 'aktif', label: 'Pelanggan Aktif', icon: Users },
     { id: 'terverifikasi', label: 'Terverifikasi', icon: UserCheck },
-    { id: 'pendaftar-baru', label: 'Pendaftar Baru', icon: UserPlus },
+    { id: 'pendaftar-baru', label: 'Pelanggan Baru', icon: UserPlus },
   ]
 
   return daftar.filter((tab) => {
@@ -324,7 +324,7 @@ const columnsPendaftarBaru: ColumnDef<PendaftarBaru, unknown>[] = [
       :columns="columnsPendaftarBaru"
       :data="dataPendaftarBaru?.data ?? []"
       :loading="loadingPendaftarBaru"
-      empty-judul="Tidak ada pendaftar baru"
+      empty-judul="Tidak ada pelanggan baru"
       empty-deskripsi="Pelanggan aktif yang belum memiliki tagihan akan muncul di sini."
     />
 
