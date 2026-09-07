@@ -2,10 +2,11 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
+import { z } from 'zod'
 import { toast } from 'vue-sonner'
 import { verifikasiDanJadwalkanSchema } from '@/schemas/permohonan-layanan.schema'
 import { mapValidationErrors } from '@/lib/errors'
-import { useDaftarTeknisi, useVerifikasiDanJadwalkan, generateWaMessage } from '../composables/usePermohonanLayanan'
+import { useDaftarTeknisi, useVerifikasiDanJadwalkan, useVerifikasiPermohonan, useJadwalkanKerja, generateWaMessage } from '../composables/usePermohonanLayanan'
 import { useTimTeknisiAktif } from '@/modules/tim-teknisi/composables/useTimTeknisi'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,44 @@ import type { PermohonanLayanan } from '@/types/models'
 const props = defineProps<{ permohonan: PermohonanLayanan }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
+const isTindakLanjutKendala = props.permohonan.status === 'DITUNDA'
+
+const tindakLanjutKendalaSchema = z
+  .object({
+    status: z.enum(['JADWALKAN_ULANG', 'DITOLAK']),
+    catatan: z.string().optional(),
+    tanggal_kerja: z.string().optional(),
+    teknisi_ids: z.array(z.number()).optional(),
+    tim_teknisi_id: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === 'DITOLAK' && !data.catatan?.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Catatan wajib diisi untuk Tolak',
+        path: ['catatan'],
+      })
+    }
+
+    if (data.status === 'JADWALKAN_ULANG') {
+      if (!data.tanggal_kerja) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Tanggal kerja wajib diisi',
+          path: ['tanggal_kerja'],
+        })
+      }
+
+      if (!data.teknisi_ids?.length) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Pilih minimal 1 teknisi',
+          path: ['teknisi_ids'],
+        })
+      }
+    }
+  })
+
 const langkah = ref<'wa' | 'form'>('wa')
 const waMessage = computed(() => generateWaMessage(props.permohonan))
 
@@ -26,12 +65,16 @@ const { data: daftarTeknisi } = useDaftarTeknisi()
 const { data: daftarTim } = useTimTeknisiAktif()
 
 const { handleSubmit, errors, defineField, setErrors, setFieldValue, values } = useForm({
-  validationSchema: toTypedSchema(verifikasiDanJadwalkanSchema),
+  validationSchema: toTypedSchema(
+    isTindakLanjutKendala
+      ? tindakLanjutKendalaSchema
+      : verifikasiDanJadwalkanSchema,
+  ),
   initialValues: {
-    status: 'DITERIMA',
+    status: isTindakLanjutKendala ? 'JADWALKAN_ULANG' : 'DITERIMA',
     teknisi_ids: [],
     tipe_paket: props.permohonan.tipe_paket,
-    jenis_permohonan: props.permohonan.jenis_permohonan
+    jenis_permohonan: props.permohonan.jenis_permohonan,
   },
 })
 
@@ -120,24 +163,115 @@ onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleTeknisiOutsideClick)
 })
 
-const { mutate, isPending } = useVerifikasiDanJadwalkan()
+const { mutate: mutateVerifikasi, isPending: isPendingVerifikasi } =
+  useVerifikasiDanJadwalkan()
+
+const { mutate: mutateTolak, isPending: isPendingTolak } =
+  useVerifikasiPermohonan()
+
+const { mutate: mutateJadwalkan, isPending: isPendingJadwalkan } =
+  useJadwalkanKerja()
+
+const isPending = computed(
+  () =>
+    isPendingVerifikasi.value ||
+    isPendingTolak.value ||
+    isPendingJadwalkan.value,
+)
 
 const onSubmit = handleSubmit((formValues) => {
-  mutate(
-    { id: props.permohonan.id, payload: formValues },
+  // ==========================================
+  // FLOW KHUSUS DITUNDA / ADA KENDALA
+  // ==========================================
+  if (isTindakLanjutKendala) {
+    if (formValues.status === 'JADWALKAN_ULANG') {
+      mutateJadwalkan(
+        {
+          id: props.permohonan.id,
+          payload: {
+            tim_teknisi_id: formValues.tim_teknisi_id,
+            teknisi_ids: formValues.teknisi_ids ?? [],
+            tanggal_kerja: formValues.tanggal_kerja ?? '',
+          },
+        },
+        {
+          onSuccess: () => {
+            toast.success('Jadwal ulang berhasil dibuat.')
+            emit('close')
+          },
+          onError: (error) => {
+            const fieldErrors = mapValidationErrors(error)
+
+            if (fieldErrors) {
+              setErrors(fieldErrors)
+            } else {
+              toast.error('Gagal membuat jadwal ulang.')
+            }
+          },
+        },
+      )
+
+      return
+    }
+
+    // ==========================================
+    // DITUNDA → DITOLAK
+    // ==========================================
+    mutateTolak(
+      {
+        id: props.permohonan.id,
+        payload: {
+          status: 'DITOLAK',
+          catatan: formValues.catatan,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Permohonan berhasil ditolak.')
+          emit('close')
+        },
+        onError: (error) => {
+          const fieldErrors = mapValidationErrors(error)
+
+          if (fieldErrors) {
+            setErrors(fieldErrors)
+          } else {
+            toast.error('Gagal menolak permohonan.')
+          }
+        },
+      },
+    )
+
+    return
+  }
+
+  // ==========================================
+  // FLOW NORMAL
+  // ==========================================
+  const normalPayload = {
+    status: formValues.status as 'DITERIMA' | 'PERLU_REVISI' | 'DITOLAK',
+    catatan: formValues.catatan,
+    tanggal_kerja: formValues.tanggal_kerja,
+    teknisi_ids: formValues.teknisi_ids,
+    tim_teknisi_id: formValues.tim_teknisi_id,
+    tipe_paket:
+      'tipe_paket' in formValues ? formValues.tipe_paket : undefined,
+    jenis_permohonan:
+      'jenis_permohonan' in formValues
+        ? formValues.jenis_permohonan
+        : undefined,
+    harga_custom:
+      'harga_custom' in formValues ? formValues.harga_custom : undefined,
+  }
+
+  mutateVerifikasi(
+    {
+      id: props.permohonan.id,
+      payload: normalPayload,
+    },
     {
       onSuccess: () => {
-        toast.success(
-          formValues.status === 'DITERIMA'
-            ? 'Permohonan diterima & jadwal kerja telah dibuat.'
-            : 'Verifikasi berhasil disimpan.',
-        )
         emit('close')
-      },
-      onError: (error) => {
-        const fieldErrors = mapValidationErrors(error)
-        if (fieldErrors) setErrors(fieldErrors)
-        else toast.error('Terjadi kesalahan, coba lagi.')
       },
     },
   )
@@ -147,7 +281,11 @@ function bukaWhatsApp() {
   if (waMessage.value.waUrl) window.open(waMessage.value.waUrl, '_blank')
 }
 
-const butuhJadwal = computed(() => values.status === 'DITERIMA')
+const butuhJadwal = computed(
+  () =>
+    values.status === 'DITERIMA' ||
+    values.status === 'JADWALKAN_ULANG',
+)
 
 function salinPesan() {
   if (navigator && navigator.clipboard) {
@@ -164,7 +302,10 @@ function salinPesan() {
     <div class="flex items-center gap-2 text-sm text-muted-foreground">
       <span :class="langkah === 'wa' ? 'font-semibold text-foreground' : ''">1. Kirim WhatsApp</span>
       <span class="text-xs">→</span>
-      <span :class="langkah === 'form' ? 'font-semibold text-foreground' : ''">2. Konfirmasi & Jadwalkan</span>
+      <span :class="langkah === 'form' ? 'font-semibold text-foreground' : ''">
+        2.
+        {{ isTindakLanjutKendala ? 'Tindak Lanjut' : 'Konfirmasi & Jadwalkan' }}
+      </span>
     </div>
 
     <template v-if="langkah === 'wa'">
@@ -217,7 +358,9 @@ function salinPesan() {
     <template v-else>
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">Konfirmasi & Jadwalkan</CardTitle>
+          <CardTitle class="text-base">
+            {{ isTindakLanjutKendala ? 'Tindak Lanjut Kendala' : 'Konfirmasi & Jadwalkan' }}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form class="space-y-4" novalidate @submit="onSubmit">
@@ -228,9 +371,29 @@ function salinPesan() {
                   <SelectValue placeholder="Pilih keputusan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="DITERIMA">Terima & Jadwalkan</SelectItem>
-                  <SelectItem value="PERLU_REVISI">Minta Revisi</SelectItem>
-                  <SelectItem value="DITOLAK">Tolak</SelectItem>
+                  <template v-if="isTindakLanjutKendala">
+                    <SelectItem value="JADWALKAN_ULANG">
+                      Jadwalkan Ulang
+                    </SelectItem>
+
+                    <SelectItem value="DITOLAK">
+                      Tolak
+                    </SelectItem>
+                  </template>
+
+                  <template v-else>
+                    <SelectItem value="DITERIMA">
+                      Terima & Jadwalkan
+                    </SelectItem>
+
+                    <SelectItem value="PERLU_REVISI">
+                      Minta Revisi
+                    </SelectItem>
+
+                    <SelectItem value="DITOLAK">
+                      Tolak
+                    </SelectItem>
+                  </template>
                 </SelectContent>
               </Select>
               <p v-if="errors.status" class="text-xs text-destructive">{{ errors.status }}</p>
@@ -267,41 +430,24 @@ function salinPesan() {
                 <Label>Teknisi Ditugaskan</Label>
 
                 <div class="relative">
-                  <button
-                    type="button"
+                  <button type="button"
                     class="flex min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-left text-sm shadow-sm transition-colors hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    :aria-expanded="teknisiDropdownOpen"
-                    aria-haspopup="listbox"
-                    @click="bukaDropdownTeknisi"
-                  >
-                    <span
-                      v-if="teknisiTerpilih.length === 0"
-                      class="text-muted-foreground"
-                    >
+                    :aria-expanded="teknisiDropdownOpen" aria-haspopup="listbox" @click="bukaDropdownTeknisi">
+                    <span v-if="teknisiTerpilih.length === 0" class="text-muted-foreground">
                       Pilih teknisi...
                     </span>
 
-                    <div
-                      v-else
-                      class="min-w-0 flex-1 max-h-[68px] overflow-y-auto pr-1"
-                    >
+                    <div v-else class="min-w-0 flex-1 max-h-[68px] overflow-y-auto pr-1">
                       <div class="flex flex-wrap items-center gap-1.5">
-                        <span
-                          v-for="teknisi in teknisiTerpilih"
-                          :key="teknisi.id"
-                          class="inline-flex max-w-[180px] items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium"
-                        >
+                        <span v-for="teknisi in teknisiTerpilih" :key="teknisi.id"
+                          class="inline-flex max-w-[180px] items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium">
                           <span class="truncate">
                             {{ teknisi.nama_lengkap }}
                           </span>
 
-                          <span
-                            role="button"
-                            tabindex="0"
+                          <span role="button" tabindex="0"
                             class="cursor-pointer text-muted-foreground hover:text-foreground"
-                            @click.stop="hapusTeknisi(teknisi.id)"
-                            @keydown.enter.stop="hapusTeknisi(teknisi.id)"
-                          >
+                            @click.stop="hapusTeknisi(teknisi.id)" @keydown.enter.stop="hapusTeknisi(teknisi.id)">
                             ×
                           </span>
                         </span>
@@ -310,46 +456,30 @@ function salinPesan() {
                     <span class="ml-2 shrink-0 text-muted-foreground">⌄</span>
                   </button>
 
-                  <div
-                    v-if="teknisiDropdownOpen"
-                    class="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
-                  >
+                  <div v-if="teknisiDropdownOpen"
+                    class="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
                     <div class="border-b p-2">
-                      <Input
-                        v-model="teknisiSearch"
-                        placeholder="Cari nama teknisi..."
-                        autocomplete="off"
-                        @keydown.esc="tutupDropdownTeknisi"
-                      />
+                      <Input v-model="teknisiSearch" placeholder="Cari nama teknisi..." autocomplete="off"
+                        @keydown.esc="tutupDropdownTeknisi" />
                     </div>
 
                     <div class="max-h-56 overflow-y-auto p-1">
-                      <button
-                        v-for="teknisi in teknisiTerfilter"
-                        :key="teknisi.id"
-                        type="button"
-                        role="option"
+                      <button v-for="teknisi in teknisiTerfilter" :key="teknisi.id" type="button" role="option"
                         :aria-selected="teknisiTerpilihCheck(teknisi.id)"
                         class="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                        @click="toggleTeknisi(teknisi.id)"
-                      >
-                        <span
-                          class="flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px]"
-                          :class="
-                            teknisiTerpilihCheck(teknisi.id)
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-input bg-background'
-                          "
-                        >
+                        @click="toggleTeknisi(teknisi.id)">
+                        <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px]"
+                          :class="teknisiTerpilihCheck(teknisi.id)
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-input bg-background'
+                            ">
                           {{ teknisiTerpilihCheck(teknisi.id) ? '✓' : '' }}
                         </span>
                         <span class="truncate">{{ teknisi.nama_lengkap }}</span>
                       </button>
 
-                      <div
-                        v-if="teknisiTerfilter.length === 0"
-                        class="px-2 py-6 text-center text-sm text-muted-foreground"
-                      >
+                      <div v-if="teknisiTerfilter.length === 0"
+                        class="px-2 py-6 text-center text-sm text-muted-foreground">
                         Teknisi tidak ditemukan.
                       </div>
                     </div>

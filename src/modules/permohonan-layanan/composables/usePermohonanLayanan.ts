@@ -92,6 +92,10 @@ export function generateWaMessage(permohonan: PermohonanLayanan): { text: string
   const alamat = `${permohonan.alamat_pemasangan}${permohonan.rt ? `, RT ${permohonan.rt}/RW ${permohonan.rw}` : ''}${permohonan.kode_pos ? `, ${permohonan.kode_pos}` : ''}`
   const jenis = permohonan.jenis_permohonan
 
+  const kendalaTerakhir = [...(permohonan.jadwal_kerja ?? [])]
+    .reverse()
+    .find((jadwal) => jadwal.hasil === 'kendala')
+
   const paketTeks =
     permohonan.tipe_paket === 'reguler'
       ? permohonan.paket_internet?.nama_paket ?? '(paket tidak tersedia)'
@@ -100,7 +104,18 @@ export function generateWaMessage(permohonan: PermohonanLayanan): { text: string
   let rincian: string[] = []
   let penutup: string[] = []
 
-  if (jenis === 'ganti_paket') {
+  if (kendalaTerakhir) {
+    rincian = [
+      `📦 *Paket Layanan:* ${paketTeks}`,
+      `📍 *Alamat Pemasangan:* ${alamat}`,
+      `⚠️ *Kendala:* ${kendalaTerakhir.catatan_kendala ?? '(keterangan kendala belum tersedia)'}`,
+    ]
+
+    penutup = [
+      'Mohon maaf atas kendala yang terjadi pada kunjungan sebelumnya.',
+      'Tim kami akan melakukan tindak lanjut terkait kunjungan tersebut dan menghubungi Bapak/Ibu kembali mengenai langkah selanjutnya.',
+    ]
+  } else if (jenis === 'ganti_paket') {
     rincian = [
       `📦 *Paket Saat Ini:* ${paketTeks}`,
       `📦 *Paket Baru:* ${permohonan.paket_internet?.nama_paket ?? '(menunggu)'}`,
