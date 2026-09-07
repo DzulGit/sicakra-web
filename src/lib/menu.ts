@@ -13,6 +13,7 @@ import {
   Contact,
   Wallet,
   Bell,
+  Store,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
 
@@ -34,6 +35,7 @@ const menuOperasional: MenuItem[] = [
   { label: 'Paket Internet', to: '/admin/operasional/paket-internet', icon: Globe },
   { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },
   { label: 'Tim Teknisi', to: '/admin/operasional/tim-teknisi', icon: UsersRound },
+  { label: 'Reseller', to: '/admin/operasional/reseller', icon: Store },
   { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
 ]
 
@@ -66,6 +68,17 @@ const menuPelanggan: MenuItem[] = [
   { label: 'Profil', to: '/pelanggan/profil', icon: UserCircle },
 ]
 
+const menuReseller: MenuItem[] = [
+  { label: 'Overview', to: '/admin/operasional/overview', icon: LayoutDashboard },
+  { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
+  { label: 'Permohonan Layanan', to: '/admin/operasional/permohonan-layanan', icon: FileText },
+  { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },
+  { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar },
+  { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
+  { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet },
+  { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
+]
+
 export function getMenuGroups(tipe: TipePengguna | null, peran: PeranAdmin | null): MenuGroup[] {
   if (tipe === 'pelanggan') {
     return [{ items: menuPelanggan }]
@@ -78,6 +91,7 @@ export function getMenuGroups(tipe: TipePengguna | null, peran: PeranAdmin | nul
     if (peran === 'operasional') return [{ items: menuOperasional }]
     if (peran === 'teknisi') return [{ items: menuTeknisi }]
     if (peran === 'keuangan') return [{ items: menuKeuangan }]
+    if (peran === 'reseller') return [{ label: 'Reseller', items: menuReseller }]
   }
 
   return []

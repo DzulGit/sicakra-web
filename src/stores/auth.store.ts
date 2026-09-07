@@ -9,7 +9,7 @@ import { useLocalStorage, StorageSerializers } from '@vueuse/core'
  */
 export type TipePengguna = 'admin' | 'pelanggan'
 
-export type PeranAdmin = 'super_admin' | 'operasional' | 'teknisi' | 'keuangan'
+export type PeranAdmin = 'super_admin' | 'operasional' | 'teknisi' | 'keuangan' | 'reseller'
 
 export interface SesiPengguna {
   id: number
@@ -44,6 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
     operasional: '/admin/operasional/overview',
     teknisi: '/admin/teknisi/overview',
     keuangan: '/admin/keuangan/overview',
+    reseller: '/admin/operasional/overview',
   }
   const ruteHome = computed(() => {
     if (tipePengguna.value === 'pelanggan') return '/pelanggan/dashboard'
