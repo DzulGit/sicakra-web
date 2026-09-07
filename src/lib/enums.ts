@@ -89,6 +89,7 @@ export const peranAdminEnum: EnumMap = {
   operasional: { label: 'Operasional', badgeVariant: 'outline' },
   teknisi: { label: 'Teknisi', badgeVariant: 'outline' },
   keuangan: { label: 'Keuangan', badgeVariant: 'outline' },
+  reseller: { label: 'Reseller', badgeVariant: 'outline' },
 }
 
 export const hasilPemasanganEnum: Record<string, { label: string; badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {

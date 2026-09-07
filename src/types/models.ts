@@ -188,9 +188,10 @@ export interface AdminLengkap {
   id: number
   nama_lengkap: string
   email: string
-  peran: 'super_admin' | 'operasional' | 'teknisi' | 'keuangan'
+  peran: 'super_admin' | 'operasional' | 'teknisi' | 'keuangan' | 'reseller'
   status_aktif: boolean
   dibuat_oleh: number | null
+  pelanggan_count?: number
   created_at: string
   updated_at: string
 }
