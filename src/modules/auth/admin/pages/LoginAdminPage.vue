@@ -192,6 +192,10 @@ const onSubmit = handleSubmit((values) => {
             {{ isPending ? 'Memproses...' : 'Masuk' }}
           </Button>
         </form>
+
+        <p class="mt-6 text-center text-xs text-landing-ink/50">
+          Mitra reseller? <RouterLink to="/reseller/masuk" class="font-medium text-landing-signal hover:underline">Masuk lewat portal reseller</RouterLink>
+        </p>
       </div>
     </div>
   </div>

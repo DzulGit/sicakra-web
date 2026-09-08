@@ -38,13 +38,14 @@ export const useAuthStore = defineStore('auth', () => {
   const peranAdmin = computed<PeranAdmin | null>(() => pengguna.value?.peran ?? null)
 
   // Halaman "home" setelah login — dipakai auto-redirect dari halaman login
-  // dan navigasi default. Cermin rute default per peran di LoginAdminPage.
+  // dan navigasi default. Reseller punya portal sendiri (/reseller), terpisah
+  // dari halaman admin internal (/admin).
   const rutePerPeran: Record<string, string> = {
     super_admin: '/admin/super-admin/admin',
     operasional: '/admin/operasional/overview',
     teknisi: '/admin/teknisi/overview',
     keuangan: '/admin/keuangan/overview',
-    reseller: '/admin/operasional/overview',
+    reseller: '/reseller/overview',
   }
   const ruteHome = computed(() => {
     if (tipePengguna.value === 'pelanggan') return '/pelanggan/dashboard'

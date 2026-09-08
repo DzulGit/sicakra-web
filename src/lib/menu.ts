@@ -69,14 +69,9 @@ const menuPelanggan: MenuItem[] = [
 ]
 
 const menuReseller: MenuItem[] = [
-  { label: 'Overview', to: '/admin/operasional/overview', icon: LayoutDashboard },
-  { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
-  { label: 'Permohonan Layanan', to: '/admin/operasional/permohonan-layanan', icon: FileText },
-  { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning },
-  { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar },
-  { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
-  { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet },
-  { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
+  { label: 'Overview', to: '/reseller/overview', icon: LayoutDashboard },
+  { label: 'Pelanggan', to: '/reseller/pelanggan', icon: Contact },
+  { label: 'Notifikasi', to: '/reseller/notifikasi', icon: Bell },
 ]
 
 export function getMenuGroups(tipe: TipePengguna | null, peran: PeranAdmin | null): MenuGroup[] {
