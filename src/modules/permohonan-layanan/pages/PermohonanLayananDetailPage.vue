@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { User, Phone, Mail, BadgeCheck, Package, MapPin, CalendarDays, Clock, ExternalLink, Image as ImageIcon } from 'lucide-vue-next'
+import { User, Phone, Mail, BadgeCheck, Package, MapPin, Clock, ExternalLink, Image as ImageIcon } from 'lucide-vue-next'
 import { usePermohonanLayananDetail } from '../composables/usePermohonanLayanan'
 import { statusPermohonanEnum, jenisPermohonanEnum, tipePaketEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
@@ -16,18 +16,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import RiwayatStatusTimeline from '../components/RiwayatStatusTimeline.vue'
-import JadwalkanKerjaDialog from '../components/JadwalkanKerjaDialog.vue'
 import WhatsappVerifikasiFlow from '../components/WhatsappVerifikasiFlow.vue'
-import WhatsappKendalaFlow from '../components/WhatsappKendalaFlow.vue'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
 
 const { data: permohonan, isLoading } = usePermohonanLayananDetail(id)
 
-const dialogJadwalkanTerbuka = ref(false)
 const dialogWaTerbuka = ref(false)
-const dialogWaKendalaTerbuka = ref(false)
 
 const bisaVerifikasi = computed(
   () =>
@@ -41,20 +37,16 @@ const bisaVerifikasiWa = computed(
     permohonan.value.status === 'MENUNGGU_VERIFIKASI',
 )
 
-const bisaJadwalkanKerja = computed(
+const bisaTindakLanjutWa = computed(
   () =>
     !!permohonan.value &&
     permohonan.value.status === 'DITUNDA',
 )
 
-const bisaKonfirmasiKendalaWa = computed(
-  () =>
-    !!permohonan.value &&
-    permohonan.value.status === 'DITUNDA',
-)
-
-const labelTombolJadwalkan = computed(() =>
-  permohonan.value?.status === 'DITUNDA' ? 'Jadwalkan Ulang' : 'Jadwalkan Kerja',
+const labelTombolWa = computed(() =>
+  permohonan.value?.status === 'DITUNDA'
+    ? 'Tindak Lanjut via WhatsApp'
+    : 'Verifikasi via WhatsApp',
 )
 
 function formatTanggal(iso: string) {
@@ -134,7 +126,8 @@ function bukaGambar(url: string) {
 
           <div v-if="permohonan.paket_internet" class="text-sm">
             <p class="text-xs text-muted-foreground">Paket Internet</p>
-            <p>{{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps) — Rp{{ Number(permohonan.paket_internet.harga).toLocaleString('id-ID') }}/bln</p>
+            <p>{{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps) — Rp{{
+              Number(permohonan.paket_internet.harga).toLocaleString('id-ID') }}/bln</p>
           </div>
           <div v-else-if="permohonan.tipe_paket === 'custom'" class="space-y-0.5 text-sm">
             <p class="text-xs text-muted-foreground">Paket Custom</p>
@@ -191,20 +184,16 @@ function bukaGambar(url: string) {
               <ImageIcon class="size-3.5" /> Dokumen Identitas
             </p>
             <div class="flex flex-wrap gap-3">
-              <button v-if="permohonan.pelanggan.foto_ktp" class="group text-left" @click="bukaGambar(urlFoto(permohonan.pelanggan.foto_ktp)!)">
-                <img
-                  :src="urlFoto(permohonan.pelanggan.foto_ktp) ?? ''"
-                  alt="Foto KTP"
-                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80"
-                />
+              <button v-if="permohonan.pelanggan.foto_ktp" class="group text-left"
+                @click="bukaGambar(urlFoto(permohonan.pelanggan.foto_ktp)!)">
+                <img :src="urlFoto(permohonan.pelanggan.foto_ktp) ?? ''" alt="Foto KTP"
+                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
                 <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
               </button>
-              <button v-if="permohonan.pelanggan.foto_selfie_ktp" class="group text-left" @click="bukaGambar(urlFoto(permohonan.pelanggan.foto_selfie_ktp)!)">
-                <img
-                  :src="urlFoto(permohonan.pelanggan.foto_selfie_ktp) ?? ''"
-                  alt="Foto Selfie KTP"
-                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80"
-                />
+              <button v-if="permohonan.pelanggan.foto_selfie_ktp" class="group text-left"
+                @click="bukaGambar(urlFoto(permohonan.pelanggan.foto_selfie_ktp)!)">
+                <img :src="urlFoto(permohonan.pelanggan.foto_selfie_ktp) ?? ''" alt="Foto Selfie KTP"
+                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
                 <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Selfie KTP</p>
               </button>
             </div>
@@ -221,11 +210,14 @@ function bukaGambar(url: string) {
         <CardContent class="space-y-1 text-sm">
           <div class="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
             <div class="sm:col-span-2">
-              <p>{{ permohonan.alamat_pemasangan }}, RT {{ permohonan.rt }}/RW {{ permohonan.rw }}, {{ permohonan.kode_pos }}</p>
-              <p v-if="permohonan.detail_alamat" class="text-muted-foreground">Detail: {{ permohonan.detail_alamat }}</p>
+              <p>{{ permohonan.alamat_pemasangan }}, RT {{ permohonan.rt }}/RW {{ permohonan.rw }}, {{
+                permohonan.kode_pos }}</p>
+              <p v-if="permohonan.detail_alamat" class="text-muted-foreground">Detail: {{ permohonan.detail_alamat }}
+              </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" class="gap-1.5" @click="bukaMaps(permohonan.latitude, permohonan.longitude)">
+          <Button variant="outline" size="sm" class="gap-1.5"
+            @click="bukaMaps(permohonan.latitude, permohonan.longitude)">
             <MapPin class="size-4" /> Buka di Google Maps
             <ExternalLink class="size-3.5" />
           </Button>
@@ -252,45 +244,36 @@ function bukaGambar(url: string) {
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-2">
-          <Button v-if="bisaVerifikasiWa" class="w-full" @click="dialogWaTerbuka = true">
-            Verifikasi via WhatsApp
+          <Button v-if="bisaVerifikasiWa || bisaTindakLanjutWa" class="w-full" @click="dialogWaTerbuka = true">
+            {{ labelTombolWa }}
           </Button>
-          <Button v-if="bisaKonfirmasiKendalaWa" class="w-full" variant="outline" @click="dialogWaKendalaTerbuka = true">
-            Konfirmasi Kendala via WhatsApp
-          </Button>
-          <Button v-if="bisaJadwalkanKerja" class="w-full" variant="outline" @click="dialogJadwalkanTerbuka = true">
-            <CalendarDays class="size-4" /> {{ labelTombolJadwalkan }}
-          </Button>
-          <p v-if="!bisaVerifikasi && !bisaVerifikasiWa && !bisaJadwalkanKerja" class="text-sm text-muted-foreground">
+
+          <p v-if="!bisaVerifikasi && !bisaVerifikasiWa && !bisaTindakLanjutWa" class="text-sm text-muted-foreground">
             Tidak ada aksi yang tersedia.
           </p>
         </CardContent>
       </Card>
     </div>
 
-    <JadwalkanKerjaDialog v-model:open="dialogJadwalkanTerbuka" :permohonan-id="permohonan.id" />
-
     <Dialog :open="dialogWaTerbuka" @update:open="dialogWaTerbuka = $event">
       <DialogContent class="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Verifikasi via WhatsApp</DialogTitle>
-          <DialogDescription>
-            Hubungi pelanggan melalui WhatsApp untuk verifikasi data dan diskusi jadwal.
-          </DialogDescription>
-        </DialogHeader>
-        <WhatsappVerifikasiFlow :permohonan="permohonan" @close="dialogWaTerbuka = false" />
-      </DialogContent>
-    </Dialog>
+          <DialogTitle>
+            {{ permohonan.status === 'DITUNDA'
+              ? 'Tindak Lanjut Kendala via WhatsApp'
+              : 'Verifikasi via WhatsApp'
+            }}
+          </DialogTitle>
 
-    <Dialog :open="dialogWaKendalaTerbuka" @update:open="dialogWaKendalaTerbuka = $event">
-      <DialogContent class="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Konfirmasi Kendala via WhatsApp</DialogTitle>
           <DialogDescription>
-            Hubungi pelanggan mengenai kendala kunjungan sebelumnya sebelum menjadwalkan ulang.
+            {{ permohonan.status === 'DITUNDA'
+              ? 'Hubungi pelanggan mengenai kendala kunjungan sebelumnya dan tentukan tindak lanjut.'
+              : 'Hubungi pelanggan melalui WhatsApp untuk verifikasi data dan diskusi jadwal.'
+            }}
           </DialogDescription>
         </DialogHeader>
-        <WhatsappKendalaFlow :permohonan="permohonan" @close="dialogWaKendalaTerbuka = false" />
+
+        <WhatsappVerifikasiFlow :permohonan="permohonan" @close="dialogWaTerbuka = false" />
       </DialogContent>
     </Dialog>
   </div>
