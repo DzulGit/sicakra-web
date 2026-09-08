@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ChevronLeft, Wifi, FileText, Receipt } from 'lucide-vue-next'
 import { useResellerPelangganDetail } from '../composables/useResellerPortal'
@@ -9,11 +9,22 @@ import { Skeleton } from '@/components/ui/skeleton'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Badge } from '@/components/ui/badge'
 import { statusPermohonanEnum, statusLayananEnum, statusPembayaranEnum } from '@/lib/enums'
+import { RouterLink } from 'vue-router'
+import BuatTagihanPertamaDialog from '../components/BuatTagihanPertamaDialog.vue'
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))
-const { data: pelanggan, isLoading, isError } = useResellerPelangganDetail(id)
+
+const {
+  data: pelanggan,
+  isLoading,
+  isError,
+  refetch,
+} = useResellerPelangganDetail(id)
+
 const layanan = computed(() => pelanggan.value?.layanan_internet?.[0])
+
+const showBuatTagihanPertama = ref(false)
 
 function formatRupiah(nilai: string | number | null | undefined): string {
   if (nilai == null || nilai === '') return '-'
@@ -23,13 +34,16 @@ function formatRupiah(nilai: string | number | null | undefined): string {
 
 <template>
   <div class="space-y-4">
-    <Button as="RouterLink" to="/reseller/pelanggan" variant="ghost" size="sm" class="w-fit">
-      <ChevronLeft class="size-4" /> Kembali
-    </Button>
+    <RouterLink to="/reseller/pelanggan">
+      <Button to="/reseller/pelanggan" variant="ghost" size="sm" class="w-fit">
+        <ChevronLeft class="size-4" /> Kembali
+      </Button>
+    </RouterLink>
 
     <Skeleton v-if="isLoading" class="h-40 w-full" />
 
-    <div v-else-if="isError || !pelanggan" class="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+    <div v-else-if="isError || !pelanggan"
+      class="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
       Pelanggan tidak ditemukan atau bukan milik reseller Anda.
     </div>
 
@@ -45,25 +59,25 @@ function formatRupiah(nilai: string | number | null | undefined): string {
               <span v-if="pelanggan.email">{{ pelanggan.email }}</span>
             </div>
           </div>
-          <StatusBadge
-            v-if="layanan?.status"
-            :value="layanan.status"
-            :map="statusLayananEnum"
-          />
+          <StatusBadge v-if="layanan?.status" :value="layanan.status" :map="statusLayananEnum" />
           <Badge v-else variant="warning">Belum Aktif</Badge>
         </div>
       </div>
 
       <Card>
         <CardHeader class="flex flex-row items-center justify-between py-3">
-          <CardTitle class="flex items-center gap-2 text-sm font-medium"><Wifi class="size-4 text-muted-foreground" /> Layanan</CardTitle>
+          <CardTitle class="flex items-center gap-2 text-sm font-medium">
+            <Wifi class="size-4 text-muted-foreground" /> Layanan
+          </CardTitle>
         </CardHeader>
         <CardContent class="grid gap-4 pb-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <template v-if="layanan">
             <div>
               <p class="text-xs text-muted-foreground">Paket</p>
-              <p class="font-medium">{{ layanan.tipe_paket === 'custom' ? layanan.nama_paket_custom : layanan.paket_internet?.nama_paket }}</p>
-              <p class="text-xs text-muted-foreground">{{ layanan.tipe_paket === 'custom' ? `${layanan.kecepatan_custom_mbps} Mbps` : `${layanan.paket_internet?.kecepatan_mbps ?? '-'} Mbps` }}</p>
+              <p class="font-medium">{{ layanan.tipe_paket === 'custom' ? layanan.nama_paket_custom :
+                layanan.paket_internet?.nama_paket }}</p>
+              <p class="text-xs text-muted-foreground">{{ layanan.tipe_paket === 'custom' ?
+                `${layanan.kecepatan_custom_mbps} Mbps` : `${layanan.paket_internet?.kecepatan_mbps ?? '-'} Mbps` }}</p>
             </div>
             <div>
               <p class="text-xs text-muted-foreground">Nomor Layanan</p>
@@ -86,31 +100,48 @@ function formatRupiah(nilai: string | number | null | undefined): string {
 
       <Card>
         <CardHeader class="flex flex-row items-center justify-between py-3">
-          <CardTitle class="flex items-center gap-2 text-sm font-medium"><FileText class="size-4 text-muted-foreground" /> Permohonan</CardTitle>
+          <CardTitle class="flex items-center gap-2 text-sm font-medium">
+            <FileText class="size-4 text-muted-foreground" /> Permohonan
+          </CardTitle>
         </CardHeader>
         <CardContent class="divide-y pb-2">
-          <div v-for="permohonan in pelanggan.permohonan_layanan ?? []" :key="permohonan.id" class="flex items-center justify-between py-2 text-sm">
+          <div v-for="permohonan in pelanggan.permohonan_layanan ?? []" :key="permohonan.id"
+            class="flex items-center justify-between py-2 text-sm">
             <div>
               <p class="font-medium">{{ permohonan.nomor_permohonan }}</p>
               <p class="text-xs text-muted-foreground">
-                {{ permohonan.tipe_paket === 'custom' ? permohonan.nama_paket_custom : permohonan.paket_internet?.nama_paket ?? '-' }}
+                {{ permohonan.tipe_paket === 'custom' ? permohonan.nama_paket_custom :
+                  permohonan.paket_internet?.nama_paket
+                  ?? '-' }}
               </p>
             </div>
             <StatusBadge :value="permohonan.status" :map="statusPermohonanEnum" />
           </div>
-          <p v-if="!pelanggan.permohonan_layanan?.length" class="py-2 text-xs text-muted-foreground">Belum ada permohonan.</p>
+          <p v-if="!pelanggan.permohonan_layanan?.length" class="py-2 text-xs text-muted-foreground">Belum ada
+            permohonan.</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader class="flex flex-row items-center justify-between py-3">
-          <CardTitle class="flex items-center gap-2 text-sm font-medium"><Receipt class="size-4 text-muted-foreground" /> Tagihan</CardTitle>
+          <CardTitle class="flex items-center gap-2 text-sm font-medium">
+            <Receipt class="size-4 text-muted-foreground" /> Tagihan
+          </CardTitle>
+
+          <Button v-if="
+            layanan?.status === 'aktif' &&
+            !(layanan?.tagihan?.length)
+          " size="sm" @click="showBuatTagihanPertama = true">
+            Buat Tagihan Pertama
+          </Button>
         </CardHeader>
         <CardContent class="divide-y pb-2">
-          <div v-for="tagihan in layanan?.tagihan ?? []" :key="tagihan.id" class="flex items-center justify-between py-2 text-sm">
+          <div v-for="tagihan in layanan?.tagihan ?? []" :key="tagihan.id"
+            class="flex items-center justify-between py-2 text-sm">
             <div>
               <p class="font-medium">{{ tagihan.nomor_tagihan }}</p>
-              <p class="text-xs text-muted-foreground">Periode {{ tagihan.periode_bulan }}-{{ tagihan.periode_tahun }}</p>
+              <p class="text-xs text-muted-foreground">Periode {{ tagihan.periode_bulan }}-{{ tagihan.periode_tahun }}
+              </p>
             </div>
             <div class="flex items-center gap-3">
               <span class="font-medium">{{ formatRupiah(tagihan.total_tagihan) }}</span>
@@ -121,5 +152,6 @@ function formatRupiah(nilai: string | number | null | undefined): string {
         </CardContent>
       </Card>
     </template>
+    <BuatTagihanPertamaDialog v-model:open="showBuatTagihanPertama" :pelanggan-id="Number(id)" @success="refetch" />
   </div>
 </template>

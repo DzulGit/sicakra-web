@@ -23,8 +23,9 @@ export interface ResellerDashboardData {
   stats: {
     total_pelanggan: number
     pelanggan_aktif: number
-    menunggu_verifikasi: number
     kendala_aktif: number
+    tagihan_belum_bayar: number
+    pendapatan: number
   }
   pelanggan_terbaru: Pelanggan[]
 }
@@ -57,7 +58,7 @@ export function daftarkanPelanggan(form: DaftarkanPelangganForm, fotoKtp?: File 
   }
   if (fotoKtp) payload.append('foto_ktp', fotoKtp)
   if (fotoSelfie) payload.append('foto_selfie_ktp', fotoSelfie)
-  return httpClient.post<ApiResponse<{ id: number; nomor_permohonan: string; nama_lengkap: string }>>(
+  return httpClient.post<ApiResponse<{id: number, nomor_pelanggan: string, nama_lengkap: string, layanan: Pelanggan['layanan_internet']}>>(
     `${BASE}/pelanggan`,
     payload,
   )
