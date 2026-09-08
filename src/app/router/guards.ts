@@ -19,9 +19,14 @@ export function setupRouterGuards(router: Router) {
     // Route publik (tidak butuh auth) -> selalu boleh lewat
     if (!to.meta.requiresAuth) return true
 
-    // 1. Harus sudah login
+    // 1. Harus sudah login. Arah balik ditentukan dari prefix path rute
+    // tujuan (portal reseller /reseller -> reseller.masuk, pelanggan,
+    // sisanya admin) karena meta.guard pada rute reseller sengaja 'admin'
+    // (reseller adalah model "admin" di backend) — disambiguasi via path.
     if (!authStore.sudahLogin) {
-      return to.meta.guard === 'pelanggan' ? { name: 'pelanggan.masuk' } : { name: 'admin.masuk' }
+      if (to.path.startsWith('/reseller')) return { name: 'reseller.masuk' }
+      if (to.path.startsWith('/pelanggan')) return { name: 'pelanggan.masuk' }
+      return { name: 'admin.masuk' }
     }
 
     // 2. Tipe pengguna harus cocok (admin token tidak boleh akses rute pelanggan, dst)

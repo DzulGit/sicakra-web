@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { landingRoutes } from './routes/landing.routes'
 import { adminRoutes } from './routes/admin.routes'
+import { resellerRoutes } from './routes/reseller.routes'
 import { pelangganRoutes } from './routes/pelanggan.routes'
 import { setupRouterGuards } from './guards'
 import './types' // augmentasi RouteMeta
@@ -30,7 +31,7 @@ const fallbackRoutes: RouteRecordRaw[] = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...landingRoutes, ...adminRoutes, ...pelangganRoutes, ...fallbackRoutes],
+  routes: [...landingRoutes, ...adminRoutes, ...resellerRoutes, ...pelangganRoutes, ...fallbackRoutes],
   scrollBehavior() {
     return { top: 0 }
   },

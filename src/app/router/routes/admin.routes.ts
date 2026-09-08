@@ -51,7 +51,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Notifikasi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'teknisi', 'keuangan', 'super_admin', 'reseller'],
+      peran: ['operasional', 'teknisi', 'keuangan', 'super_admin'],
     },
   },
 
@@ -65,7 +65,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Overview',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
 
@@ -79,7 +79,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Overview',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['keuangan', 'reseller'],
+      peran: ['keuangan'],
     },
   },
 
@@ -93,7 +93,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Overview',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['teknisi', 'reseller'],
+      peran: ['teknisi'],
     },
   },
 
@@ -107,7 +107,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Permohonan Layanan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -119,7 +119,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Detail Permohonan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -131,7 +131,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Laporan Kendala',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -143,7 +143,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Detail Laporan Kendala',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
 
@@ -156,7 +156,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Paket Internet',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -168,7 +168,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Tambah Paket Internet',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -180,7 +180,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Ubah Paket Internet',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -192,7 +192,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Pelanggan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'keuangan', 'super_admin', 'reseller'],
+      peran: ['operasional', 'keuangan', 'super_admin'],
     },
   },
   {
@@ -204,7 +204,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Detail Pelanggan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'keuangan', 'super_admin', 'reseller'],
+      peran: ['operasional', 'keuangan', 'super_admin'],
     },
   },
   {
@@ -216,7 +216,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Buat Pelanggan Baru',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'super_admin', 'reseller'],
+      peran: ['operasional', 'super_admin'],
     },
   },
 
@@ -230,7 +230,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Reseller',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'super_admin', 'reseller'],
+      peran: ['operasional', 'super_admin'],
     },
   },
   {
@@ -242,7 +242,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Pelanggan Reseller',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'super_admin', 'reseller'],
+      peran: ['operasional', 'super_admin'],
     },
   },
 
@@ -256,7 +256,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Jadwal Kerja',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['teknisi', 'reseller'],
+      peran: ['teknisi'],
     },
   },
   {
@@ -268,7 +268,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Isi Hasil Kunjungan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['teknisi', 'reseller'],
+      peran: ['teknisi'],
     },
   },
   {
@@ -280,7 +280,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Laporan Kendala',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['teknisi', 'reseller'],
+      peran: ['teknisi'],
     },
   },
   {
@@ -292,7 +292,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Detail Laporan Kendala',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['teknisi', 'reseller'],
+      peran: ['teknisi'],
     },
   },
 
@@ -306,7 +306,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Tagihan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['keuangan', 'reseller'],
+      peran: ['keuangan'],
     },
   },
   {
@@ -318,7 +318,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Pendaftar Baru',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['keuangan', 'reseller'],
+      peran: ['keuangan'],
     },
   },
   {
@@ -330,7 +330,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Detail Tagihan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['keuangan', 'reseller'],
+      peran: ['keuangan'],
     },
   },
   {
@@ -342,7 +342,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Pendapatan',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['keuangan', 'reseller'],
+      peran: ['keuangan'],
     },
   },
 
@@ -368,7 +368,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -380,7 +380,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Tambah Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
   {
@@ -392,7 +392,7 @@ export const adminRoutes: RouteRecordRaw[] = [
       judul: 'Ubah Tim Teknisi',
       requiresAuth: true,
       guard: 'admin',
-      peran: ['operasional', 'reseller'],
+      peran: ['operasional'],
     },
   },
 
