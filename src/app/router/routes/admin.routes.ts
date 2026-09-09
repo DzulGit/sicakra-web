@@ -24,6 +24,9 @@ const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDet
 const BuatPelangganPage = () => import('@/modules/buat-pelanggan/pages/BuatPelangganPage.vue')
 const ResellerListPage = () => import('@/modules/reseller/pages/ResellerListPage.vue')
 const ResellerPelangganListPage = () => import('@/modules/reseller/pages/ResellerPelangganListPage.vue')
+const ResellerPaketListPage = () => import('@/modules/reseller/pages/ResellerPaketListPage.vue')
+const ResellerTagihanListPage = () => import('@/modules/reseller/pages/ResellerTagihanListPage.vue')
+const ResellerPelangganDetailPage = () => import('@/modules/reseller/pages/ResellerPelangganDetailPage.vue')
 const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
 const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
 const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
@@ -240,6 +243,42 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Pelanggan Reseller',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/reseller/:id/paket',
+    name: 'admin.operasional.reseller.paket',
+    component: ResellerPaketListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Paket Internet Reseller',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/reseller/:id/tagihan',
+    name: 'admin.operasional.reseller.tagihan',
+    component: ResellerTagihanListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Tagihan Reseller',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/reseller/:id/pelanggan/:pelangganId',
+    name: 'admin.operasional.reseller.pelanggan.detail',
+    component: ResellerPelangganDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Pelanggan Reseller',
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional', 'super_admin'],

@@ -113,10 +113,13 @@ export interface LayananInternetRingkas {
   nomor_layanan: string
   pelanggan?: Pelanggan
   paket_internet?: PaketInternet
+  tipe_paket?: 'reguler' | 'custom'
+  status?: 'aktif' | 'nonaktif'
   alamat_pemasangan?: string
   detail_alamat?: string | null
   nama_paket_custom?: string | null
   kecepatan_custom_mbps?: number | null
+  tagihan?: Tagihan[]
 }
 
 export interface LaporanKendala {
