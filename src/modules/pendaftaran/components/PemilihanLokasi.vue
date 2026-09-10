@@ -46,9 +46,9 @@ async function cariAlamat(lat: number, lng: number) {
     const kota = a.city || a.town || a.county || ''
     const prov = a.state || ''
     const kodepos = a.postcode || ''
-    const address = [jalan, [rt, rw].filter(Boolean).join('/'), desa, kec, kota, prov, kodepos, 'Indonesia']
-      .filter(Boolean)
-      .join(', ') || data.display_name || ''
+    const bagian = [jalan, [rt, rw].filter(Boolean).join('/'), desa, kec, kota, prov, kodepos, 'Indonesia'].filter(Boolean)
+    const tanpaDuplikat = bagian.filter((v, i) => i === 0 || v !== bagian[i - 1])
+    const address = tanpaDuplikat.join(', ') || data.display_name || ''
     emit('update:modelValue', { lat, lng, address, provinsi: prov || undefined, kota: kota || undefined })
   } catch {
     emit('update:modelValue', { lat, lng })

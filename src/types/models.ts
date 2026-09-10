@@ -103,6 +103,7 @@ export interface PermohonanLayanan {
   updated_at: string
   pelanggan?: Pelanggan
   paket_internet?: PaketInternet
+  paket_internet_baru?: PaketInternet | null
   riwayat_status?: RiwayatStatusPermohonan[]
   jadwal_kerja?: JadwalKerja[]
   alasan?: string | null
