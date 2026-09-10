@@ -2,6 +2,7 @@ import type { RouteRecordRaw } from 'vue-router'
 const LoginResellerPage = () => import('@/modules/reseller-portal/pages/LoginResellerPage.vue')
 const ResellerOverviewPage = () => import('@/modules/reseller-portal/pages/ResellerOverviewPage.vue')
 const ResellerPelangganListPage = () => import('@/modules/reseller-portal/pages/ResellerPelangganListPage.vue')
+const ResellerDaftarkanPelangganPage = () => import('@/modules/reseller-portal/pages/ResellerDaftarkanPelangganPage.vue')
 const ResellerPelangganDetailPage = () => import('@/modules/reseller-portal/pages/ResellerPelangganDetailPage.vue')
 const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
 const ResellerPaketInternetListPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetListPage.vue')
@@ -41,6 +42,18 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Pelanggan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/pelanggan/baru',
+    name: 'reseller.pelanggan.baru',
+    component: ResellerDaftarkanPelangganPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Daftarkan Pelanggan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],
