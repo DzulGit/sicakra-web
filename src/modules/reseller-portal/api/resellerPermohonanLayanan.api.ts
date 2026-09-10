@@ -2,7 +2,6 @@ import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
 import type { JadwalKerja, PermohonanLayanan } from '@/types/models'
 import type {
-  BuatPermohonanResellerForm,
   JadwalkanResellerForm,
   VerifikasiDanJadwalkanResellerForm,
   VerifikasiResellerForm,
@@ -16,10 +15,6 @@ export function getResellerPermohonanLayananList(params: Record<string, string>)
 
 export function getResellerPermohonanLayananDetail(id: number | string) {
   return httpClient.get<ApiResponse<PermohonanLayanan>>(`${BASE}/${id}`)
-}
-
-export function buatResellerPermohonan(payload: BuatPermohonanResellerForm) {
-  return httpClient.post<ApiResponse<PermohonanLayanan>>(BASE, payload)
 }
 
 export function verifikasiResellerPermohonan(id: number | string, payload: VerifikasiResellerForm) {

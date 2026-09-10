@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import {
-  buatResellerPermohonan,
   getResellerPermohonanLayananDetail,
   getResellerPermohonanLayananList,
   jadwalkanResellerKerja,
@@ -48,14 +47,6 @@ function useInvalidasiPermohonan() {
     queryClient.invalidateQueries({ queryKey: ['reseller-portal', 'permohonan-layanan'] })
     if (id) queryClient.invalidateQueries({ queryKey: ['reseller-portal', 'permohonan-layanan', 'detail', id] })
   }
-}
-
-export function useBuatResellerPermohonan() {
-  const invalidate = useInvalidasiPermohonan()
-  return useMutation({
-    mutationFn: buatResellerPermohonan,
-    onSuccess: () => invalidate(),
-  })
 }
 
 export function useVerifikasiResellerPermohonan() {
