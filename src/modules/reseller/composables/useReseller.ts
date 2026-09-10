@@ -5,6 +5,8 @@ import {
   getResellerPelangganList,
   getResellerPelangganDetail,
   getResellerPaketInternetList,
+  getResellerStatistikDetail,
+  getResellerStatistikGlobal,
   getResellerTagihanList,
   simpanReseller,
 } from '../api/reseller.api'
@@ -49,6 +51,20 @@ export function useResellerPelangganDetail(
         toValue(resellerId),
         toValue(pelangganId),
       ).then((res) => res.data.data),
+  })
+}
+
+export function useResellerStatistikGlobal() {
+  return useQuery({
+    queryKey: ['reseller', 'statistik'],
+    queryFn: () => getResellerStatistikGlobal().then((res) => res.data.data),
+  })
+}
+
+export function useResellerStatistikDetail(id: MaybeRefOrGetter<number | string>) {
+  return useQuery({
+    queryKey: ['reseller', 'statistik', id],
+    queryFn: () => getResellerStatistikDetail(toValue(id)).then((res) => res.data.data),
   })
 }
 

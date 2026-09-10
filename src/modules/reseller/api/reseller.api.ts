@@ -1,9 +1,22 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
-import type { AdminLengkap, PaketInternet, Pelanggan, Tagihan } from '@/types/models'
+import type {
+  AdminLengkap,
+  PaketInternet,
+  Pelanggan,
+  ResellerStatistikDetail,
+  ResellerStatistikGlobal,
+  Tagihan,
+} from '@/types/models'
 import type { SimpanResellerForm } from '@/schemas/reseller.schema'
 
 const BASE = '/admin/operasional/reseller'
+
+export interface LaporanResellerParams {
+  reseller_id?: number | null
+  tahun: number
+  bulan?: number | null
+}
 
 export function getResellerList() {
   return httpClient.get<PaginatedResponse<AdminLengkap>>(BASE)
@@ -32,4 +45,20 @@ export function getResellerPelangganDetail(
   return httpClient.get<ApiResponse<Pelanggan>>(
     `${BASE}/${resellerId}/pelanggan/${pelangganId}`,
   )
+}
+
+export function getResellerStatistikGlobal() {
+  return httpClient.get<ApiResponse<ResellerStatistikGlobal>>(`${BASE}/statistik`)
+}
+
+export function getResellerStatistikDetail(id: number | string) {
+  return httpClient.get<ApiResponse<ResellerStatistikDetail>>(`${BASE}/${id}/statistik`)
+}
+
+export function getLaporanResellerPdf(params: LaporanResellerParams) {
+  return httpClient.post<Blob>(`${BASE}/laporan`, params, { responseType: 'blob' })
+}
+
+export function getLaporanResellerExcel(params: LaporanResellerParams) {
+  return httpClient.post<Blob>(`${BASE}/laporan/excel`, params, { responseType: 'blob' })
 }
