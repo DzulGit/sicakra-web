@@ -11,8 +11,8 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { daftarkanPelangganSchema } from '@/schemas/reseller-portal.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { getResellerPaketInternetList } from '@/modules/paket-internet/api/reseller/resellerPaketInternet.api'
-import { useResellerPelangganList, useDaftarkanPelanggan } from '../composables/useResellerPortal'
 import PemilihanLokasi from '@/modules/pendaftaran/components/PemilihanLokasi.vue'
+import { useResellerPelangganList, useDaftarkanPelanggan } from '../composables/useResellerPortal'
 
 import type { Pelanggan } from '@/types/models'
 
@@ -186,7 +186,10 @@ const [detailAlamat, detailAlamatAttrs] = defineField('detail_alamat')
 const [provinsi, provinsiAttrs] = defineField('provinsi')
 const [kota, kotaAttrs] = defineField('kota')
 const [paketId, paketIdAttrs] = defineField('paket_internet_id')
+defineField('latitude')
+defineField('longitude')
 
+// Model lokasi peta (diisi oleh PemilihanLokasi). Disinkronkan ke vee-validate.
 const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
 
 watch(lokasiPeta, (l) => {
@@ -213,6 +216,8 @@ function resetFormState() {
   fotoKtp.value = null
   fotoSelfie.value = null
   lokasiPeta.value = null
+  setFieldValue('latitude', undefined)
+  setFieldValue('longitude', undefined)
 }
 
 const { mutate, isPending } = useDaftarkanPelanggan()
@@ -382,16 +387,9 @@ const onSubmit = handleSubmit((formValues) => {
 
           <!-- LOKASI PETA -->
           <div class="space-y-2">
-            <p class="text-sm font-medium">Titik Lokasi Pemasangan</p>
-            <div class="h-64 w-full overflow-hidden rounded-md border">
-              <PemilihanLokasi v-model="lokasiPeta" class="h-full w-full" />
-            </div>
-            <p v-if="errors.latitude" class="text-xs text-destructive">
-              {{ errors.latitude }}
-            </p>
-            <p v-else class="text-xs text-muted-foreground">
-              Klik peta atau geser marker untuk menentukan lokasi. Alamat akan terisi
-              otomatis.
+            <PemilihanLokasi v-model="lokasiPeta" />
+            <p v-if="errors.latitude || errors.longitude" class="text-xs text-destructive">
+              {{ errors.latitude || errors.longitude }}
             </p>
           </div>
 
@@ -508,7 +506,7 @@ const onSubmit = handleSubmit((formValues) => {
             Batal
           </Button>
 
-          <Button type="submit" form="form-daftarkan-pelanggan" :disabled="isPending || !paketTersedia.length">
+          <Button type="submit" form="form-daftarkan-pelanggan" :disabled="isPending || !paketTersedia.length || !lokasiPeta">
             {{ isPending ? 'Menyimpan...' : 'Daftarkan' }}
           </Button>
         </DialogFooter>
