@@ -11,6 +11,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { daftarkanPelangganSchema } from '@/schemas/reseller-portal.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { getResellerPaketInternetList } from '@/modules/paket-internet/api/reseller/resellerPaketInternet.api'
+import LocationPicker from '@/modules/pendaftaran/components/PemilihanLokasi.vue'
 import { useResellerPelangganList, useDaftarkanPelanggan } from '../composables/useResellerPortal'
 
 import type { Pelanggan } from '@/types/models'
@@ -184,6 +185,21 @@ const [detailAlamat, detailAlamatAttrs] = defineField('detail_alamat')
 const [provinsi, provinsiAttrs] = defineField('provinsi')
 const [kota, kotaAttrs] = defineField('kota')
 const [paketId, paketIdAttrs] = defineField('paket_internet_id')
+const [latitude, latitudeAttrs] = defineField('latitude')
+const [longitude, longitudeAttrs] = defineField('longitude')
+
+// Model lokasi peta (diisi oleh LocationPicker). Disinkronkan ke vee-validate.
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
+
+watch(fotoKtp, (f) => setFieldValue('foto_ktp', f ?? undefined))
+watch(fotoSelfie, (f) => setFieldValue('foto_selfie_ktp', f ?? undefined))
+watch(lokasiPeta, (l) => {
+  setFieldValue('latitude', l?.lat)
+  setFieldValue('longitude', l?.lng)
+  if (l?.address) setFieldValue('alamat_pemasangan', l.address)
+  setFieldValue('provinsi', l?.provinsi ?? undefined)
+  setFieldValue('kota', l?.kota ?? undefined)
+})
 
 function onFileKtp(event: Event) {
   const input = event.target as HTMLInputElement
@@ -200,6 +216,9 @@ function resetFormState() {
 
   fotoKtp.value = null
   fotoSelfie.value = null
+  lokasiPeta.value = null
+  setFieldValue('latitude', undefined)
+  setFieldValue('longitude', undefined)
 }
 
 const { mutate, isPending } = useDaftarkanPelanggan()
@@ -425,6 +444,25 @@ const onSubmit = handleSubmit((formValues) => {
             </div>
           </div>
 
+          <!-- LOKASI PEMASANGAN (MAP) -->
+          <div class="space-y-2">
+            <Label>Titik Lokasi Pemasangan</Label>
+            <p class="text-xs text-muted-foreground">
+              Klik peta atau gunakan tombol Deteksi Lokasi untuk mengisi alamat otomatis.
+            </p>
+            <div class="h-72 w-full overflow-hidden rounded-md border">
+              <LocationPicker v-model="lokasiPeta" class="h-full w-full" />
+            </div>
+            <input type="hidden" v-bind="latitudeAttrs" :value="latitude" />
+            <input type="hidden" v-bind="longitudeAttrs" :value="longitude" />
+            <p v-if="errors.latitude || errors.longitude" class="text-xs text-destructive">
+              Pilih lokasi di peta dulu ya.
+            </p>
+            <p v-else class="text-xs text-muted-foreground">
+              Koordinat akan terkirim otomatis dari poin yang dipilih.
+            </p>
+          </div>
+
           <!-- PAKET -->
           <div class="space-y-2">
             <Label>
@@ -481,7 +519,7 @@ const onSubmit = handleSubmit((formValues) => {
             Batal
           </Button>
 
-          <Button type="submit" form="form-daftarkan-pelanggan" :disabled="isPending || !paketTersedia.length">
+          <Button type="submit" form="form-daftarkan-pelanggan" :disabled="isPending || !paketTersedia.length || !lokasiPeta">
             {{ isPending ? 'Menyimpan...' : 'Daftarkan' }}
           </Button>
         </DialogFooter>
