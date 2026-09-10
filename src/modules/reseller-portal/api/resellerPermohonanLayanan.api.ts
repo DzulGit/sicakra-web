@@ -1,9 +1,7 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
-import type { JadwalKerja, PermohonanLayanan } from '@/types/models'
+import type { PermohonanLayanan } from '@/types/models'
 import type {
-  JadwalkanResellerForm,
-  VerifikasiDanJadwalkanResellerForm,
   VerifikasiResellerForm,
 } from '@/schemas/reseller-portal.schema'
 
@@ -19,15 +17,4 @@ export function getResellerPermohonanLayananDetail(id: number | string) {
 
 export function verifikasiResellerPermohonan(id: number | string, payload: VerifikasiResellerForm) {
   return httpClient.patch<ApiResponse<PermohonanLayanan>>(`${BASE}/${id}/verifikasi`, payload)
-}
-
-export function verifikasiDanJadwalkanReseller(id: number | string, payload: VerifikasiDanJadwalkanResellerForm) {
-  return httpClient.post<ApiResponse<{ permohonan: PermohonanLayanan; jadwal_kerja: JadwalKerja }>>(
-    `${BASE}/${id}/verifikasi-dan-jadwalkan`,
-    payload,
-  )
-}
-
-export function jadwalkanResellerKerja(id: number | string, payload: JadwalkanResellerForm) {
-  return httpClient.post<ApiResponse<JadwalKerja>>(`${BASE}/${id}/jadwalkan-kerja`, payload)
 }

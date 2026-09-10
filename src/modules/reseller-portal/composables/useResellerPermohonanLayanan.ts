@@ -4,13 +4,9 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import {
   getResellerPermohonanLayananDetail,
   getResellerPermohonanLayananList,
-  jadwalkanResellerKerja,
-  verifikasiDanJadwalkanReseller,
   verifikasiResellerPermohonan,
 } from '../api/resellerPermohonanLayanan.api'
 import type {
-  JadwalkanResellerForm,
-  VerifikasiDanJadwalkanResellerForm,
   VerifikasiResellerForm,
 } from '@/schemas/reseller-portal.schema'
 
@@ -54,24 +50,6 @@ export function useVerifikasiResellerPermohonan() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number | string; payload: VerifikasiResellerForm }) =>
       verifikasiResellerPermohonan(id, payload),
-    onSuccess: (_, { id }) => invalidate(id),
-  })
-}
-
-export function useVerifikasiDanJadwalkanReseller() {
-  const invalidate = useInvalidasiPermohonan()
-  return useMutation({
-    mutationFn: ({ id, payload }: { id: number | string; payload: VerifikasiDanJadwalkanResellerForm }) =>
-      verifikasiDanJadwalkanReseller(id, payload),
-    onSuccess: (_, { id }) => invalidate(id),
-  })
-}
-
-export function useJadwalkanResellerKerja() {
-  const invalidate = useInvalidasiPermohonan()
-  return useMutation({
-    mutationFn: ({ id, payload }: { id: number | string; payload: JadwalkanResellerForm }) =>
-      jadwalkanResellerKerja(id, payload),
     onSuccess: (_, { id }) => invalidate(id),
   })
 }

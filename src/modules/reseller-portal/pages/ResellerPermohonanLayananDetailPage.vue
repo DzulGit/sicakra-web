@@ -10,9 +10,8 @@ import {
 import {
   useResellerPermohonanLayananDetail,
   useVerifikasiResellerPermohonan,
-  useJadwalkanResellerKerja,
 } from '../composables/useResellerPermohonanLayanan'
-import { verifikasiResellerSchema, jadwalkanResellerSchema } from '@/schemas/reseller-portal.schema'
+import { verifikasiResellerSchema } from '@/schemas/reseller-portal.schema'
 import { statusPermohonanEnum, jenisPermohonanEnum, tipePaketEnum } from '@/lib/enums'
 import { mapValidationErrors } from '@/lib/errors'
 import StatusBadge from '@/components/data/StatusBadge.vue'
@@ -44,19 +43,9 @@ const router = useRouter()
 const id = computed(() => Number(route.params.id))
 const { data: permohonan, isLoading } = useResellerPermohonanLayananDetail(id)
 
-const jadwalTerdekat = computed(() => {
-  if (!permohonan.value?.jadwal_kerja?.length) return null
-  return [...permohonan.value.jadwal_kerja].sort(
-    (a, b) => new Date(a.tanggal_kerja).getTime() - new Date(b.tanggal_kerja).getTime(),
-  )[0]
-})
-
 const isCustom = computed(() => permohonan.value?.tipe_paket === 'custom')
 const bisaVerifikasi = computed(
   () => !!permohonan.value && ['MENUNGGU_VERIFIKASI', 'PERLU_REVISI'].includes(permohonan.value.status),
-)
-const bisaJadwalkan = computed(
-  () => !!permohonan.value && ['DITERIMA', 'DITUNDA'].includes(permohonan.value.status),
 )
 
 function formatTanggal(iso: string) {
@@ -83,24 +72,6 @@ const prosesVerifikasi = verifikasiSubmit(async (form) => {
     const data = (err as { response?: { data?: { errors?: Record<string, string[]> } } })?.response?.data
     if (data?.errors) mapValidationErrors(data.errors)
     else toast.error('Gagal memproses verifikasi')
-  }
-})
-
-// ===== Dialog Jadwalkan =====
-const dialogJadwal = ref(false)
-const jadwalkanMutation = useJadwalkanResellerKerja()
-const { handleSubmit: jadwalkanSubmit, errors: jadwalkanErrors, values: jadwalkanValues, setFieldValue: setJadwalkanField, resetForm: jadwalkanReset } = useForm({
-  validationSchema: toTypedSchema(jadwalkanResellerSchema),
-  initialValues: { tanggal_kerja: '' },
-})
-const prosesJadwalkan = jadwalkanSubmit(async (form) => {
-  try {
-    await jadwalkanMutation.mutateAsync({ id: id.value, payload: { tanggal_kerja: form.tanggal_kerja } })
-    toast.success('Penjadwalan berhasil')
-    dialogJadwal.value = false
-    jadwalkanReset()
-  } catch {
-    toast.error('Gagal menjadwalkan')
   }
 })
 </script>
@@ -144,10 +115,6 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
               <p class="text-xs text-muted-foreground">No. Pelanggan</p>
               <p>{{ permohonan.pelanggan?.nomor_pelanggan ?? '-' }}</p>
             </div>
-            <div v-if="jadwalTerdekat">
-              <p class="text-xs text-muted-foreground">Jadwal Eksekusi</p>
-              <p>{{ formatTanggal(jadwalTerdekat.tanggal_kerja) }}</p>
-            </div>
             <div v-if="permohonan.updated_at !== permohonan.created_at">
               <p class="text-xs text-muted-foreground">Terakhir Diupdate</p>
               <p>{{ formatTanggal(permohonan.updated_at) }}</p>
@@ -156,11 +123,13 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
 
           <div v-if="permohonan.paket_internet" class="text-sm">
             <p class="text-xs text-muted-foreground">Paket Internet</p>
-            <p>{{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps) — Rp{{ Number(permohonan.paket_internet.harga).toLocaleString('id-ID') }}/bln</p>
+            <p>{{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps) — Rp{{
+              Number(permohonan.paket_internet.harga).toLocaleString('id-ID') }}/bln</p>
           </div>
           <div v-if="permohonan.paket_internet_baru && permohonan.jenis_permohonan === 'ganti_paket'" class="text-sm">
             <p class="text-xs text-muted-foreground">Paket Baru</p>
-            <p>{{ permohonan.paket_internet_baru.nama_paket }} ({{ permohonan.paket_internet_baru.kecepatan_mbps }} Mbps)</p>
+            <p>{{ permohonan.paket_internet_baru.nama_paket }} ({{ permohonan.paket_internet_baru.kecepatan_mbps }}
+              Mbps)</p>
           </div>
           <div v-else-if="isCustom" class="space-y-0.5 text-sm">
             <p class="text-xs text-muted-foreground">Paket Custom</p>
@@ -189,20 +158,42 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-            <div><p class="text-xs text-muted-foreground">Nama</p><p>{{ permohonan.pelanggan?.nama_lengkap ?? '-' }}</p></div>
-            <div><p class="text-xs text-muted-foreground">NIK</p><p>{{ permohonan.pelanggan?.nik ?? '-' }}</p></div>
-            <div><p class="text-xs text-muted-foreground">No. HP</p><p class="flex items-center gap-1.5"><Phone class="size-3.5 text-muted-foreground" /> {{ permohonan.pelanggan?.nomor_hp ?? '-' }}</p></div>
-            <div><p class="text-xs text-muted-foreground">Email</p><p class="flex items-center gap-1.5"><Mail class="size-3.5 text-muted-foreground" /> {{ permohonan.pelanggan?.email ?? '-' }}</p></div>
+            <div>
+              <p class="text-xs text-muted-foreground">Nama</p>
+              <p>{{ permohonan.pelanggan?.nama_lengkap ?? '-' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">NIK</p>
+              <p>{{ permohonan.pelanggan?.nik ?? '-' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">No. HP</p>
+              <p class="flex items-center gap-1.5">
+                <Phone class="size-3.5 text-muted-foreground" /> {{ permohonan.pelanggan?.nomor_hp ?? '-' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">Email</p>
+              <p class="flex items-center gap-1.5">
+                <Mail class="size-3.5 text-muted-foreground" /> {{ permohonan.pelanggan?.email ?? '-' }}
+              </p>
+            </div>
           </div>
           <div v-if="permohonan.pelanggan?.foto_ktp || permohonan.pelanggan?.foto_selfie_ktp" class="space-y-1.5">
-            <p class="flex items-center gap-1.5 text-xs text-muted-foreground"><ImageIcon class="size-3.5" /> Dokumen Identitas</p>
+            <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <ImageIcon class="size-3.5" /> Dokumen Identitas
+            </p>
             <div class="flex flex-wrap gap-3">
-              <a v-if="permohonan.pelanggan.foto_ktp" :href="permohonan.pelanggan.foto_ktp" target="_blank" rel="noopener" class="group text-left">
-                <img :src="permohonan.pelanggan.foto_ktp" alt="Foto KTP" class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
+              <a v-if="permohonan.pelanggan.foto_ktp" :href="permohonan.pelanggan.foto_ktp" target="_blank"
+                rel="noopener" class="group text-left">
+                <img :src="permohonan.pelanggan.foto_ktp" alt="Foto KTP"
+                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
                 <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
               </a>
-              <a v-if="permohonan.pelanggan.foto_selfie_ktp" :href="permohonan.pelanggan.foto_selfie_ktp" target="_blank" rel="noopener" class="group text-left">
-                <img :src="permohonan.pelanggan.foto_selfie_ktp" alt="Selfie KTP" class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
+              <a v-if="permohonan.pelanggan.foto_selfie_ktp" :href="permohonan.pelanggan.foto_selfie_ktp"
+                target="_blank" rel="noopener" class="group text-left">
+                <img :src="permohonan.pelanggan.foto_selfie_ktp" alt="Selfie KTP"
+                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
                 <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Selfie KTP</p>
               </a>
             </div>
@@ -218,11 +209,13 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-1 text-sm">
-          <p>{{ permohonan.alamat_pemasangan }}, RT {{ permohonan.rt }}/RW {{ permohonan.rw }}, {{ permohonan.kode_pos }}</p>
+          <p>{{ permohonan.alamat_pemasangan }}, RT {{ permohonan.rt }}/RW {{ permohonan.rw }}, {{ permohonan.kode_pos
+            }}</p>
           <p v-if="permohonan.detail_alamat" class="text-muted-foreground">Detail: {{ permohonan.detail_alamat }}</p>
           <Button v-if="permohonan.latitude && permohonan.longitude" variant="outline" size="sm" class="mt-2 gap-1.5"
             @click="bukaMaps(permohonan.latitude, permohonan.longitude)">
-            <MapPin class="size-4" /> Buka di Google Maps <ExternalLink class="size-3.5" />
+            <MapPin class="size-4" /> Buka di Google Maps
+            <ExternalLink class="size-3.5" />
           </Button>
         </CardContent>
       </Card>
@@ -249,17 +242,13 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-2">
-          <Button v-if="bisaVerifikasi" class="w-full" @click="dialogVerifikasi = true">Verifikasi</Button>
-          <Button v-if="bisaJadwalkan" class="w-full" variant="outline" @click="dialogJadwal = true">
-            {{ permohonan.status === 'DITUNDA' ? 'Jadwalkan Ulang' : 'Jadwalkan Kerja' }}
+          <Button v-if="bisaVerifikasi" class="w-full" @click="dialogVerifikasi = true">
+            Buat Keputusan
           </Button>
 
-          <div v-if="jadwalTerdekat && permohonan.status === 'DIJADWAKAN'" class="rounded-md bg-muted/50 p-3 text-sm space-y-1">
-            <p class="font-medium">Jadwal Terdekat</p>
-            <p>{{ formatTanggal(jadwalTerdekat.tanggal_kerja) }}</p>
-          </div>
-
-          <p v-if="!bisaVerifikasi && !bisaJadwalkan" class="text-sm text-muted-foreground">Tidak ada aksi yang tersedia.</p>
+          <p v-if="!bisaVerifikasi" class="text-sm text-muted-foreground">
+            Tidak ada aksi yang tersedia.
+          </p>
         </CardContent>
       </Card>
 
@@ -278,8 +267,11 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
         <form @submit.prevent="prosesVerifikasi" class="space-y-4">
           <div class="space-y-2">
             <Label>Keputusan</Label>
-            <Select :model-value="verifikasiValues.status" @update:model-value="(v: any) => setVerifikasiField('status', v)">
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select :model-value="verifikasiValues.status"
+              @update:model-value="(v: any) => setVerifikasiField('status', v)">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="DITERIMA">Terima</SelectItem>
                 <SelectItem value="DITOLAK">Tolak</SelectItem>
@@ -291,38 +283,21 @@ const prosesJadwalkan = jadwalkanSubmit(async (form) => {
 
           <div v-if="isCustom && verifikasiValues.status === 'DITERIMA'" class="space-y-1.5">
             <Label>Harga Kesepakatan (Rp/bln)</Label>
-            <Input type="number" :model-value="verifikasiValues.harga_custom" @update:model-value="(v: any) => setVerifikasiField('harga_custom', Number(v) || undefined)" />
-            <p v-if="verifikasiErrors.harga_custom" class="text-xs text-destructive">{{ verifikasiErrors.harga_custom }}</p>
+            <Input type="number" :model-value="verifikasiValues.harga_custom"
+              @update:model-value="(v: any) => setVerifikasiField('harga_custom', Number(v) || undefined)" />
+            <p v-if="verifikasiErrors.harga_custom" class="text-xs text-destructive">{{ verifikasiErrors.harga_custom }}
+            </p>
           </div>
 
           <div class="space-y-1.5">
             <Label>Catatan {{ verifikasiValues.status === 'DITERIMA' ? '(opsional)' : '(wajib)' }}</Label>
-            <Textarea :model-value="verifikasiValues.catatan" @update:model-value="(v: any) => setVerifikasiField('catatan', v)" />
+            <Textarea :model-value="verifikasiValues.catatan"
+              @update:model-value="(v: any) => setVerifikasiField('catatan', v)" />
             <p v-if="verifikasiErrors.catatan" class="text-xs text-destructive">{{ verifikasiErrors.catatan }}</p>
           </div>
 
           <DialogFooter>
             <Button type="submit">Kirim Verifikasi</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-
-    <!-- Dialog Jadwalkan -->
-    <Dialog :open="dialogJadwal" @update:open="(v) => { dialogJadwal = v; if (!v) jadwalkanReset() }">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{{ permohonan.status === 'DITUNDA' ? 'Jadwalkan Ulang Kerja' : 'Jadwalkan Kerja' }}</DialogTitle>
-          <DialogDescription>Tentukan tanggal pengerjaan untuk permohonan ini.</DialogDescription>
-        </DialogHeader>
-        <form @submit.prevent="prosesJadwalkan" class="space-y-4">
-          <div class="space-y-1.5">
-            <Label>Tanggal Kerja</Label>
-            <Input type="date" :model-value="jadwalkanValues.tanggal_kerja" @update:model-value="(v: any) => setJadwalkanField('tanggal_kerja', v)" />
-            <p v-if="jadwalkanErrors.tanggal_kerja" class="text-xs text-destructive">{{ jadwalkanErrors.tanggal_kerja }}</p>
-          </div>
-          <DialogFooter>
-            <Button type="submit">Simpan Jadwal</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -119,27 +119,3 @@ export const verifikasiResellerSchema = z
     path: ['catatan'],
   })
 export type VerifikasiResellerForm = z.infer<typeof verifikasiResellerSchema>
-
-export const verifikasiDanJadwalkanResellerSchema = z
-  .object({
-    status: z.enum(['DITERIMA', 'PERLU_REVISI', 'DITOLAK'], {
-      message: 'Pilih keputusan verifikasi',
-    }),
-    catatan: z.string().optional(),
-    tanggal_kerja: z.string().optional(),
-    harga_custom: z.coerce.number().min(1, 'Harga wajib diisi').optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.status !== 'DITERIMA' && !data.catatan?.trim()) {
-      ctx.addIssue({ code: 'custom', message: 'Catatan wajib diisi untuk Tolak / Perlu Revisi', path: ['catatan'] })
-    }
-    if (data.status === 'DITERIMA' && !data.tanggal_kerja) {
-      ctx.addIssue({ code: 'custom', message: 'Tanggal kerja wajib diisi', path: ['tanggal_kerja'] })
-    }
-  })
-export type VerifikasiDanJadwalkanResellerForm = z.infer<typeof verifikasiDanJadwalkanResellerSchema>
-
-export const jadwalkanResellerSchema = z.object({
-  tanggal_kerja: z.string().min(1, 'Tanggal wajib diisi'),
-})
-export type JadwalkanResellerForm = z.infer<typeof jadwalkanResellerSchema>
