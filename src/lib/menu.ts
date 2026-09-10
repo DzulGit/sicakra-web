@@ -72,6 +72,7 @@ const menuReseller: MenuItem[] = [
   { label: 'Overview', to: '/reseller/overview', icon: LayoutDashboard },
   { label: 'Paket Internet', to: '/reseller/paket-internet', icon: Globe },
   { label: 'Pelanggan', to: '/reseller/pelanggan', icon: Contact },
+  { label: 'Permohonan Layanan', to: '/reseller/permohonan-layanan', icon: FileText },
   { label: 'Tagihan', to: '/reseller/tagihan', icon: Receipt },
   { label: 'Notifikasi', to: '/reseller/notifikasi', icon: Bell },
 ]

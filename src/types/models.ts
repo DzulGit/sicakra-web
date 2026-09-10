@@ -263,6 +263,52 @@ export interface PendapatanRingkasan {
   pembayaran_terbaru: DashboardPembayaranRingkas[]
 }
 
+export interface ResellerDistribusiItem {
+  label: string
+  jumlah: number
+}
+
+export interface ResellerTransaksi {
+  id: number
+  jenis: 'tagihan' | 'pembayaran'
+  nomor: string
+  reseller: string
+  pelanggan: string
+  nominal: number
+  status: string
+  waktu: string
+}
+
+export interface ResellerStatistikGlobal {
+  stats: {
+    total_reseller: number
+    reseller_aktif: number
+    total_pelanggan: number
+    total_paket: number
+    total_tagihan: number
+    total_pendapatan: number
+  }
+  distribusi_pelanggan: ResellerDistribusiItem[]
+  omzet_per_reseller: ResellerDistribusiItem[]
+  transaksi_terbaru: ResellerTransaksi[]
+}
+
+export interface ResellerStatistikDetail {
+  stats: {
+    total_pelanggan: number
+    pelanggan_aktif: number
+    total_paket: number
+    tagihan_dibuat: number
+    tagihan_belum_bayar: number
+    total_pendapatan: number
+  }
+  trend_pendapatan: DashboardTrendPoint[]
+  distribusi_status_tagihan: DashboardStatusDist[]
+  distribusi_paket: ResellerDistribusiItem[]
+  pelanggan_terbaru: { id: number; nama_lengkap: string; nomor_pelanggan: string }[]
+  transaksi_terbaru: ResellerTransaksi[]
+}
+
 export interface DashboardAktivitasTeknisi {
   id: number
   teknisi: string

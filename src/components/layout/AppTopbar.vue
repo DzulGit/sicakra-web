@@ -6,6 +6,7 @@ import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLogoutAdmin } from '@/modules/auth/admin/composables/useAdminAuth'
 import { useLogoutPelanggan } from '@/modules/auth/pelanggan/composables/usePelangganAuth'
+import { useLogoutReseller } from '@/modules/reseller-portal/composables/useResellerPortal'
 import { useNotifikasiList } from '@/modules/notifikasi/composables/useNotifikasi'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -26,6 +27,7 @@ const uiStore = useUiStore()
 const router = useRouter()
 const { mutate: logoutAdmin } = useLogoutAdmin()
 const { mutate: logoutPelanggan } = useLogoutPelanggan()
+const { mutate: logoutReseller } = useLogoutReseller()
 const { isNative } = usePlatform()
 
 const { data: notifikasiResponse } = useNotifikasiList()
@@ -49,14 +51,16 @@ function getFotoUrl(foto?: string | null) {
 
 function logout() {
   const tipe = authStore.tipePengguna
-  const mutasiLogout = tipe === 'pelanggan' ? logoutPelanggan : logoutAdmin
+  const adalahReseller = tipe === 'admin' && authStore.peranAdmin === 'reseller'
+  const mutasiLogout = tipe === 'pelanggan' ? logoutPelanggan : adalahReseller ? logoutReseller : logoutAdmin
 
   // Bersihkan sesi lokal & redirect SEGERA (jangan tunggu response server) —
   // pengalaman logout harus terasa instan. Kalau call API gagal (mis. token
   // sudah invalid duluan), tidak masalah, tujuan akhirnya sama: keluar.
   mutasiLogout(undefined, { onSettled: () => { } })
   authStore.bersihkanSesi()
-  router.push(tipe === 'pelanggan' ? '/pelanggan/masuk' : '/admin/masuk')
+  const ruteMasuk = tipe === 'pelanggan' ? '/pelanggan/masuk' : adalahReseller ? '/reseller/masuk' : '/admin/masuk'
+  router.push(ruteMasuk)
 }
 
 function bukaProfil() {

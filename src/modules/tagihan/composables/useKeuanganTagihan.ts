@@ -34,7 +34,7 @@ export function useTagihanList() {
   })
 }
 
-export function usePendaftarBaru() {
+export function usePendaftarBaru(enabled: MaybeRefOrGetter<boolean> = true) {
   const route = useRoute()
 
   const params = computed(() => {
@@ -50,6 +50,7 @@ export function usePendaftarBaru() {
   return useQuery({
     queryKey: ['tagihan', 'keuangan', 'pendaftar-baru', params],
     queryFn: () => getPendaftarBaru(params.value).then((res) => res.data),
+    enabled: toValue(enabled),
   })
 }
 

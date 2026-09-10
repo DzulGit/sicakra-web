@@ -8,6 +8,8 @@ const ResellerPaketInternetListPage = () => import('@/modules/reseller-portal/pa
 const ResellerPaketInternetFormPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetFormPage.vue')
 const ResellerTagihanListPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanListPage.vue')
 const ResellerTagihanDetailPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanDetailPage.vue')
+const ResellerPermohonanLayananListPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananListPage.vue')
+const ResellerPermohonanLayananDetailPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananDetailPage.vue')
 /**
  * Route PORTAL RESELLER — mitra eksternal memakai sistem, data dibatasi
  * (scoped) pelanggan milik reseller tsb. Pisah total dari rute admin internal
@@ -99,6 +101,30 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Ubah Paket Internet',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/permohonan-layanan',
+    name: 'reseller.permohonan-layanan.index',
+    component: ResellerPermohonanLayananListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Permohonan Layanan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/permohonan-layanan/:id',
+    name: 'reseller.permohonan-layanan.detail',
+    component: ResellerPermohonanLayananDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Permohonan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],
