@@ -74,7 +74,9 @@ const menuReseller: MenuItem[] = [
   { label: 'Pelanggan', to: '/reseller/pelanggan', icon: Contact },
   { label: 'Permohonan Layanan', to: '/reseller/permohonan-layanan', icon: FileText },
   { label: 'Tagihan', to: '/reseller/tagihan', icon: Receipt },
+  { label: 'Pendapatan', to: '/reseller/pendapatan', icon: Wallet },
   { label: 'Notifikasi', to: '/reseller/notifikasi', icon: Bell },
+  { label: 'Profil', to: '/reseller/profil', icon: UserCircle },
 ]
 
 export function getMenuGroups(tipe: TipePengguna | null, peran: PeranAdmin | null): MenuGroup[] {
