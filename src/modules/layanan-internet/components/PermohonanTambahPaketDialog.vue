@@ -25,7 +25,7 @@ const paketId = ref<number | null>(null)
 const namaPaketCustom = ref('')
 const kecepatanCustom = ref<number | ''>('')
 
-const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string; detail?: string } | null>(null)
 const alamatPemasangan = ref('')
 const detailAlamat = ref('')
 const isSubmitting = ref(false)
@@ -33,6 +33,7 @@ const error = ref('')
 
 watch(lokasiPeta, (l) => {
   if (l?.address) alamatPemasangan.value = l.address
+  if (l?.detail && !detailAlamat.value) detailAlamat.value = l.detail
 })
 
 const paketTersedia = computed(() =>
@@ -125,18 +126,18 @@ async function kirim() {
         <div class="space-y-2">
           <Label for="alamat_tambah">Alamat Pemasangan</Label>
           <Textarea
-            id="alamat_tambah" v-model="alamatPemasangan"
+            id="alamat_tambah" v-model="alamatPemasangan" readonly
             placeholder="Otomatis terisi dari peta..."
-            class="min-h-[70px]"
+            class="min-h-[70px] bg-muted/40"
           />
-          <p class="text-xs text-muted-foreground">Alamat akan terisi otomatis saat kamu klik peta.</p>
+          <p class="text-xs text-muted-foreground">Otomatis terisi dari peta (tidak bisa diubah manual).</p>
         </div>
 
         <div class="space-y-2">
           <Label for="detail_tambah">Detail Tambahan <span class="text-muted-foreground">(opsional)</span></Label>
           <Textarea
             id="detail_tambah" v-model="detailAlamat"
-            placeholder="Contoh: RT 03 RW 05, Lantai 2..."
+            placeholder="Contoh: Jalan Mawar No. 5, RT 03 RW 05, Lantai 2..."
             class="min-h-[70px]"
           />
         </div>

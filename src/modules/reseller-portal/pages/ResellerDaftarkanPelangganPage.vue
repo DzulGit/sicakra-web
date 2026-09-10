@@ -75,7 +75,7 @@ defineField('longitude')
 
 const fotoKtp = ref<File | null>(null)
 const fotoSelfieKtp = ref<File | null>(null)
-const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string; detail?: string } | null>(null)
 
 watch(fotoKtp, (f) => setFieldValue('foto_ktp', f ?? undefined))
 watch(fotoSelfieKtp, (f) => setFieldValue('foto_selfie_ktp', f ?? undefined))
@@ -83,6 +83,7 @@ watch(lokasiPeta, (l) => {
   setFieldValue('latitude', l?.lat)
   setFieldValue('longitude', l?.lng)
   if (l?.address) setFieldValue('alamat_pemasangan', l.address)
+  if (l?.detail && !detailAlamat.value) setFieldValue('detail_alamat', l.detail)
   setFieldValue('provinsi', l?.provinsi ?? undefined)
   setFieldValue('kota', l?.kota ?? undefined)
 })
@@ -226,8 +227,9 @@ const ringkasan = computed(() => ({
         </div>
         <div class="space-y-2">
           <Label for="alamat_pemasangan">Detail Alamat Lengkap</Label>
-          <Textarea id="alamat_pemasangan" v-model="alamatPemasangan" v-bind="alamatPemasanganAttrs"
-            placeholder="Otomatis terisi dari peta..." class="min-h-[90px]" />
+          <Textarea id="alamat_pemasangan" v-model="alamatPemasangan" v-bind="alamatPemasanganAttrs" readonly
+            placeholder="Otomatis terisi dari peta..." class="min-h-[90px] bg-muted/40" />
+          <p class="text-xs text-muted-foreground">Otomatis terisi dari peta (tidak bisa diubah manual).</p>
           <p v-if="errors.alamat_pemasangan" class="text-xs text-destructive">{{ errors.alamat_pemasangan }}</p>
         </div>
         <div class="space-y-2">
@@ -235,7 +237,7 @@ const ringkasan = computed(() => ({
             <span class="text-muted-foreground">(opsional)</span>
           </Label>
           <Textarea id="detail_alamat" v-model="detailAlamat" v-bind="detailAlamatAttrs"
-            placeholder="Contoh: RT 03 RW 05, rumah cat hijau, samping masjid..." class="min-h-[80px]" />
+            placeholder="Contoh: Jalan Mawar No. 5, RT 03 RW 05, rumah cat hijau, samping masjid..." class="min-h-[80px]" />
           <p v-if="errors.detail_alamat" class="text-xs text-destructive">{{ errors.detail_alamat }}</p>
         </div>
         <Button @click="lanjutKeDataDiri"

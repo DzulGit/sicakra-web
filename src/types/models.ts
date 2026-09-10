@@ -192,6 +192,8 @@ export interface AdminLengkap {
   id: number
   nama_lengkap: string
   email: string
+  email_baru?: string | null
+  foto_profil?: string | null
   peran: 'super_admin' | 'operasional' | 'teknisi' | 'keuangan' | 'reseller'
   status_aktif: boolean
   dibuat_oleh: number | null

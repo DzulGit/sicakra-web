@@ -8,14 +8,14 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { LocateFixed, LoaderCircle } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
-// @ts-expect-error
+// @ts-expect-error leaflet default icon types are incomplete
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow })
 
 const props = defineProps<{
-  modelValue: { lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null
+  modelValue: { lat: number; lng: number; address?: string; provinsi?: string; kota?: string; detail?: string } | null
 }>()
-const emit = defineEmits<{   (e: 'update:modelValue', value: { lat: number; lng: number; address?: string; provinsi?: string; kota?: string }): void }>()
+const emit = defineEmits<{ (e: 'update:modelValue', value: { lat: number; lng: number; address?: string; provinsi?: string; kota?: string; detail?: string }): void }>()
 
 const DEFAULT_CENTER: [number, number] = [-7.8031634, 110.3336448]
 const DEFAULT_ZOOM = 13
@@ -42,14 +42,24 @@ async function cariAlamat(lat: number, lng: number) {
     const rt = a.suburb?.match(/RT\.?\s*\d+/i)?.[0] || ''
     const rw = a.suburb?.match(/RW\.?\s*\d+/i)?.[0] || ''
     const desa = a.village || a.neighbourhood || a.suburb || ''
-    const kec = a.county || a.city_district || a.municipality || ''
-    const kota = a.city || a.town || a.county || ''
+    const kec = a.county || a.city_district || ''
+    // ponytail: nominatim roles (city vs county) flip antar region OSM; prefer key ber-tingkat kabupaten
+    // untuk konsistensi kolom kota/string, meski label admin terkadang terlalu tinggi/rendah
+    const kota = (a.municipality || a.state_district || a.city || a.town) || ''
     const prov = a.state || ''
     const kodepos = a.postcode || ''
-    const bagian = [jalan, [rt, rw].filter(Boolean).join('/'), desa, kec, kota, prov, kodepos, 'Indonesia'].filter(Boolean)
+    const detail = [jalan, [rt, rw].filter(Boolean).join('/')].filter(Boolean).join(', ')
+    const bagian = [desa, kec, kota, prov, kodepos, 'Indonesia'].filter(Boolean)
     const tanpaDuplikat = bagian.filter((v, i) => i === 0 || v !== bagian[i - 1])
     const address = tanpaDuplikat.join(', ') || data.display_name || ''
-    emit('update:modelValue', { lat, lng, address, provinsi: prov || undefined, kota: kota || undefined })
+    emit('update:modelValue', {
+      lat,
+      lng,
+      address,
+      provinsi: prov || undefined,
+      kota: kota || undefined,
+      detail: jalan ? detail : undefined,
+    })
   } catch {
     emit('update:modelValue', { lat, lng })
   } finally {
@@ -117,7 +127,7 @@ watch(() => props.modelValue, (n) => { if (n && marker) marker.setLatLng([n.lat,
       </div>
     </div>
     <div ref="elPeta" class="h-72 w-full rounded-md border" />
-    <p class="text-xs text-muted-foreground">Klik peta atau geser marker untuk menentukan lokasi. Alamat akan terisi otomatis.</p>
+    <p class="text-xs text-muted-foreground">Klik peta atau geser marker untuk menentukan lokasi. Alamat terdeteksi otomatis (desa, kecamatan, kabupaten, provinsi, kode pos, negara). Nama jalan/RT-RW terisi ke Detail Alamat.</p>
     <p v-if="errorGeolocation" class="text-xs text-warning">{{ errorGeolocation }}</p>
     <p v-if="!modelValue" class="text-xs text-destructive">Pilih lokasi di peta dulu ya.</p>
   </div>
