@@ -10,8 +10,18 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { getPelangganList, getLaporanPendapatanPdf, getLaporanPendapatanExcel, type PelangganList, type PendapatanFilterParams } from '../api/pendapatan.api'
+import type { ApiResponse } from '@/types/api'
 
-const props = defineProps<{ open: boolean }>()
+const props = withDefaults(defineProps<{
+  open: boolean
+  fetchPelanggan?: () => Promise<{ data: ApiResponse<PelangganList[]> }>
+  fetchPdf?: (params: PendapatanFilterParams) => Promise<{ data: Blob }>
+  fetchExcel?: (params: PendapatanFilterParams) => Promise<{ data: Blob }>
+}>(), {
+  fetchPelanggan: () => getPelangganList(),
+  fetchPdf: (params) => getLaporanPendapatanPdf(params),
+  fetchExcel: (params) => getLaporanPendapatanExcel(params),
+})
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 
 const NAMA_BULAN: Record<number, string> = {
@@ -108,8 +118,9 @@ const selectedPelangganLabels = computed(() =>
 // ─── Load Pelanggan ────────────────────────────────────────
 watch(() => props.open, (v) => {
   if (v && daftarPelanggan.value.length === 0) {
+    daftarPelanggan.value = []
     loadingPelanggan.value = true
-    getPelangganList()
+    props.fetchPelanggan()
       .then((res) => { daftarPelanggan.value = res.data.data })
       .catch(() => {})
       .finally(() => { loadingPelanggan.value = false })
@@ -149,8 +160,8 @@ async function unduhLaporan() {
   try {
     const ext = format.value === 'pdf' ? 'pdf' : 'xlsx'
     const fetcher = format.value === 'pdf'
-      ? () => getLaporanPendapatanPdf(buildParams())
-      : () => getLaporanPendapatanExcel(buildParams())
+      ? () => props.fetchPdf(buildParams())
+      : () => props.fetchExcel(buildParams())
     await downloadBlob(fetcher, `laporan-pendapatan-${slugPeriode()}.${ext}`)
     emit('update:open', false)
   } finally {

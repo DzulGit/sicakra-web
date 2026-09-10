@@ -9,6 +9,8 @@ import {
   getResellerStatistikGlobal,
   getResellerTagihanList,
   simpanReseller,
+  setujuiEmailReseller,
+  tolakEmailReseller,
 } from '../api/reseller.api'
 import type { SimpanResellerForm } from '@/schemas/reseller.schema'
 
@@ -72,6 +74,22 @@ export function useSimpanReseller() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (payload: SimpanResellerForm) => simpanReseller(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reseller'] }),
+  })
+}
+
+export function useSetujuiEmailReseller() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number | string) => setujuiEmailReseller(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reseller'] }),
+  })
+}
+
+export function useTolakEmailReseller() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number | string) => tolakEmailReseller(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reseller'] }),
   })
 }

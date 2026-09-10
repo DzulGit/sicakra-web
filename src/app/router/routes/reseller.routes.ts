@@ -4,6 +4,8 @@ const ResellerOverviewPage = () => import('@/modules/reseller-portal/pages/Resel
 const ResellerPelangganListPage = () => import('@/modules/reseller-portal/pages/ResellerPelangganListPage.vue')
 const ResellerDaftarkanPelangganPage = () => import('@/modules/reseller-portal/pages/ResellerDaftarkanPelangganPage.vue')
 const ResellerPelangganDetailPage = () => import('@/modules/reseller-portal/pages/ResellerPelangganDetailPage.vue')
+const PendapatanResellerPage = () => import('@/modules/pendapatan-reseller/pages/PendapatanResellerPage.vue')
+const ProfilResellerPage = () => import('@/modules/profil-reseller/pages/ProfilResellerPage.vue')
 const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
 const ResellerPaketInternetListPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetListPage.vue')
 const ResellerPaketInternetFormPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetFormPage.vue')
@@ -42,6 +44,30 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Pelanggan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/profil',
+    name: 'reseller.profil',
+    component: ProfilResellerPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Profil',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/pendapatan',
+    name: 'reseller.pendapatan',
+    component: PendapatanResellerPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Pendapatan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],

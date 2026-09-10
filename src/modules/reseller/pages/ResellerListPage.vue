@@ -4,9 +4,9 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { Store, UserPlus, FileDown, Users, UserCheck, Wifi, Wallet } from 'lucide-vue-next'
+import { Store, UserPlus, FileDown, Users, UserCheck, Wifi, Wallet, MailCheck, MailX } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
-import { useResellerList, useResellerStatistikGlobal, useSimpanReseller } from '../composables/useReseller'
+import { useResellerList, useResellerStatistikGlobal, useSimpanReseller, useSetujuiEmailReseller, useTolakEmailReseller } from '../composables/useReseller'
 import { simpanResellerSchema } from '@/schemas/reseller.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import type { AdminLengkap } from '@/types/models'
@@ -24,6 +24,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 
 const { data: hasil, isLoading } = useResellerList()
 const { data: statistik, isLoading: statistikLoading } = useResellerStatistikGlobal()
+const { mutate: setujuiEmail, isPending: pendingSetujui } = useSetujuiEmailReseller()
+const { mutate: tolakEmail, isPending: pendingTolak } = useTolakEmailReseller()
+
+function onSetujuiEmail(id: number | string, nama: string, emailBaru: string) {
+  setujuiEmail(id, {
+    onSuccess: () => toast.success(`Email ${nama} disetujui menjadi ${emailBaru}.`),
+    onError: () => toast.error('Gagal menyetujui. Email mungkin sudah dipakai akun lain.'),
+  })
+}
+
+function onTolakEmail(id: number | string, nama: string) {
+  tolakEmail(id, {
+    onSuccess: () => toast.success(`Permintaan ganti email ${nama} ditolak.`),
+    onError: () => toast.error('Gagal menolak permintaan, coba lagi.'),
+  })
+}
 
 function formatRupiah(value: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -38,6 +54,24 @@ const showExport = ref(false)
 const columns: ColumnDef<AdminLengkap, unknown>[] = [
   { accessorKey: 'nama_lengkap', header: 'Nama' },
   { accessorKey: 'email', header: 'Email' },
+  {
+    id: 'email_baru',
+    header: 'Permintaan Ganti Email',
+    cell: ({ row }) => {
+      const emailBaru = row.original.email_baru
+      if (!emailBaru) {
+        return h('span', { class: 'text-xs text-muted-foreground' }, '-')
+      }
+      return h(
+        'div',
+        { class: 'flex flex-wrap items-center gap-1.5' },
+        [
+          h(Badge, { variant: 'warning' }, () => 'Menunggu'),
+          h('span', { class: 'text-xs font-medium' }, emailBaru),
+        ],
+      )
+    },
+  },
   {
     id: 'pelanggan_count',
     header: 'Jumlah Pelanggan',
@@ -54,12 +88,32 @@ const columns: ColumnDef<AdminLengkap, unknown>[] = [
   {
     id: 'aksi',
     header: '',
-    cell: ({ row }) =>
-      h(
-        Button,
-        { as: RouterLink, to: `/admin/operasional/reseller/${row.original.id}/pelanggan`, variant: 'outline', size: 'sm' },
-        () => 'Monitor Pelanggan',
-      ),
+    cell: ({ row }) => {
+      const buttons: ReturnType<typeof h>[] = [
+        h(
+          Button,
+          { as: RouterLink, to: `/admin/operasional/reseller/${row.original.id}/pelanggan`, variant: 'outline', size: 'sm' },
+          () => 'Monitor',
+        ),
+      ]
+
+      if (row.original.email_baru) {
+        buttons.push(
+          h(
+            Button,
+            { variant: 'success', size: 'sm', disabled: pendingSetujui.value || pendingTolak.value, onClick: () => onSetujuiEmail(row.original.id, row.original.nama_lengkap, row.original.email_baru ?? '') },
+            () => [h(MailCheck, { class: 'size-4' }), ' Setujui'],
+          ),
+          h(
+            Button,
+            { variant: 'destructive', size: 'sm', disabled: pendingSetujui.value || pendingTolak.value, onClick: () => onTolakEmail(row.original.id, row.original.nama_lengkap) },
+            () => [h(MailX, { class: 'size-4' }), ' Tolak'],
+          ),
+        )
+      }
+
+      return h('div', { class: 'flex flex-wrap gap-1.5 justify-end' }, buttons)
+    },
   },
 ]
 

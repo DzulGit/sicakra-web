@@ -62,3 +62,11 @@ export function getLaporanResellerPdf(params: LaporanResellerParams) {
 export function getLaporanResellerExcel(params: LaporanResellerParams) {
   return httpClient.post<Blob>(`${BASE}/laporan/excel`, params, { responseType: 'blob' })
 }
+
+export function setujuiEmailReseller(id: number | string) {
+  return httpClient.patch<ApiResponse<AdminLengkap>>(`${BASE}/${id}/setujui-email`)
+}
+
+export function tolakEmailReseller(id: number | string) {
+  return httpClient.patch<ApiResponse<AdminLengkap>>(`${BASE}/${id}/tolak-email`)
+}
