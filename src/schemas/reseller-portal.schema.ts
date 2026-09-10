@@ -51,6 +51,14 @@ export const daftarkanPelangganSchema = z.object({
     .coerce
     .number()
     .positive('Pilih paket internet'),
+
+  foto_ktp: z
+    .instanceof(File, { message: 'Foto KTP wajib diunggah' })
+    .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB'),
+  foto_selfie_ktp: z
+    .instanceof(File, { message: 'Foto selfie wajib berupa berkas' })
+    .refine((f) => f.size <= 2 * 1024 * 1024, 'Ukuran foto maksimal 2MB')
+    .optional(),
 })
 
 export type DaftarkanPelangganForm = z.infer<

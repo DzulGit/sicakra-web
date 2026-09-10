@@ -54,6 +54,7 @@ export function getResellerPelangganDetail(id: number | string) {
 export function daftarkanPelanggan(form: DaftarkanPelangganForm, fotoKtp?: File | null, fotoSelfie?: File | null) {
   const payload = new FormData()
   for (const [key, value] of Object.entries(form)) {
+    if (key === 'foto_ktp' || key === 'foto_selfie_ktp') continue
     if (value !== undefined && value !== '') payload.append(key, String(value))
   }
   if (fotoKtp) payload.append('foto_ktp', fotoKtp)
@@ -61,5 +62,6 @@ export function daftarkanPelanggan(form: DaftarkanPelangganForm, fotoKtp?: File 
   return httpClient.post<ApiResponse<{id: number, nomor_pelanggan: string, nama_lengkap: string, layanan: Pelanggan['layanan_internet']}>>(
     `${BASE}/pelanggan`,
     payload,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
   )
 }
