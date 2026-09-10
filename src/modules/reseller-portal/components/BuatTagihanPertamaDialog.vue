@@ -65,22 +65,18 @@ const preview = ref<PreviewTagihanPertamaItem[]>([])
 const layananId = ref<number | null>(null)
 const mode = ref<ModeTagihan>('prorata')
 const jumlahHariJatuhTempo = ref(7)
+
+const nominalManual = ref<number | null>(null)
 const errorMessage = ref('')
 
 const layananTerpilih = computed(() => {
   if (!layananId.value) return null
 
-  return preview.value.find(
-    (item) => item.layanan_internet_id === layananId.value,
-  ) ?? null
-})
-
-const nominalTerpilih = computed(() => {
-  if (!layananTerpilih.value) return 0
-
-  return mode.value === 'prorata'
-    ? layananTerpilih.value.prorata.nominal_terhitung
-    : layananTerpilih.value.full.nominal_terhitung
+  return (
+    preview.value.find(
+      (item) => item.layanan_internet_id === layananId.value,
+    ) ?? null
+  )
 })
 
 const detailTerpilih = computed(() => {
@@ -89,6 +85,38 @@ const detailTerpilih = computed(() => {
   return mode.value === 'prorata'
     ? layananTerpilih.value.prorata
     : layananTerpilih.value.full
+})
+
+/**
+ * Nominal yang dihitung otomatis oleh sistem.
+ */
+const nominalRekomendasi = computed(() => {
+  if (!detailTerpilih.value) return 0
+
+  return detailTerpilih.value.nominal_terhitung
+})
+
+/**
+ * Nominal yang benar-benar akan dikirim ke backend.
+ *
+ * Jika user belum mengubah apa pun, gunakan nominal rekomendasi.
+ */
+const nominalTerpilih = computed(() => {
+  if (nominalManual.value === null) {
+    return nominalRekomendasi.value
+  }
+
+  return nominalManual.value
+})
+
+/**
+ * Menentukan apakah nominal sudah diubah oleh user.
+ */
+const nominalDiubah = computed(() => {
+  return (
+    nominalManual.value !== null &&
+    nominalManual.value !== nominalRekomendasi.value
+  )
 })
 
 function formatRupiah(nilai: number | string | null | undefined) {
@@ -115,6 +143,33 @@ function formatTanggal(tanggal: string) {
   }).format(date)
 }
 
+/**
+ * Reset nominal manual ke hasil perhitungan sistem.
+ */
+function gunakanNominalRekomendasi() {
+  nominalManual.value = null
+}
+
+/**
+ * Ketika user mulai mengetik nominal,
+ * nilai tersebut menjadi nominal manual.
+ */
+function handleNominalInput(value: string | number) {
+  if (value === '' || value === null || value === undefined) {
+    nominalManual.value = null
+    return
+  }
+
+  const numericValue = Number(value)
+
+  if (Number.isNaN(numericValue)) {
+    nominalManual.value = null
+    return
+  }
+
+  nominalManual.value = numericValue
+}
+
 function tutup() {
   if (isGenerating.value) return
 
@@ -126,6 +181,7 @@ async function loadPreview() {
   layananId.value = null
   mode.value = 'prorata'
   jumlahHariJatuhTempo.value = 7
+  nominalManual.value = null
   errorMessage.value = ''
 
   try {
@@ -141,6 +197,17 @@ async function loadPreview() {
   }
 }
 
+/**
+ * Ketika layanan atau mode berubah,
+ * nominal manual dikembalikan ke hasil rekomendasi sistem.
+ */
+watch(
+  [layananId, mode],
+  () => {
+    nominalManual.value = null
+  },
+)
+
 async function submit() {
   if (!layananId.value) {
     toast.error('Layanan pelanggan belum tersedia.')
@@ -155,12 +222,18 @@ async function submit() {
     return
   }
 
+  if (nominalTerpilih.value < 0) {
+    toast.error('Nominal tagihan tidak boleh kurang dari 0.')
+    return
+  }
+
   try {
     await generateTagihan({
       pelangganId: props.pelangganId,
       payload: {
         layanan_internet_id: layananId.value,
         mode: mode.value,
+        nominal_manual: nominalTerpilih.value,
         jumlah_hari_jatuh_tempo: jumlahHariJatuhTempo.value,
       },
     })
@@ -185,42 +258,33 @@ watch(
 </script>
 
 <template>
-  <Dialog
-    :open="props.open"
-    @update:open="(value) => emit('update:open', value)"
-  >
+  <Dialog :open="props.open" @update:open="(value) => emit('update:open', value)">
     <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-lg">
       <DialogHeader>
         <DialogTitle>Buat Tagihan Pertama</DialogTitle>
 
         <DialogDescription>
-          Buat tagihan pertama untuk pelanggan sebelum masuk ke siklus
-          penagihan berikutnya.
+          Sistem akan menghitung nominal awal berdasarkan paket dan tanggal
+          aktif. Nominal tersebut masih bisa disesuaikan sebelum tagihan
+          dibuat.
         </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-5">
         <!-- Loading preview -->
-        <div
-          v-if="isLoadingPreview"
-          class="rounded-lg border p-4 text-sm text-muted-foreground"
-        >
+        <div v-if="isLoadingPreview" class="rounded-lg border p-4 text-sm text-muted-foreground">
           Mengambil data tagihan...
         </div>
 
         <!-- Error -->
-        <div
-          v-else-if="errorMessage"
-          class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-        >
+        <div v-else-if="errorMessage"
+          class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           {{ errorMessage }}
         </div>
 
         <!-- Tidak ada layanan -->
-        <div
-          v-else-if="preview.length === 0"
-          class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground"
-        >
+        <div v-else-if="preview.length === 0"
+          class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
           Tidak ada layanan aktif yang bisa dibuatkan tagihan pertama.
         </div>
 
@@ -231,16 +295,9 @@ watch(
               Layanan
             </Label>
 
-            <select
-              id="layanan-internet"
-              v-model="layananId"
-              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            >
-              <option
-                v-for="item in preview"
-                :key="item.layanan_internet_id"
-                :value="item.layanan_internet_id"
-              >
+            <select id="layanan-internet" v-model="layananId"
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <option v-for="item in preview" :key="item.layanan_internet_id" :value="item.layanan_internet_id">
                 {{ item.prorata.nama_paket }}
                 — {{ item.prorata.kecepatan_mbps }} Mbps
               </option>
@@ -248,15 +305,13 @@ watch(
           </div>
 
           <!-- Informasi layanan -->
-          <div
-            v-if="detailTerpilih"
-            class="rounded-lg border bg-muted/30 p-4"
-          >
+          <div v-if="detailTerpilih" class="rounded-lg border bg-muted/30 p-4">
             <div class="grid gap-3 sm:grid-cols-2">
               <div>
                 <p class="text-xs text-muted-foreground">
                   Paket
                 </p>
+
                 <p class="font-medium">
                   {{ detailTerpilih.nama_paket }}
                 </p>
@@ -266,6 +321,7 @@ watch(
                 <p class="text-xs text-muted-foreground">
                   Kecepatan
                 </p>
+
                 <p class="font-medium">
                   {{ detailTerpilih.kecepatan_mbps }} Mbps
                 </p>
@@ -275,6 +331,7 @@ watch(
                 <p class="text-xs text-muted-foreground">
                   Tanggal Aktif
                 </p>
+
                 <p class="font-medium">
                   {{ formatTanggal(detailTerpilih.tanggal_aktif) }}
                 </p>
@@ -284,6 +341,7 @@ watch(
                 <p class="text-xs text-muted-foreground">
                   Harga Bulanan
                 </p>
+
                 <p class="font-medium">
                   {{ formatRupiah(detailTerpilih.harga_bulanan) }}
                 </p>
@@ -298,18 +356,11 @@ watch(
             </Label>
 
             <div class="grid gap-3 sm:grid-cols-2">
-              <label
-                class="cursor-pointer rounded-lg border p-4 transition"
-                :class="mode === 'prorata'
+              <label class="cursor-pointer rounded-lg border p-4 transition" :class="mode === 'prorata'
                   ? 'border-primary bg-primary/5'
-                  : 'hover:bg-muted/50'"
-              >
-                <input
-                  v-model="mode"
-                  type="radio"
-                  value="prorata"
-                  class="sr-only"
-                />
+                  : 'hover:bg-muted/50'
+                ">
+                <input v-model="mode" type="radio" value="prorata" class="sr-only" />
 
                 <div class="space-y-1">
                   <p class="font-medium">
@@ -317,28 +368,24 @@ watch(
                   </p>
 
                   <p class="text-xs text-muted-foreground">
-                    Tagihan dihitung berdasarkan sisa hari pada periode
-                    berjalan.
+                    Berdasarkan sisa hari pada bulan berjalan.
                   </p>
 
                   <p class="pt-1 text-sm font-semibold">
-                    {{ formatRupiah(layananTerpilih?.prorata.nominal_terhitung) }}
+                    {{
+                      formatRupiah(
+                        layananTerpilih?.prorata.nominal_terhitung,
+                      )
+                    }}
                   </p>
                 </div>
               </label>
 
-              <label
-                class="cursor-pointer rounded-lg border p-4 transition"
-                :class="mode === 'full'
+              <label class="cursor-pointer rounded-lg border p-4 transition" :class="mode === 'full'
                   ? 'border-primary bg-primary/5'
-                  : 'hover:bg-muted/50'"
-              >
-                <input
-                  v-model="mode"
-                  type="radio"
-                  value="full"
-                  class="sr-only"
-                />
+                  : 'hover:bg-muted/50'
+                ">
+                <input v-model="mode" type="radio" value="full" class="sr-only" />
 
                 <div class="space-y-1">
                   <p class="font-medium">
@@ -346,15 +393,151 @@ watch(
                   </p>
 
                   <p class="text-xs text-muted-foreground">
-                    Tagihan menggunakan harga bulanan penuh.
+                    Menggunakan harga bulanan penuh.
                   </p>
 
                   <p class="pt-1 text-sm font-semibold">
-                    {{ formatRupiah(layananTerpilih?.full.nominal_terhitung) }}
+                    {{
+                      formatRupiah(
+                        layananTerpilih?.full.nominal_terhitung,
+                      )
+                    }}
                   </p>
                 </div>
               </label>
             </div>
+          </div>
+
+          <!-- Penjelasan perhitungan -->
+          <div v-if="detailTerpilih" class="rounded-lg border bg-muted/20 p-4">
+            <div class="mb-3">
+              <p class="text-sm font-medium">
+                Perhitungan nominal
+              </p>
+
+              <p class="text-xs text-muted-foreground">
+                Nominal berikut adalah rekomendasi otomatis dari sistem.
+              </p>
+            </div>
+
+            <!-- Perhitungan prorata -->
+            <div v-if="mode === 'prorata'" class="space-y-2">
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="text-muted-foreground">
+                  Harga paket
+                </span>
+
+                <span class="font-medium">
+                  {{ formatRupiah(detailTerpilih.harga_bulanan) }}
+                </span>
+              </div>
+
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="text-muted-foreground">
+                  Jumlah hari dalam bulan
+                </span>
+
+                <span class="font-medium">
+                  {{ Math.round(detailTerpilih.jumlah_hari_dalam_bulan) }} hari
+                </span>
+              </div>
+
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="text-muted-foreground">
+                  Hari yang ditagihkan
+                </span>
+
+                <span class="font-medium">
+                  {{ Math.round(detailTerpilih.jumlah_hari) }} hari
+                </span>
+              </div>
+
+              <div class="my-2 border-t" />
+
+              <div class="rounded-md bg-background p-3 text-center">
+                <p class="text-sm text-muted-foreground">
+                  Perhitungan
+                </p>
+
+                <p class="mt-1 font-medium">
+                  {{ Math.round(detailTerpilih.harga_bulanan) }}
+                  ÷
+                  {{ Math.round(detailTerpilih.jumlah_hari_dalam_bulan) }}
+                  ×
+                  {{ Math.round(detailTerpilih.jumlah_hari) }}
+                </p>
+
+                <p class="mt-1 text-lg font-semibold">
+                  =
+                  {{ formatRupiah(nominalRekomendasi) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Perhitungan full -->
+            <div v-else class="space-y-2">
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="text-muted-foreground">
+                  Harga paket bulanan
+                </span>
+
+                <span class="font-medium">
+                  {{ formatRupiah(detailTerpilih.harga_bulanan) }}
+                </span>
+              </div>
+
+              <div class="my-2 border-t" />
+
+              <div class="rounded-md bg-background p-3 text-center">
+                <p class="text-sm text-muted-foreground">
+                  Perhitungan
+                </p>
+
+                <p class="mt-1 font-medium">
+                  1 bulan ×
+                  {{ formatRupiah(detailTerpilih.harga_bulanan) }}
+                </p>
+
+                <p class="mt-1 text-lg font-semibold">
+                  =
+                  {{ formatRupiah(nominalRekomendasi) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nominal tagihan -->
+          <div class="space-y-2">
+            <Label for="nominal-tagihan">
+              Nominal Tagihan
+            </Label>
+
+            <div class="flex gap-2">
+              <Input id="nominal-tagihan" :model-value="nominalTerpilih" type="number" min="0" step="1000"
+                @update:model-value="handleNominalInput" />
+
+              <Button v-if="nominalDiubah" type="button" variant="outline" @click="gunakanNominalRekomendasi">
+                Gunakan Rekomendasi
+              </Button>
+            </div>
+
+            <div v-if="nominalDiubah" class="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
+              <p class="font-medium">
+                Nominal disesuaikan
+              </p>
+
+              <p class="mt-1 text-muted-foreground">
+                Sistem merekomendasikan
+                {{ formatRupiah(nominalRekomendasi) }},
+                tetapi nominal yang akan dibuat adalah
+                {{ formatRupiah(nominalTerpilih) }}.
+              </p>
+            </div>
+
+            <p v-else class="text-xs text-muted-foreground">
+              Nominal mengikuti hasil perhitungan sistem. Kamu masih bisa
+              mengubahnya jika diperlukan.
+            </p>
           </div>
 
           <!-- Jatuh tempo -->
@@ -364,14 +547,8 @@ watch(
             </Label>
 
             <div class="flex items-center gap-2">
-              <Input
-                id="jumlah-hari-jatuh-tempo"
-                v-model.number="jumlahHariJatuhTempo"
-                type="number"
-                min="1"
-                max="31"
-                class="w-28"
-              />
+              <Input id="jumlah-hari-jatuh-tempo" v-model.number="jumlahHariJatuhTempo" type="number" min="1" max="31"
+                class="w-28" />
 
               <span class="text-sm text-muted-foreground">
                 hari dari hari ini
@@ -384,9 +561,7 @@ watch(
           </div>
 
           <!-- Total -->
-          <div
-            class="flex items-center justify-between rounded-lg border p-4"
-          >
+          <div class="flex items-center justify-between rounded-lg border p-4">
             <div>
               <p class="text-sm text-muted-foreground">
                 Total Tagihan
@@ -405,22 +580,15 @@ watch(
       </div>
 
       <DialogFooter>
-        <Button
-          variant="outline"
-          :disabled="isGenerating"
-          @click="tutup"
-        >
+        <Button variant="outline" :disabled="isGenerating" @click="tutup">
           Batal
         </Button>
 
-        <Button
-          :disabled="
-            isLoadingPreview ||
-            isGenerating ||
-            !layananTerpilih
-          "
-          @click="submit"
-        >
+        <Button :disabled="isLoadingPreview ||
+          isGenerating ||
+          !layananTerpilih ||
+          nominalTerpilih < 0
+          " @click="submit">
           {{ isGenerating ? 'Membuat...' : 'Buat Tagihan' }}
         </Button>
       </DialogFooter>
