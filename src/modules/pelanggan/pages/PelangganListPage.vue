@@ -96,7 +96,7 @@ const { data: dataTerverifikasi, isLoading: loadingTerverifikasi } = useQuery({
 const {
   data: dataPendaftarBaru,
   isLoading: loadingPendaftarBaru,
-} = usePendaftarBaru()
+} = usePendaftarBaru(bolehPendaftarBaru)
 
 const columnsPelanggan: ColumnDef<Pelanggan, unknown>[] = [
   { accessorKey: 'nomor_pelanggan', header: 'Nomor Pelanggan' },

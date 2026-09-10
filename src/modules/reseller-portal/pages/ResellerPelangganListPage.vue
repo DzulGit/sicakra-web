@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, ref, computed } from 'vue'
+import { h, ref, computed, watch } from 'vue'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
@@ -12,6 +12,7 @@ import { daftarkanPelangganSchema } from '@/schemas/reseller-portal.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { getResellerPaketInternetList } from '@/modules/paket-internet/api/reseller/resellerPaketInternet.api'
 import { useResellerPelangganList, useDaftarkanPelanggan } from '../composables/useResellerPortal'
+import PemilihanLokasi from '@/modules/pendaftaran/components/PemilihanLokasi.vue'
 
 import type { Pelanggan } from '@/types/models'
 
@@ -171,6 +172,7 @@ const {
   defineField,
   resetForm,
   setErrors,
+  setFieldValue,
 } = useForm({
   validationSchema: toTypedSchema(daftarkanPelangganSchema),
 })
@@ -184,6 +186,16 @@ const [detailAlamat, detailAlamatAttrs] = defineField('detail_alamat')
 const [provinsi, provinsiAttrs] = defineField('provinsi')
 const [kota, kotaAttrs] = defineField('kota')
 const [paketId, paketIdAttrs] = defineField('paket_internet_id')
+
+const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string } | null>(null)
+
+watch(lokasiPeta, (l) => {
+  setFieldValue('latitude', l?.lat)
+  setFieldValue('longitude', l?.lng)
+  if (l?.address) setFieldValue('alamat_pemasangan', l.address)
+  setFieldValue('provinsi', l?.provinsi ?? undefined)
+  setFieldValue('kota', l?.kota ?? undefined)
+})
 
 function onFileKtp(event: Event) {
   const input = event.target as HTMLInputElement
@@ -200,6 +212,7 @@ function resetFormState() {
 
   fotoKtp.value = null
   fotoSelfie.value = null
+  lokasiPeta.value = null
 }
 
 const { mutate, isPending } = useDaftarkanPelanggan()
@@ -367,14 +380,28 @@ const onSubmit = handleSubmit((formValues) => {
             </p>
           </div>
 
+          <!-- LOKASI PETA -->
+          <div class="space-y-2">
+            <p class="text-sm font-medium">Titik Lokasi Pemasangan</p>
+            <div class="h-64 w-full overflow-hidden rounded-md border">
+              <PemilihanLokasi v-model="lokasiPeta" class="h-full w-full" />
+            </div>
+            <p v-if="errors.latitude" class="text-xs text-destructive">
+              {{ errors.latitude }}
+            </p>
+            <p v-else class="text-xs text-muted-foreground">
+              Klik peta atau geser marker untuk menentukan lokasi. Alamat akan terisi
+              otomatis.
+            </p>
+          </div>
+
           <!-- ALAMAT -->
           <div class="space-y-2">
             <Label for="alamat">
               Alamat Pemasangan
             </Label>
 
-            <Textarea id="alamat" v-model="alamat" v-bind="alamatAttrs" placeholder="Alamat lokasi pemasangan"
-              :aria-invalid="!!errors.alamat_pemasangan" />
+            <Textarea id="alamat" v-model="alamat" v-bind="alamatAttrs" placeholder="Otomatis terisi dari peta. Bisa diedit jika perlu..." :aria-invalid="!!errors.alamat_pemasangan" />
 
             <p v-if="errors.alamat_pemasangan" class="text-xs text-destructive">
               {{ errors.alamat_pemasangan }}
