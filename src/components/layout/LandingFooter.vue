@@ -15,8 +15,8 @@ const navigasi = [
       <div class="grid gap-10 md:grid-cols-3">
         <div>
           <div class="flex items-center gap-4">
-            <img src="/public/sicakra.png" alt="Logo" class="h-25 w-auto" />
-            <img src="/public/aqrapana.png" alt="Logo" class="h-25 w-auto" />
+            <img src="/sicakra.png" alt="Logo" class="h-25 w-auto" />
+            <img src="/aqrapana.png" alt="Logo" class="h-25 w-auto" />
           </div>
 
           <p class="mt-2 max-w-xs text-sm text-muted-foreground">
