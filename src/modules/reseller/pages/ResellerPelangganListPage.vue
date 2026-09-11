@@ -46,14 +46,6 @@ function getStatusTagihan(tagihan: Tagihan) {
     return { label: 'Sudah Dibayar', variant: 'success' as const }
   }
 
-  if (
-    tagihan.status_pembayaran === 'belum_bayar' &&
-    tagihan.tanggal_jatuh_tempo &&
-    new Date(tagihan.tanggal_jatuh_tempo) < new Date()
-  ) {
-    return { label: 'Terlambat', variant: 'destructive' as const }
-  }
-
   return { label: 'Belum Dibayar', variant: 'secondary' as const }
 }
 

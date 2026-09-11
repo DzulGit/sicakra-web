@@ -9,6 +9,8 @@ import {
     getResellerTagihanDetail,
     perbaruiLinkResellerTagihan,
     bayarTunaiResellerTagihan,
+    getResellerDraftTagihanList,
+    terbitkanResellerTagihan,
 } from '../api/resellerTagihan.api'
 
 export function useResellerTagihanList() {
@@ -110,6 +112,36 @@ export function useResellerBayarTunaiTagihan() {
             bayarTunaiResellerTagihan(id, jumlahBulan).then((res) => res.data.data),
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['tagihan', 'reseller', 'detail', variables.id] })
+            queryClient.invalidateQueries({ queryKey: ['tagihan', 'reseller', 'list'] })
+        },
+    })
+}
+
+// ----- Draft / Terbitkan Tagihan -----
+
+export function useResellerDraftTagihanList() {
+    const route = useRoute()
+    const params = computed(() => {
+        const p: Record<string, string> = {}
+        for (const [key, value] of Object.entries(route.query)) {
+            if (typeof value === 'string') p[key] = value
+        }
+        return p
+    })
+
+    return useQuery({
+        queryKey: ['tagihan', 'reseller', 'draft', params],
+        queryFn: () => getResellerDraftTagihanList(params.value).then((res) => res.data.data),
+    })
+}
+
+export function useTerbitkanResellerTagihan() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (payload: { tagihan_ids: number[]; nominal?: Record<number, number> }) =>
+            terbitkanResellerTagihan(payload).then((res) => res.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tagihan', 'reseller', 'draft'] })
             queryClient.invalidateQueries({ queryKey: ['tagihan', 'reseller', 'list'] })
         },
     })

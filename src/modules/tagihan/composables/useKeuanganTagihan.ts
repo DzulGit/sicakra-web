@@ -16,6 +16,8 @@ import {
   regenerateTagihan,
   previewTagihanPertama,
   generateTagihanPertama,
+  getDraftTagihanList,
+  terbitkanTagihan,
 } from '../api/keuanganTagihan.api'
 
 export function useTagihanList() {
@@ -76,7 +78,6 @@ export function useGenerateTagihanPertama() {
         layanan_internet_id: number
         mode: 'prorata' | 'full'
         nominal_manual?: number
-        jumlah_hari_jatuh_tempo?: number
       }
     }) =>
       generateTagihanPertama(pelangganId, payload).then(
@@ -122,7 +123,7 @@ export function useGenerateTagihanManual() {
       payload,
     }: {
       pelangganId: number | string
-      payload: { periode_bulan: number; periode_tahun: number; jumlah_hari_jatuh_tempo?: number }
+      payload: { periode_bulan: number; periode_tahun: number }
     }) => generateTagihanManual(pelangganId, payload).then((res) => res.data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
@@ -210,6 +211,36 @@ export function useRegenerateInvoice() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
+    },
+  })
+}
+
+// ----- Draft / Terbitkan Tagihan -----
+
+export function useDraftTagihanList() {
+  const route = useRoute()
+  const params = computed(() => {
+    const p: Record<string, string> = {}
+    for (const [key, value] of Object.entries(route.query)) {
+      if (typeof value === 'string') p[key] = value
+    }
+    return p
+  })
+
+  return useQuery({
+    queryKey: ['tagihan', 'keuangan', 'draft', params],
+    queryFn: () => getDraftTagihanList(params.value).then((res) => res.data.data),
+  })
+}
+
+export function useTerbitkanTagihan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: { tagihan_ids: number[]; nominal?: Record<number, number> }) =>
+      terbitkanTagihan(payload).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'draft'] })
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })
     },
   })
 }

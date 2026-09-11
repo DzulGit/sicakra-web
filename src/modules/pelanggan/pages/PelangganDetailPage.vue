@@ -91,7 +91,6 @@ const columnsTagihan: ColumnDef<BarisTagihan, unknown>[] = [
   { header: 'Periode', cell: ({ row }) => formatPeriode(row.original) },
   { header: 'Jumlah', cell: ({ row }) => `${row.original.jumlah_bulan} bulan` },
   { header: 'Total', cell: ({ row }) => formatRupiah(row.original.total_tagihan) },
-  { header: 'Jatuh Tempo', cell: ({ row }) => formatTanggal(row.original.tanggal_jatuh_tempo) },
   {
     header: 'Status',
     cell: ({ row }) => h(StatusBadge, { value: row.original.status_pembayaran, map: statusPembayaranEnum }),
@@ -269,7 +268,7 @@ function formatTanggal(iso?: string | null) {
                 </Button>
               </div>
               <p v-else class="font-medium">{{ pelanggan.tanggal_tagihan ?? 20 }}</p>
-              <p class="text-xs text-muted-foreground">Hari jatuh tempo tagihan tiap bulan.</p>
+              <p class="text-xs text-muted-foreground">Tanggal tagihan dibuat tiap bulan.</p>
             </div>
 
             <Separator />

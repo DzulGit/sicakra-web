@@ -60,7 +60,6 @@ export function generateTagihanPertama(
     layanan_internet_id: number
     mode: 'prorata' | 'full'
     nominal_manual?: number
-    jumlah_hari_jatuh_tempo?: number
   },
 ) {
   return httpClient.post<ApiResponse<Tagihan>>(
@@ -81,7 +80,7 @@ export function getRingkasanOmzet(tahun: number) {
   return httpClient.get<ApiResponse<RingkasanOmzet[]>>(`${BASE}-ringkasan`, { params: { tahun } })
 }
 
-export function generateTagihanManual(pelangganId: number | string, payload: { periode_bulan: number; periode_tahun: number; jumlah_hari_jatuh_tempo?: number }) {
+export function generateTagihanManual(pelangganId: number | string, payload: { periode_bulan: number; periode_tahun: number }) {
   return httpClient.post<ApiResponse<Tagihan[]>>(`${BASE}/generate/${pelangganId}`, payload)
 }
 
@@ -103,6 +102,30 @@ export function bayarTunaiTagihan(id: number | string, jumlahBulan: number) {
 
 // SENGAJA tidak ada create()/update() — TagihanPolicy backend melarang keduanya,
 // Keuangan bersifat read-only. Lihat docs/api/keuangan.md.
+
+// ----- Draft / Terbitkan Tagihan -----
+
+export type DraftTagihan = Tagihan & {
+  layanan_internet?: {
+    id: number
+    pelanggan?: { id: number; nama_lengkap: string }
+    paket_internet?: { id: number; nama_paket: string } | null
+  }
+}
+
+export function getDraftTagihanList(params: Record<string, string>) {
+  return httpClient.get<PaginatedResponse<DraftTagihan>>(`${BASE}/draft`, { params })
+}
+
+export function terbitkanTagihan(payload: {
+  tagihan_ids: number[]
+  nominal?: Record<number, number>
+}) {
+  return httpClient.post<ApiResponse<{ message: string; berhasil: number; gagal: number }>>(
+    `${BASE}/terbitkan`,
+    payload,
+  )
+}
 
 // ----- Sisi Pelanggan (hanya tagihan dari layanan miliknya sendiri) -----
 const BASE_PELANGGAN = '/pelanggan/tagihan'

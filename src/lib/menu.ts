@@ -4,6 +4,7 @@ import {
   FileText,
   Calendar,
   Receipt,
+  Send,
   Users,
   UsersRound,
   Wifi,
@@ -49,6 +50,7 @@ const menuTeknisi: MenuItem[] = [
 const menuKeuangan: MenuItem[] = [
   { label: 'Overview', to: '/admin/keuangan/overview', icon: LayoutDashboard },
   { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
+  { label: 'Terbitkan Tagihan', to: '/admin/keuangan/terbitkan-tagihan', icon: Send },
   { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
   { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
@@ -74,6 +76,7 @@ const menuReseller: MenuItem[] = [
   { label: 'Pelanggan', to: '/reseller/pelanggan', icon: Contact },
   { label: 'Permohonan Layanan', to: '/reseller/permohonan-layanan', icon: FileText },
   { label: 'Tagihan', to: '/reseller/tagihan', icon: Receipt },
+  { label: 'Terbitkan Tagihan', to: '/reseller/terbitkan-tagihan', icon: Send },
   { label: 'Pendapatan', to: '/reseller/pendapatan', icon: Wallet },
   { label: 'Notifikasi', to: '/reseller/notifikasi', icon: Bell },
   { label: 'Profil', to: '/reseller/profil', icon: UserCircle },

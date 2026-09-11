@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { DollarSign, CalendarClock, TrendingUp, Banknote, AlertCircle, Coins } from 'lucide-vue-next'
+import { DollarSign, TrendingUp, Banknote, AlertCircle, Coins } from 'lucide-vue-next'
 import DashboardSection from './DashboardSection.vue'
 import DashboardHeader from './DashboardHeader.vue'
 import DashboardStatCard from './DashboardStatCard.vue'
 import DashboardRevenueTrendChart from './DashboardRevenueTrendChart.vue'
 import DashboardStatusDistribution from './DashboardStatusDistribution.vue'
 import DashboardKeuanganTable from './DashboardKeuanganTable.vue'
-import DashboardTagihanJatuhTempo from './DashboardTagihanJatuhTempo.vue'
 import DashboardQuickActions from './DashboardQuickActions.vue'
 import { useDashboardKeuangan } from '../composables/useDashboardKeuangan'
 
@@ -44,12 +43,6 @@ const { data, isLoading } = useDashboardKeuangan()
         :loading="isLoading"
       />
       <DashboardStatCard
-        :icon="CalendarClock"
-        label="Jatuh Tempo Minggu Ini"
-        :value="data?.stats?.jatuh_tempo_minggu_ini ?? 0"
-        :loading="isLoading"
-      />
-      <DashboardStatCard
         :icon="Coins"
         label="Total Tertunggak"
         :value="data?.stats?.total_tertunggak ?? 'Rp0'"
@@ -64,7 +57,6 @@ const { data, isLoading } = useDashboardKeuangan()
   </div>
 
   <div class="grid gap-6 lg:grid-cols-2">
-    <DashboardTagihanJatuhTempo :data="data?.tagihan_akan_jatuh_tempo" :loading="isLoading" />
     <DashboardQuickActions />
   </div>
 

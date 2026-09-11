@@ -165,8 +165,7 @@ export interface Tagihan {
   harga_snapshot: string
   total_tagihan: string
   jumlah_bulan: number
-  tanggal_jatuh_tempo: string
-  status_pembayaran: 'belum_bayar' | 'sudah_bayar' | 'kedaluwarsa'
+  status_pembayaran: 'belum_diterbitkan' | 'belum_bayar' | 'sudah_bayar' | 'kedaluwarsa'
   xendit_invoice_id: string | null
   xendit_external_id: string | null
   xendit_invoice_url: string | null
@@ -349,7 +348,6 @@ export interface DashboardKeuanganStats {
   total_pembayaran_hari_ini: string
   tagihan_tertunggak: number
   total_tertunggak: string
-  jatuh_tempo_minggu_ini: number
   pendapatan_bulan_ini: string
 }
 
@@ -358,7 +356,6 @@ export interface DashboardKeuanganRingkasan {
   tren_pendapatan: DashboardTrendPoint[]
   distribusi_pembayaran: DashboardStatusDist[]
   pembayaran_terbaru: DashboardPembayaranRingkas[]
-  tagihan_akan_jatuh_tempo: Tagihan[]
 }
 
 export interface DashboardJadwalRingkas {

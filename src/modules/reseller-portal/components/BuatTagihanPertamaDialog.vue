@@ -64,7 +64,6 @@ const {
 const preview = ref<PreviewTagihanPertamaItem[]>([])
 const layananId = ref<number | null>(null)
 const mode = ref<ModeTagihan>('prorata')
-const jumlahHariJatuhTempo = ref(7)
 
 const nominalManual = ref<number | null>(null)
 const errorMessage = ref('')
@@ -180,7 +179,6 @@ async function loadPreview() {
   preview.value = []
   layananId.value = null
   mode.value = 'prorata'
-  jumlahHariJatuhTempo.value = 7
   nominalManual.value = null
   errorMessage.value = ''
 
@@ -214,14 +212,6 @@ async function submit() {
     return
   }
 
-  if (
-    jumlahHariJatuhTempo.value < 1 ||
-    jumlahHariJatuhTempo.value > 31
-  ) {
-    toast.error('Jatuh tempo harus antara 1 sampai 31 hari.')
-    return
-  }
-
   if (nominalTerpilih.value < 0) {
     toast.error('Nominal tagihan tidak boleh kurang dari 0.')
     return
@@ -234,7 +224,6 @@ async function submit() {
         layanan_internet_id: layananId.value,
         mode: mode.value,
         nominal_manual: nominalTerpilih.value,
-        jumlah_hari_jatuh_tempo: jumlahHariJatuhTempo.value,
       },
     })
 
@@ -537,26 +526,6 @@ watch(
             <p v-else class="text-xs text-muted-foreground">
               Nominal mengikuti hasil perhitungan sistem. Kamu masih bisa
               mengubahnya jika diperlukan.
-            </p>
-          </div>
-
-          <!-- Jatuh tempo -->
-          <div class="space-y-2">
-            <Label for="jumlah-hari-jatuh-tempo">
-              Jatuh Tempo
-            </Label>
-
-            <div class="flex items-center gap-2">
-              <Input id="jumlah-hari-jatuh-tempo" v-model.number="jumlahHariJatuhTempo" type="number" min="1" max="31"
-                class="w-28" />
-
-              <span class="text-sm text-muted-foreground">
-                hari dari hari ini
-              </span>
-            </div>
-
-            <p class="text-xs text-muted-foreground">
-              Default 7 hari.
             </p>
           </div>
 

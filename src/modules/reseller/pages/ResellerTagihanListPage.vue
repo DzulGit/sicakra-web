@@ -50,11 +50,6 @@ const columns: ColumnDef<Tagihan, unknown>[] = [
     cell: ({ row }) => `${row.original.periode_bulan}/${row.original.periode_tahun}`,
   },
   {
-    accessorKey: 'tanggal_jatuh_tempo',
-    header: 'Jatuh Tempo',
-    cell: ({ row }) => formatTanggal(row.original.tanggal_jatuh_tempo),
-  },
-  {
     accessorKey: 'total_tagihan',
     header: 'Total',
     cell: ({ row }) => formatRupiah(row.original.total_tagihan),
@@ -64,13 +59,9 @@ const columns: ColumnDef<Tagihan, unknown>[] = [
     header: 'Status',
     cell: ({ row }) => {
       const tagihan = row.original
-      const terlambat =
-        tagihan.status_pembayaran === 'belum_bayar' &&
-        tagihan.tanggal_jatuh_tempo &&
-        new Date(tagihan.tanggal_jatuh_tempo) < new Date()
 
-      if (terlambat) {
-        return h(Badge, { variant: 'destructive' }, () => 'Terlambat')
+      if (tagihan.status_pembayaran === 'belum_bayar') {
+        return h(Badge, { variant: 'destructive' }, () => 'Belum Bayar')
       }
 
       return h(StatusBadge, {

@@ -84,7 +84,6 @@ const previewData = ref<PreviewItem[]>([])
 const layananTerpilih = ref('')
 const mode = ref<'prorata' | 'full'>('prorata')
 const nominalManual = ref('')
-const jumlahHariJatuhTempo = ref('7')
 const error = ref('')
 
 const isPending = computed(
@@ -121,19 +120,6 @@ const nominalAkhir = computed(() => {
     : nominalTerhitung.value
 })
 
-const tanggalJatuhTempo = computed(() => {
-  const hari = Number(jumlahHariJatuhTempo.value || 0)
-  const tanggal = new Date()
-
-  tanggal.setDate(tanggal.getDate() + hari)
-
-  return tanggal.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-})
-
 const formatRupiah = (nilai: number) =>
   new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -146,7 +132,6 @@ function resetForm() {
   layananTerpilih.value = ''
   mode.value = 'prorata'
   nominalManual.value = ''
-  jumlahHariJatuhTempo.value = '7'
   error.value = ''
 }
 
@@ -233,13 +218,6 @@ function konfirmasi() {
     return
   }
 
-  const hari = Number(jumlahHariJatuhTempo.value)
-
-  if (!Number.isInteger(hari) || hari < 1 || hari > 31) {
-    error.value = 'Jumlah hari jatuh tempo harus 1–31.'
-    return
-  }
-
   error.value = ''
 
   generate(
@@ -249,7 +227,6 @@ function konfirmasi() {
         layanan_internet_id: layanan.value.layanan_internet_id,
         mode: mode.value,
         nominal_manual: nominal,
-        jumlah_hari_jatuh_tempo: hari,
       },
     },
     {
@@ -471,28 +448,7 @@ function konfirmasi() {
               <p class="text-xs text-muted-foreground">
                 Nominal hasil perhitungan dapat diubah oleh Keuangan
                 sebelum tagihan dibuat.
-              </p>
-            </div>
-
-            <!-- Jatuh Tempo -->
-            <div class="space-y-2">
-              <Label for="jatuh-tempo-pertama">
-                Jatuh Tempo (hari)
-              </Label>
-
-              <Input
-                id="jatuh-tempo-pertama"
-                v-model="jumlahHariJatuhTempo"
-                type="number"
-                min="1"
-                max="31"
-                :disabled="isPending"
-              />
-
-              <p class="text-xs text-muted-foreground">
-                Jatuh tempo dihitung sejak tagihan dibuat:
-                {{ tanggalJatuhTempo }}
-              </p>
+                </p>
             </div>
           </div>
 

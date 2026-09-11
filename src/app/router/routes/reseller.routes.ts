@@ -11,6 +11,7 @@ const ResellerPaketInternetListPage = () => import('@/modules/reseller-portal/pa
 const ResellerPaketInternetFormPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetFormPage.vue')
 const ResellerTagihanListPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanListPage.vue')
 const ResellerTagihanDetailPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanDetailPage.vue')
+const ResellerTerbitkanTagihanPage = () => import('@/modules/reseller-portal/pages/ResellerTerbitkanTagihanPage.vue')
 const ResellerPermohonanLayananListPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananListPage.vue')
 const ResellerPermohonanLayananDetailPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananDetailPage.vue')
 /**
@@ -176,6 +177,18 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Tagihan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/terbitkan-tagihan',
+    name: 'reseller.terbitkan-tagihan',
+    component: ResellerTerbitkanTagihanPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Terbitkan Tagihan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],

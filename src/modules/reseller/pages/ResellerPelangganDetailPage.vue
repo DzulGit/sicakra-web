@@ -52,17 +52,6 @@ function statusTagihan(item: Tagihan) {
         }
     }
 
-    if (
-        item.status_pembayaran === 'belum_bayar' &&
-        item.tanggal_jatuh_tempo &&
-        new Date(item.tanggal_jatuh_tempo) < new Date()
-    ) {
-        return {
-            label: 'Terlambat',
-            variant: 'destructive' as const,
-        }
-    }
-
     return {
         label: 'Belum Dibayar',
         variant: 'secondary' as const,
@@ -79,11 +68,6 @@ const tagihanColumns: ColumnDef<Tagihan, unknown>[] = [
         header: 'Periode',
         cell: ({ row }) =>
             `${row.original.periode_bulan}/${row.original.periode_tahun}`,
-    },
-    {
-        accessorKey: 'tanggal_jatuh_tempo',
-        header: 'Jatuh Tempo',
-        cell: ({ row }) => formatTanggal(row.original.tanggal_jatuh_tempo),
     },
     {
         accessorKey: 'total_tagihan',

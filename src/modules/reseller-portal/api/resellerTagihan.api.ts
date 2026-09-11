@@ -55,7 +55,6 @@ export function generateResellerTagihanPertama(
     layanan_internet_id: number
     mode: 'prorata' | 'full'
     nominal_manual?: number
-    jumlah_hari_jatuh_tempo?: number
   },
 ) {
   return httpClient.post<ApiResponse<Tagihan>>(`${BASE}/pertama/${pelangganId}`, payload)
@@ -77,4 +76,28 @@ export function bayarTunaiResellerTagihan(id: number | string, jumlahBulan: numb
   return httpClient.post<ApiResponse<Tagihan>>(`${BASE}/${id}/bayar-tunai`, {
     jumlah_bulan: jumlahBulan,
   })
+}
+
+// ----- Draft / Terbitkan Tagihan -----
+
+export type DraftTagihan = Tagihan & {
+  layanan_internet?: {
+    id: number
+    pelanggan?: { id: number; nama_lengkap: string }
+    paket_internet?: { id: number; nama_paket: string } | null
+  }
+}
+
+export function getResellerDraftTagihanList(params: Record<string, string>) {
+  return httpClient.get<PaginatedResponse<DraftTagihan>>(`${BASE}/draft`, { params })
+}
+
+export function terbitkanResellerTagihan(payload: {
+  tagihan_ids: number[]
+  nominal?: Record<number, number>
+}) {
+  return httpClient.post<ApiResponse<{ message: string; berhasil: number; gagal: number }>>(
+    `${BASE}/terbitkan`,
+    payload,
+  )
 }

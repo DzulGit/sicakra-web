@@ -198,10 +198,6 @@ function waHref(nomor: string) {
               <span class="text-muted-foreground">Total Tagihan</span>
               <span class="font-semibold">{{ formatRupiah(tagihan.total_tagihan) }}</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-muted-foreground">Jatuh Tempo</span>
-              <span>{{ formatTanggal(tagihan.tanggal_jatuh_tempo) }}</span>
-            </div>
             <div v-if="tagihan.dibayar_pada" class="flex justify-between">
               <span class="text-muted-foreground">Dibayar Pada</span>
               <span>{{ formatTanggal(tagihan.dibayar_pada) }}</span>
