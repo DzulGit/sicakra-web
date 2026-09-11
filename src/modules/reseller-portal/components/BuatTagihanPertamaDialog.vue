@@ -424,11 +424,11 @@ watch(
             <div v-if="mode === 'prorata'" class="space-y-2">
               <div class="flex justify-between gap-4 text-sm">
                 <span class="text-muted-foreground">
-                  Harga paket
+                  Jumlah hari tersisa
                 </span>
 
                 <span class="font-medium">
-                  {{ formatRupiah(detailTerpilih.harga_bulanan) }}
+                  {{ Math.round(detailTerpilih.jumlah_hari) }} hari
                 </span>
               </div>
 
@@ -444,11 +444,11 @@ watch(
 
               <div class="flex justify-between gap-4 text-sm">
                 <span class="text-muted-foreground">
-                  Hari yang ditagihkan
+                  Harga paket bulanan
                 </span>
 
                 <span class="font-medium">
-                  {{ Math.round(detailTerpilih.jumlah_hari) }} hari
+                  {{ formatRupiah(detailTerpilih.harga_bulanan) }}
                 </span>
               </div>
 
@@ -460,11 +460,11 @@ watch(
                 </p>
 
                 <p class="mt-1 font-medium">
-                  {{ Math.round(detailTerpilih.harga_bulanan) }}
+                  {{ Math.round(detailTerpilih.jumlah_hari) }}
                   ÷
                   {{ Math.round(detailTerpilih.jumlah_hari_dalam_bulan) }}
                   ×
-                  {{ Math.round(detailTerpilih.jumlah_hari) }}
+                  {{ Math.round(detailTerpilih.harga_bulanan) }}
                 </p>
 
                 <p class="mt-1 text-lg font-semibold">
