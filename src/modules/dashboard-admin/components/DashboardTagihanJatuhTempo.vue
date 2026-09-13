@@ -16,9 +16,6 @@ function rupiah(nilai: string) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(nilai))
 }
 
-function tanggal(t: string) {
-  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(t))
-}
 </script>
 
 <template>
@@ -41,7 +38,7 @@ function tanggal(t: string) {
           <div class="min-w-0">
             <p class="truncate text-sm font-medium">{{ tagihan.nomor_tagihan }}</p>
             <p class="truncate text-xs text-muted-foreground">
-              {{ tagihan.layanan_internet?.pelanggan?.nama_lengkap ?? '—' }} · {{ tanggal(tagihan.tanggal_jatuh_tempo) }}
+              {{ tagihan.layanan_internet?.pelanggan?.nama_lengkap ?? '—' }} · Periode {{ tagihan.periode_bulan }}/{{ tagihan.periode_tahun }}
             </p>
           </div>
           <div class="flex shrink-0 items-center gap-3">

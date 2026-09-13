@@ -101,7 +101,7 @@ const columns: ColumnDef<AdminLengkap, unknown>[] = [
         buttons.push(
           h(
             Button,
-            { variant: 'success', size: 'sm', disabled: pendingSetujui.value || pendingTolak.value, onClick: () => onSetujuiEmail(row.original.id, row.original.nama_lengkap, row.original.email_baru ?? '') },
+            { variant: 'default', size: 'sm', disabled: pendingSetujui.value || pendingTolak.value, onClick: () => onSetujuiEmail(row.original.id, row.original.nama_lengkap, row.original.email_baru ?? '') },
             () => [h(MailCheck, { class: 'size-4' }), ' Setujui'],
           ),
           h(

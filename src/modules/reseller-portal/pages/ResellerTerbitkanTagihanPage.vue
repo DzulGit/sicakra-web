@@ -76,7 +76,7 @@ async function handleTerbitkan() {
       tagihan_ids: tagihanIds,
       nominal: Object.keys(nominal).length > 0 ? nominal : undefined,
     })
-    toast.success(res.message)
+    toast.success(res.message ?? 'Tagihan berhasil diterbitkan.')
     selectedIds.value = new Set()
     nominalOverrides.value = {}
     showConfirm.value = false
@@ -129,7 +129,7 @@ const columns: ColumnDef<DraftTagihan, any>[] = [
         type: 'number',
         class: 'w-32 h-8 text-xs',
         modelValue: String(getNominalDefault(row.original)),
-        'onUpdate:modelValue': (v: string) => {
+        'onUpdate:modelValue': (v: string | number) => {
           nominalOverrides.value[row.original.id] = Number(v)
         },
       }),

@@ -19,8 +19,8 @@ const props = withDefaults(defineProps<{
   fetchExcel?: (params: PendapatanFilterParams) => Promise<{ data: Blob }>
 }>(), {
   fetchPelanggan: () => getPelangganList(),
-  fetchPdf: (params) => getLaporanPendapatanPdf(params),
-  fetchExcel: (params) => getLaporanPendapatanExcel(params),
+  fetchPdf: (params: PendapatanFilterParams) => getLaporanPendapatanPdf(params),
+  fetchExcel: (params: PendapatanFilterParams) => getLaporanPendapatanExcel(params),
 })
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 

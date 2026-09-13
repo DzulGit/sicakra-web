@@ -94,7 +94,7 @@ function pilihPaket(paket: PaketInternet) {
 }
 
 function lanjutKeLokasi() {
-  setFieldValue('paket_internet_id', String(selectedPaket.value!.id))
+  setFieldValue('paket_internet_id', Number(selectedPaket.value!.id))
   isModalOpen.value = false
   currentStep.value = 2
 }

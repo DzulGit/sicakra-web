@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { useQuery } from '@tanstack/vue-query'
 import { Search, X, Users, UserPlus, Plus } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Component } from 'vue'

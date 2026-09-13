@@ -58,7 +58,7 @@ const {
   setFieldValue,
   resetForm,
 } = useForm({
-  validationSchema: toTypedSchema(schema),
+  validationSchema: computed(() => toTypedSchema(schema.value)),
 })
 
 const [namaPaket, namaPaketAttrs] = defineField('nama_paket')
@@ -71,7 +71,7 @@ const [statusAktif] = defineField('status_aktif')
 
 // Load paket saat mode edit
 const { data: paket, isLoading: isLoadingDetail } = useResellerPaketInternetDetail(
-  computed(() => (modeEdit.value ? props.paketId : undefined)),
+  computed(() => (modeEdit.value && props.paketId != null ? Number(props.paketId) : undefined)),
 )
 
 watch(
@@ -246,7 +246,7 @@ function handleClose() {
           <Checkbox
             id="status_aktif"
             :model-value="statusAktif"
-            @update:model-value="(v: boolean) => setFieldValue('status_aktif', v)"
+            @update:model-value="(v) => setFieldValue('status_aktif', v === true)"
           />
           <Label for="status_aktif" class="cursor-pointer font-normal">
             Paket aktif

@@ -24,13 +24,6 @@ function formatRupiah(value: string | number) {
   }).format(Number(value))
 }
 
-function formatTanggal(value: string | null | undefined) {
-  if (!value) return '-'
-
-  return new Intl.DateTimeFormat('id-ID', {
-    dateStyle: 'medium',
-  }).format(new Date(value))
-}
 
 const columns: ColumnDef<Tagihan, unknown>[] = [
   { accessorKey: 'nomor_tagihan', header: 'Nomor Tagihan' },
