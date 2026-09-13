@@ -2,15 +2,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import {
+  bayarGabunganTagihan,
   bayarTagihan,
   bayarTunaiTagihan,
   generateTagihanManual,
+  getDeposit,
   getPendaftarBaru,
+  getRiwayatPembayaran,
   getRingkasanOmzet,
   getTagihanDetail,
   getTagihanList,
   getTagihanSayaDetail,
   getTagihanSayaList,
+  getTunggakan,
+  gunakanDeposit,
   perbaruiLinkTagihan,
   regenerateInvoice,
   regenerateTagihan,
@@ -194,13 +199,87 @@ export function useTagihanSayaDetail(id: MaybeRefOrGetter<number | string>) {
 
 export function useBayarTagihan() {
   const queryClient = useQueryClient()
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya'] })
+    queryClient.invalidateQueries({ queryKey: ['deposit-pelanggan'] })
+    queryClient.invalidateQueries({ queryKey: ['tunggakan-pelanggan'] })
+    queryClient.invalidateQueries({ queryKey: ['riwayat-pembayaran-pelanggan'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard-pelanggan'] })
+  }
+
+  return {
+    bayarSatu: useMutation({
+      mutationFn: ({
+        id,
+        jumlahDibayar,
+        gunakanDeposit,
+      }: {
+        id: number | string
+        jumlahDibayar?: number
+        gunakanDeposit?: boolean
+      }) =>
+        bayarTagihan(id, {
+          jumlah_dibayar: jumlahDibayar,
+          gunakan_deposit: gunakanDeposit,
+        }).then((res) => res.data.data),
+      onSuccess: invalidate,
+    }),
+    bayarGabungan: useMutation({
+      mutationFn: (payload: {
+        jumlahDibayar: number
+        tagihanIds?: number[]
+        gunakanDeposit?: boolean
+      }) =>
+        bayarGabunganTagihan({
+          jumlah_dibayar: payload.jumlahDibayar,
+          tagihan_ids: payload.tagihanIds,
+          gunakan_deposit: payload.gunakanDeposit,
+        }).then((res) => res.data.data),
+      onSuccess: invalidate,
+    }),
+  }
+}
+
+export function useDeposit() {
+  return useQuery({
+    queryKey: ['deposit-pelanggan'],
+    queryFn: () => getDeposit().then((res) => res.data.data),
+  })
+}
+
+export function useTunggakan() {
+  return useQuery({
+    queryKey: ['tunggakan-pelanggan'],
+    queryFn: () => getTunggakan().then((res) => res.data.data),
+  })
+}
+
+export function useGunakanDeposit() {
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, jumlahBulan }: { id: number | string; jumlahBulan?: number }) =>
-      bayarTagihan(id, jumlahBulan).then((res) => res.data.data),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', variables.id] })
-      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
+    mutationFn: () => gunakanDeposit().then((res) => res.data.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deposit-pelanggan'] })
+      queryClient.invalidateQueries({ queryKey: ['tunggakan-pelanggan'] })
+      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya'] })
+      queryClient.invalidateQueries({ queryKey: ['riwayat-pembayaran-pelanggan'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-pelanggan'] })
     },
+  })
+}
+
+export function useRiwayatPembayaran() {
+  const route = useRoute()
+  const params = computed(() => {
+    const p: Record<string, string> = {}
+    for (const [key, value] of Object.entries(route.query)) {
+      if (typeof value === 'string') p[key] = value
+    }
+    return p
+  })
+  return useQuery({
+    queryKey: ['riwayat-pembayaran-pelanggan', params],
+    queryFn: () => getRiwayatPembayaran(params.value).then((res) => res.data.data),
   })
 }
 

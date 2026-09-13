@@ -144,14 +144,84 @@ export interface LaporanKendala {
 
 export interface Pembayaran {
   id: number
-  tagihan_id: number
+  tagihan_id: number | null
+  pelanggan_id: number | null
+  pakai_saldo_kredit: boolean
+  tagihan_terpilih: number[] | null
   metode_pembayaran: string | null
+  provider: string | null
+  provider_reference: string | null
+  provider_external_id: string | null
+  payment_url: string | null
+  provider_status: string | null
+  provider_expires_at: string | null
   dibayar_oleh?: string | null
   jumlah_dibayar: string | null
   referensi_xendit: string | null
   status: 'pending' | 'berhasil' | 'gagal'
   dibayar_pada: string | null
   created_at: string
+  alokasi_tagihan?: Array<{ id: number; tagihan_id: number; jumlah_dialokasikan: string }>
+  mutasi_saldo_kredit?: MutasiSaldoKredit[]
+}
+
+export interface MutasiSaldoKredit {
+  id: number
+  pelanggan_id: number
+  pembayaran_id: number | null
+  tagihan_id: number | null
+  jenis: 'kredit' | 'pemakaian'
+  jumlah: string
+  keterangan: string | null
+  created_at: string
+}
+
+export interface DepositInfo {
+  saldo_deposit: number
+  mutasi: MutasiSaldoKredit[]
+}
+
+export interface TagihanTunggakan {
+  id: number
+  nomor_tagihan: string
+  periode_bulan: number
+  periode_tahun: number
+  total_tagihan: number
+  jumlah_bulan: number
+  sudah_dibayar: number
+  saldo_kredit_digunakan: number
+  sisa_tagihan: number
+  status_pembayaran: Tagihan['status_pembayaran']
+  dibayar_pada: string | null
+}
+
+export interface TunggakanRingkasan {
+  total_tunggakan: number
+  jumlah_tagihan: number
+  tagihan: TagihanTunggakan[]
+}
+
+export interface GunakanDepositResult {
+  saldo_awal: number
+  total_digunakan: number
+  saldo_akhir: number
+  tagihan: Array<{
+    tagihan_id: number
+    nomor_tagihan: string
+    jumlah_digunakan: number
+    sisa_tagihan: number
+    status_pembayaran: Tagihan['status_pembayaran']
+  }>
+  saldo_deposit: number
+  tunggakan: TunggakanRingkasan
+}
+
+export interface BayarGabunganResult {
+  pembayaran: Pembayaran
+  total_tagihan: number
+  jumlah_dibayar: number
+  kelebihan: number
+  payment_url: string | null
 }
 
 export interface Tagihan {
@@ -168,6 +238,9 @@ export interface Tagihan {
   status_pembayaran: 'belum_diterbitkan' | 'belum_bayar' | 'sudah_bayar' | 'kedaluwarsa'
   xendit_invoice_id: string | null
   xendit_external_id: string | null
+  sisa_tagihan?: number
+  sudah_dibayar?: number
+  saldo_kredit_digunakan?: number
   xendit_invoice_url: string | null
   xendit_invoice_status: string | null
   xendit_invoice_expires_at: string | null
@@ -179,6 +252,7 @@ export interface Tagihan {
   created_at: string
   layanan_internet?: LayananInternetRingkas
   pembayaran?: Pembayaran[]
+  riwayat_pembayaran?: Pembayaran[]
 }
 
 export interface RingkasanOmzet {
@@ -444,6 +518,9 @@ export interface DashboardRingkasan {
     layanan_aktif: number
     tagihan_belum_bayar: number
     total_tagihan_belum_bayar: number
+    jumlah_tagihan_menunggak: number
+    total_tunggakan: number
+    saldo_deposit: number
     kendala_aktif: number
     permohonan_pending: number
   }
@@ -460,8 +537,8 @@ export interface DashboardRingkasan {
     id: number
     nomor_tagihan: string
     total: number
+    sisa: number
     status_pembayaran: string
-    tenggat: string | null
     layanan: string
   }>
   kendala_terbaru: Array<{

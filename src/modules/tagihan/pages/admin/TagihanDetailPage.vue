@@ -358,7 +358,7 @@ function waHref(nomor: string) {
           <CardTitle class="text-base">Riwayat Pembayaran</CardTitle>
         </CardHeader>
         <CardContent>
-          <RiwayatPembayaranTable :pembayaran="tagihan.pembayaran ?? []" />
+          <RiwayatPembayaranTable :pembayaran="tagihan.riwayat_pembayaran ?? []" />
         </CardContent>
       </Card>
     </template>

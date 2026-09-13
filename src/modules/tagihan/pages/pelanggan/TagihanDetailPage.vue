@@ -1,44 +1,56 @@
 <script setup lang="ts">
-import { computed, watch, onUnmounted } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { AxiosError } from 'axios'
 import type { ApiErrorResponse } from '@/types/api'
-import { useRegenerateInvoice, useTagihanSayaDetail } from '../../composables/useKeuanganTagihan'
+import { useTagihanSayaDetail, useBayarTagihan } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'vue-sonner'
-import { RefreshCw, ExternalLink, Clock } from 'lucide-vue-next'
+import { ExternalLink } from 'lucide-vue-next'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
 
 const { data: tagihan, isLoading, refetch } = useTagihanSayaDetail(id)
-const { mutate: regenerate, isPending: isRegenerating } = useRegenerateInvoice()
+const { bayarSatu } = useBayarTagihan()
+
+const jumlahDibayar = ref<string>('')
+const pakaiDeposit = ref(false)
 
 let intervalId: ReturnType<typeof setInterval> | null = null
 
-watch(tagihan, (baru) => {
-  if (baru?.status_pembayaran === 'belum_bayar') {
-    if (!intervalId) {
-      intervalId = setInterval(() => {
-        if (refetch) refetch()
-      }, 3000)
+watch(
+  tagihan,
+  (baru) => {
+    if (baru?.status_pembayaran === 'belum_bayar') {
+      if (!intervalId) {
+        intervalId = setInterval(() => {
+          if (refetch) refetch()
+        }, 5000)
+      }
+    } else {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
     }
-  } else {
-    if (intervalId) {
-      clearInterval(intervalId)
-      intervalId = null
-    }
-  }
-}, { immediate: true, deep: true })
+  },
+  { immediate: true, deep: true },
+)
 
 onUnmounted(() => {
   if (intervalId) clearInterval(intervalId)
 })
+
+const sisaTagihan = computed(() => Number(tagihan.value?.sisa_tagihan ?? tagihan.value?.total_tagihan ?? 0))
 
 const periodeTampilan = computed(() => {
   const t = tagihan.value
@@ -46,10 +58,14 @@ const periodeTampilan = computed(() => {
   return `${t.periode_bulan}/${t.periode_tahun}`
 })
 
-function formatRupiah(nilai: string | number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(nilai))
+function formatRupiah(nilai: string | number | null | undefined) {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
+    Number(nilai ?? 0),
+  )
 }
-function formatTanggal(iso: string) {
+
+function formatTanggal(iso: string | null | undefined) {
+  if (!iso) return '—'
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
 }
 
@@ -58,18 +74,23 @@ function pesanError(e: unknown) {
   return data?.message
 }
 
-function handleRegenerate() {
-  regenerate(id.value, {
-    onSuccess: (baru) => {
-      if (baru?.xendit_invoice_url) {
-        window.open(baru.xendit_invoice_url, '_blank', 'noopener,noreferrer')
-      }
-      toast.success('Link pembayaran baru dibuat')
-    },
-    onError: (e: Error) => {
-      toast.error(pesanError(e) ?? 'Gagal membuat link pembayaran')
-    },
-  })
+async function bayar() {
+  const jumlah = Number(jumlahDibayar.value)
+  try {
+    const hasilBayar = await bayarSatu.mutateAsync({
+      id: id.value,
+      jumlahDibayar: jumlah > 0 ? jumlah : undefined,
+      gunakanDeposit: pakaiDeposit.value,
+    })
+    const url = hasilBayar.payment_url
+    refetch?.()
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+      toast.success('Selesaikan pembayaran di jendela Xendit')
+    }
+  } catch (e: unknown) {
+    toast.error(pesanError(e) ?? 'Gagal membuat pembayaran')
+  }
 }
 </script>
 
@@ -92,9 +113,6 @@ function handleRegenerate() {
       </CardContent>
     </Card>
 
-
-
-    <!-- Card 2: Ringkasan & Pembayaran -->
     <Card>
       <CardHeader>
         <CardTitle class="text-base">Ringkasan & Pembayaran</CardTitle>
@@ -104,75 +122,56 @@ function handleRegenerate() {
           <span class="text-muted-foreground">Periode</span>
           <span>{{ periodeTampilan }}</span>
         </div>
-
         <div class="flex items-center justify-between">
           <span class="text-muted-foreground">Total Tagihan</span>
-          <span class="text-lg font-semibold">{{ formatRupiah(tagihan.total_tagihan) }}</span>
+          <span>{{ formatRupiah(tagihan.total_tagihan) }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted-foreground">Sudah Dibayar</span>
+          <span>{{ formatRupiah(tagihan.sudah_dibayar) }}</span>
+        </div>
+        <div v-if="Number(tagihan.saldo_kredit_digunakan) > 0" class="flex items-center justify-between">
+          <span class="text-muted-foreground">Dibayar dari Deposit</span>
+          <span>{{ formatRupiah(tagihan.saldo_kredit_digunakan) }}</span>
+        </div>
+        <div class="flex items-center justify-between border-t pt-3">
+          <span class="font-medium">Sisa Tagihan</span>
+          <span class="text-lg font-semibold tabular-nums">{{ formatRupiah(sisaTagihan) }}</span>
         </div>
 
-        <!-- Belum bayar + link Xendit aktif: murni bayar, tanpa logika generate -->
-        <div v-if="tagihan.status_pembayaran === 'belum_bayar' && tagihan.xendit_invoice_url" class="space-y-3 pt-2">
-          <Button as="a" :href="tagihan.xendit_invoice_url" target="_blank" rel="noopener noreferrer" class="w-full"
-            :disabled="overdueTerkunci">
+        <div v-if="tagihan.status_pembayaran === 'belum_bayar'" class="space-y-3 pt-2">
+          <div class="grid gap-2">
+            <Label for="jumlah-bayar">Jumlah dibayar (kosongkan = lunasi sisa)</Label>
+            <Input id="jumlah-bayar" v-model="jumlahDibayar" type="number" min="1" :placeholder="String(sisaTagihan)" />
+          </div>
+          <label class="flex items-center gap-2 text-sm">
+            <Checkbox v-model="pakaiDeposit" />
+            <span>Pakai saldo deposit untuk transaksi ini</span>
+          </label>
+          <Button class="w-full" :disabled="bayarSatu.isPending" @click="bayar">
             <ExternalLink class="mr-2 size-4" />
-            Bayar Sekarang via Xendit
+            Bayar via Xendit
           </Button>
         </div>
 
-        <!-- Belum bayar + invoice belum ke-generate (async) -->
         <div
-          v-else-if="tagihan.status_pembayaran === 'belum_bayar' && !tagihan.xendit_invoice_url && !tagihan.xendit_invoice_id"
-          class="flex items-center gap-2 rounded-lg border border-dashed px-4 py-3 text-muted-foreground">
-          <RefreshCw class="size-4 animate-spin" />
-          <span class="text-sm">Menyiapkan pembayaran...</span>
-        </div>
-
-        <!-- Kedaluwarsa: buat ulang link pembayaran -->
-        <div v-else-if="tagihan.status_pembayaran === 'kedaluwarsa'" class="space-y-3">
-          <div v-if="tagihan.xendit_invoice_retry_count >= 3"
-            class="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm">
-            <p class="font-medium text-destructive">Maksimal percobaan tercapai</p>
-            <p class="mt-1 text-muted-foreground">Silakan hubungi customer service untuk bantuan.</p>
-          </div>
-
-          <div v-else
-            class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-            <Clock class="mt-0.5 size-5 shrink-0 text-amber-600" />
-            <div class="flex-1">
-              <p class="font-medium">Waktu pembayaran habis</p>
-              <p class="mt-0.5 text-amber-800/80">Klik tombol di bawah untuk membuat link pembayaran baru.</p>
-            </div>
-          </div>
-
-          <p v-if="tagihan.xendit_invoice_retry_count > 0" class="text-xs text-muted-foreground">
-            Percobaan ke-{{ tagihan.xendit_invoice_retry_count }} dari 3
-          </p>
-
-          <Button v-if="tagihan.xendit_invoice_retry_count < 3" class="w-full"
-            :disabled="isRegenerating || overdueTerkunci" @click="handleRegenerate">
-            <RefreshCw v-if="isRegenerating" class="mr-2 size-4 animate-spin" />
-            Buat Ulang Link Pembayaran
-          </Button>
-        </div>
-
-        <!-- Sudah bayar -->
-        <div v-else-if="tagihan.status_pembayaran === 'sudah_bayar'"
-          class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
+          v-else-if="tagihan.status_pembayaran === 'sudah_bayar'"
+          class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900"
+        >
           <p class="font-medium">Lunas</p>
-          <p v-if="tagihan.dibayar_pada" class="mt-0.5 text-sm text-emerald-800/80">
+          <p class="mt-0.5 text-sm text-emerald-800/80">
             Dibayar {{ formatTanggal(tagihan.dibayar_pada) }}
           </p>
         </div>
       </CardContent>
     </Card>
 
-    <!-- Riwayat Pembayaran -->
-    <Card v-if="tagihan.pembayaran">
+    <Card v-if="tagihan.riwayat_pembayaran?.length">
       <CardHeader>
         <CardTitle class="text-base">Riwayat Pembayaran</CardTitle>
       </CardHeader>
       <CardContent>
-        <RiwayatPembayaranTable :pembayaran="tagihan.pembayaran" />
+        <RiwayatPembayaranTable :pembayaran="tagihan.riwayat_pembayaran" />
       </CardContent>
     </Card>
   </div>

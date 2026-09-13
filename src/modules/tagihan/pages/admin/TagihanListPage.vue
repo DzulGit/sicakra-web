@@ -35,21 +35,19 @@ const columns = [
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v)
     },
   }),
+  col.accessor((row) => row.sisa_tagihan ?? row.total_tagihan, {
+    id: 'sisa_tagihan',
+    header: 'Sisa',
+    cell: ({ row }) => {
+      const sisa = Number(row.original.sisa_tagihan ?? row.original.total_tagihan)
+      const total = Number(row.original.total_tagihan)
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
+        .format(sisa) + (sisa !== total ? ` / ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(total)}` : '')
+    },
+  }),
   col.accessor('status_pembayaran', {
     header: 'Status',
     cell: ({ getValue }) => h(StatusBadge, { value: getValue(), map: statusPembayaranEnum }),
-  }),
-  col.accessor('xendit_invoice_status', {
-    header: 'Invoice Xendit',
-    cell: ({ row }) => {
-      const s = row.original.xendit_invoice_status
-      if (!s) return '—'
-      return s === 'active' ? 'Aktif' : 'Kedaluwarsa'
-    },
-  }),
-  col.accessor('xendit_invoice_retry_count', {
-    header: 'Retry',
-    cell: ({ getValue }) => getValue() || '—',
   }),
   col.accessor('id', {
     header: '',

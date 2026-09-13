@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import {
   Wifi, Receipt, MessageSquareWarning, FileText, ShieldAlert, X,
-  AlertTriangle, CreditCard, ArrowRight, Network
+  AlertTriangle, CreditCard, ArrowRight, Network, Wallet
 } from 'lucide-vue-next'
 import { useDashboardRingkasan } from '../composables/useDashboardPelanggan'
 import { statusPermohonanEnum, statusLaporanEnum, statusPembayaranEnum, statusLayananEnum } from '@/lib/enums'
@@ -125,11 +125,28 @@ const sapaan = () => {
             </div>
             <div class="min-w-0">
               <p class="text-xs text-muted-foreground">Tagihan Tertunggak</p>
-              <p class="text-2xl font-semibold leading-tight tracking-tight">{{ ringkasan.ringkasan.tagihan_belum_bayar }}</p>
-              <p v-if="ringkasan.ringkasan.tagihan_belum_bayar" class="text-xs font-medium text-destructive">
-                {{ formatCurrency(ringkasan.ringkasan.total_tagihan_belum_bayar) }}
+              <p class="text-2xl font-semibold leading-tight tracking-tight">{{ ringkasan.ringkasan.jumlah_tagihan_menunggak }}</p>
+              <p v-if="ringkasan.ringkasan.jumlah_tagihan_menunggak" class="text-xs font-medium text-destructive">
+                {{ formatCurrency(ringkasan.ringkasan.total_tunggakan) }}
               </p>
               <p v-else class="text-xs text-emerald-600">Lunas semua</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card class="rounded-xl border shadow-none">
+          <CardContent class="flex items-center gap-3 p-4">
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
+              <Wallet class="size-5 text-emerald-600" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs text-muted-foreground">Saldo Deposit</p>
+              <p class="text-2xl font-semibold leading-tight tracking-tight">
+                {{ formatCurrency(ringkasan.ringkasan.saldo_deposit) }}
+              </p>
+              <p v-if="ringkasan.ringkasan.saldo_deposit" class="text-xs text-emerald-600">
+                Siap dipakai untuk tagihan
+              </p>
+              <p v-else class="text-xs text-muted-foreground">Tidak ada</p>
             </div>
           </CardContent>
         </Card>
@@ -213,7 +230,9 @@ const sapaan = () => {
                 </div>
                 <p class="mt-0.5 truncate text-xs text-muted-foreground">
                   {{ t.nomor_tagihan }} &middot; {{ t.layanan }}
-                  <span v-if="t.tenggat"> &middot; Jatuh tempo {{ formatDate(t.tenggat) }}</span>
+                  <span v-if="t.status_pembayaran === 'belum_bayar' && t.sisa !== t.total">
+                    &middot; Sisa {{ formatCurrency(t.sisa) }}
+                  </span>
                 </p>
               </div>
               <Button :as="RouterLink" :to="`/pelanggan/tagihan/${t.id}`" variant="ghost" size="sm" class="shrink-0">

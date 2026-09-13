@@ -1,6 +1,14 @@
 import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedData, PaginatedResponse } from '@/types/api'
-import type { RingkasanOmzet, Tagihan } from '@/types/models'
+import type {
+  BayarGabunganResult,
+  DepositInfo,
+  GunakanDepositResult,
+  Pembayaran,
+  RingkasanOmzet,
+  Tagihan,
+  TunggakanRingkasan,
+} from '@/types/models'
 
 const BASE = '/admin/keuangan/tagihan'
 
@@ -138,10 +146,38 @@ export function getTagihanSayaDetail(id: number | string) {
   return httpClient.get<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}`)
 }
 
-export function bayarTagihan(id: number | string, jumlahBulan?: number) {
-  return httpClient.post<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}/bayar`, {
-    jumlah_bulan: jumlahBulan,
-  })
+export function bayarTagihan(
+  id: number | string,
+  payload: { jumlah_dibayar?: number; gunakan_deposit?: boolean } = {},
+) {
+  return httpClient.post<ApiResponse<Pembayaran>>(`${BASE_PELANGGAN}/${id}/bayar`, payload)
+}
+
+export function bayarGabunganTagihan(payload: {
+  jumlah_dibayar: number
+  tagihan_ids?: number[]
+  gunakan_deposit?: boolean
+}) {
+  return httpClient.post<ApiResponse<BayarGabunganResult>>(
+    `${BASE_PELANGGAN}/bayar-gabungan`,
+    payload,
+  )
+}
+
+export function getDeposit() {
+  return httpClient.get<ApiResponse<DepositInfo>>('/pelanggan/deposit')
+}
+
+export function getTunggakan() {
+  return httpClient.get<ApiResponse<TunggakanRingkasan>>(`${BASE_PELANGGAN}/tunggakan`)
+}
+
+export function gunakanDeposit() {
+  return httpClient.post<ApiResponse<GunakanDepositResult>>('/pelanggan/deposit/gunakan')
+}
+
+export function getRiwayatPembayaran(params: Record<string, string> = {}) {
+  return httpClient.get<PaginatedResponse<Pembayaran>>('/pelanggan/pembayaran', { params })
 }
 
 export function regenerateInvoice(id: number | string) {
