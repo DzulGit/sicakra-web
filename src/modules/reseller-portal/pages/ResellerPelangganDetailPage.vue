@@ -1,157 +1,248 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { ChevronLeft, Wifi, FileText, Receipt } from 'lucide-vue-next'
+import { computed, h, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, CalendarClock, ReceiptText, UserRound, FileText } from 'lucide-vue-next'
+import type { ColumnDef } from '@tanstack/vue-table'
 import { useResellerPelangganDetail } from '../composables/useResellerPortal'
+import BuatTagihanPertamaDialog from '../components/BuatTagihanPertamaDialog.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Separator } from '@/components/ui/separator'
+import DataTable from '@/components/data/DataTable.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
-import { Badge } from '@/components/ui/badge'
-import { statusPermohonanEnum, statusLayananEnum, statusPembayaranEnum } from '@/lib/enums'
+import { statusLayananEnum, statusPermohonanEnum, statusPembayaranEnum } from '@/lib/enums'
 import { RouterLink } from 'vue-router'
-import BuatTagihanPertamaDialog from '../components/BuatTagihanPertamaDialog.vue'
+import type { LayananInternetDetail, Tagihan } from '@/types/models'
 
 const route = useRoute()
+const router = useRouter()
 const id = computed(() => String(route.params.id))
 
-const {
-  data: pelanggan,
-  isLoading,
-  isError,
-  refetch,
-} = useResellerPelangganDetail(id)
-
-const layanan = computed(() => pelanggan.value?.layanan_internet?.[0])
+const { data: pelanggan, isLoading, isError, refetch } = useResellerPelangganDetail(id)
 
 const showBuatTagihanPertama = ref(false)
 
-function formatRupiah(nilai: string | number | null | undefined): string {
+const layananList = computed<LayananInternetDetail[]>(() => pelanggan.value?.layanan_internet ?? [])
+
+type BarisTagihan = Tagihan & { layananNomor: string }
+
+const tagihanList = computed<BarisTagihan[]>(() => {
+  const list: BarisTagihan[] = []
+  for (const l of layananList.value) {
+    for (const t of l.tagihan ?? []) list.push({ ...t, layananNomor: l.nomor_layanan })
+  }
+  return list.sort((a, b) => b.periode_tahun - a.periode_tahun || b.periode_bulan - a.periode_bulan)
+})
+
+const bisaBuatTagihanPertama = computed(() => {
+  return layananList.value.some((layanan) => layanan.status === 'aktif' && !layanan.tagihan?.length)
+})
+
+const columnsTagihan: ColumnDef<BarisTagihan, unknown>[] = [
+  { accessorKey: 'nomor_tagihan', header: 'Nomor Tagihan' },
+  { accessorKey: 'layananNomor', header: 'Layanan' },
+  { header: 'Periode', cell: ({ row }) => formatPeriode(row.original) },
+  { header: 'Jumlah', cell: ({ row }) => `${row.original.jumlah_bulan} bulan` },
+  { header: 'Total', cell: ({ row }) => formatRupiah(row.original.total_tagihan) },
+  { header: 'Sisa', cell: ({ row }) => formatRupiah(row.original.sisa_tagihan ?? row.original.total_tagihan) },
+  { header: 'Status', cell: ({ row }) => h(StatusBadge, { value: row.original.status_pembayaran, map: statusPembayaranEnum }) },
+  {
+    id: 'aksi',
+    header: '',
+    cell: ({ row }) =>
+      h(Button, { as: RouterLink, to: `/reseller/tagihan/${row.original.id}`, variant: 'outline', size: 'sm' }, () => 'Detail'),
+  },
+]
+
+function formatPeriode(t: Tagihan) {
+  if ((t.jumlah_bulan ?? 1) > 1 && t.periode_akhir_bulan && t.periode_akhir_tahun) {
+    return `${t.periode_bulan}/${t.periode_tahun} – ${t.periode_akhir_bulan}/${t.periode_akhir_tahun}`
+  }
+  return `${t.periode_bulan}/${t.periode_tahun}`
+}
+
+function formatRupiah(nilai: string | number | null | undefined) {
   if (nilai == null || nilai === '') return '-'
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(nilai))
+}
+
+function formatTanggal(iso?: string | null) {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
 }
 </script>
 
 <template>
-  <div class="space-y-4">
-    <RouterLink to="/reseller/pelanggan">
-      <Button to="/reseller/pelanggan" variant="ghost" size="sm" class="w-fit">
-        <ChevronLeft class="size-4" /> Kembali
+  <div class="space-y-6">
+    <!-- ===== Header ===== -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <Button variant="ghost" size="sm" @click="router.back()">
+        <ArrowLeft class="size-4" /> Kembali
       </Button>
-    </RouterLink>
-
-    <Skeleton v-if="isLoading" class="h-40 w-full" />
-
-    <div v-else-if="isError || !pelanggan"
-      class="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-      Pelanggan tidak ditemukan atau bukan milik reseller Anda.
+      <Button v-if="bisaBuatTagihanPertama" variant="outline" @click="showBuatTagihanPertama = true">
+        <ReceiptText class="mr-2 size-4" />
+        Buat Tagihan Pertama
+      </Button>
     </div>
 
+    <!-- ===== Loading (skeleton) ===== -->
+    <div v-if="isLoading" class="grid gap-6 lg:grid-cols-3">
+      <Skeleton class="h-64 lg:col-span-2" />
+      <Skeleton class="h-64" />
+      <Skeleton class="h-64 lg:col-span-3" />
+    </div>
+
+    <!-- ===== Error ===== -->
+    <Card v-else-if="isError || !pelanggan">
+      <CardContent class="py-10 text-center text-sm text-destructive">
+        Pelanggan tidak ditemukan atau bukan milik reseller Anda.
+      </CardContent>
+    </Card>
+
     <template v-else>
-      <div class="rounded-xl border bg-card p-5">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <h1 class="text-xl font-semibold">{{ pelanggan.nama_lengkap }}</h1>
-            <p class="mt-0.5 text-sm text-muted-foreground">{{ pelanggan.nomor_pelanggan ?? '-' }}</p>
-            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span>NIK: {{ pelanggan.nik }}</span>
-              <span>{{ pelanggan.nomor_hp }}</span>
-              <span v-if="pelanggan.email">{{ pelanggan.email }}</span>
-            </div>
-          </div>
-          <StatusBadge v-if="layanan?.status" :value="layanan.status" :map="statusLayananEnum" />
-          <Badge v-else variant="warning">Belum Aktif</Badge>
-        </div>
+      <!-- ===== Page title ===== -->
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-3xl font-semibold tracking-tight">{{ pelanggan.nama_lengkap }}</h1>
+        <Badge variant="secondary" class="font-mono">{{ pelanggan.nomor_pelanggan ?? 'Tanpa Nomor' }}</Badge>
       </div>
 
+      <!-- ===== Baris 1: Profil + Billing ===== -->
+      <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Card 1: Profil Pelanggan & Status Layanan -->
+        <Card class="lg:col-span-2">
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2"><UserRound class="size-4" /> Profil &amp; Layanan</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-5">
+            <div class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+              <div>
+                <p class="text-xs text-muted-foreground">Nomor Pelanggan</p>
+                <p class="font-medium">{{ pelanggan.nomor_pelanggan ?? '-' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">NIK</p>
+                <p class="font-medium">{{ pelanggan.nik }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">No. HP</p>
+                <p class="font-medium">{{ pelanggan.nomor_hp }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">Email</p>
+                <p class="font-medium break-all">{{ pelanggan.email ?? '-' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">Username</p>
+                <p class="font-medium">{{ pelanggan.username ?? '-' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">Status Akun</p>
+                <Badge :variant="pelanggan.password_sudah_dibuat ? 'success' : 'secondary'">
+                  {{ pelanggan.password_sudah_dibuat ? 'Password dibuat' : 'Belum buat password' }}
+                </Badge>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div v-if="!layananList.length" class="text-sm text-muted-foreground">Belum ada layanan internet.</div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="l in layananList"
+                :key="l.id"
+                class="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="font-medium">
+                      {{ l.paket_internet?.nama_paket ?? l.nama_paket_custom ?? 'Paket Custom' }}
+                    </p>
+                    <StatusBadge :value="l.status" :map="statusLayananEnum" />
+                  </div>
+                  <p class="text-xs text-muted-foreground">
+                    {{ l.nomor_layanan }}
+                    <template v-if="l.paket_internet"> · {{ l.paket_internet.kecepatan_mbps }} Mbps</template>
+                    <template v-else-if="l.kecepatan_custom_mbps"> · {{ l.kecepatan_custom_mbps }} Mbps</template>
+                    <template v-if="l.tanggal_aktif"> · Aktif sejak {{ formatTanggal(l.tanggal_aktif) }}</template>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Card 2: Informasi Billing & Siklus -->
+        <Card>
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2"><CalendarClock class="size-4" /> Billing &amp; Siklus</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-4">
+            <div class="space-y-2">
+              <p class="text-xs font-medium text-foreground">Tanggal Tagihan</p>
+              <p class="font-medium">{{ pelanggan.tanggal_tagihan ?? 20 }}</p>
+              <p class="text-xs text-muted-foreground">Tanggal tagihan dibuat tiap bulan.</p>
+            </div>
+
+            <Separator />
+
+            <div v-if="!layananList.length" class="text-sm text-muted-foreground">Belum ada layanan.</div>
+            <div v-else class="space-y-4">
+              <div v-for="l in layananList" :key="l.id" class="space-y-2">
+                <p class="text-sm font-medium font-mono">{{ l.nomor_layanan }}</p>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-xs text-muted-foreground">Bebas Tagihan</p>
+                    <p class="font-medium">{{ l.bebas_tagihan_bulan ?? 0 }} bulan</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Mulai Penagihan</p>
+                    <p class="font-medium">{{ formatTanggal(l.tanggal_mulai_penagihan) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- ===== Card 3: Daftar Tagihan ===== -->
       <Card>
-        <CardHeader class="flex flex-row items-center justify-between py-3">
-          <CardTitle class="flex items-center gap-2 text-sm font-medium">
-            <Wifi class="size-4 text-muted-foreground" /> Layanan
-          </CardTitle>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2"><ReceiptText class="size-4" /> Daftar Tagihan</CardTitle>
         </CardHeader>
-        <CardContent class="grid gap-4 pb-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <template v-if="layanan">
-            <div>
-              <p class="text-xs text-muted-foreground">Paket</p>
-              <p class="font-medium">{{ layanan.tipe_paket === 'custom' ? layanan.nama_paket_custom :
-                layanan.paket_internet?.nama_paket }}</p>
-              <p class="text-xs text-muted-foreground">{{ layanan.tipe_paket === 'custom' ?
-                `${layanan.kecepatan_custom_mbps} Mbps` : `${layanan.paket_internet?.kecepatan_mbps ?? '-'} Mbps` }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-muted-foreground">Nomor Layanan</p>
-              <p class="font-medium">{{ layanan.nomor_layanan }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-muted-foreground">Tanggal Aktif</p>
-              <p class="font-medium">{{ layanan.tanggal_aktif }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-muted-foreground">Harga</p>
-              <p class="font-medium">{{ formatRupiah(layanan.paket_internet?.harga ?? layanan.harga_custom) }}</p>
-            </div>
-          </template>
-          <p v-else class="text-xs text-muted-foreground sm:col-span-full">
-            Belum ada layanan aktif. Menunggu verifikasi & pemasangan oleh tim operasional.
-          </p>
+        <CardContent>
+          <DataTable
+            :columns="columnsTagihan"
+            :data="tagihanList"
+            empty-judul="Belum ada tagihan"
+            empty-deskripsi="Tagihan muncul setelah periode penagihan dimulai."
+          />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader class="flex flex-row items-center justify-between py-3">
-          <CardTitle class="flex items-center gap-2 text-sm font-medium">
-            <FileText class="size-4 text-muted-foreground" /> Permohonan
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="divide-y pb-2">
-          <div v-for="permohonan in pelanggan.permohonan_layanan ?? []" :key="permohonan.id"
-            class="flex items-center justify-between py-2 text-sm">
-            <div>
-              <p class="font-medium">{{ permohonan.nomor_permohonan }}</p>
-              <p class="text-xs text-muted-foreground">
-                {{ permohonan.tipe_paket === 'custom' ? permohonan.nama_paket_custom :
-                  permohonan.paket_internet?.nama_paket
-                  ?? '-' }}
-              </p>
-            </div>
-            <StatusBadge :value="permohonan.status" :map="statusPermohonanEnum" />
-          </div>
-          <p v-if="!pelanggan.permohonan_layanan?.length" class="py-2 text-xs text-muted-foreground">Belum ada
-            permohonan.</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader class="flex flex-row items-center justify-between py-3">
-          <CardTitle class="flex items-center gap-2 text-sm font-medium">
-            <Receipt class="size-4 text-muted-foreground" /> Tagihan
-          </CardTitle>
-
-          <Button v-if="
-            layanan?.status === 'aktif' &&
-            !(layanan?.tagihan?.length)
-          " size="sm" @click="showBuatTagihanPertama = true">
-            Buat Tagihan Pertama
-          </Button>
-        </CardHeader>
-        <CardContent class="divide-y pb-2">
-          <div v-for="tagihan in layanan?.tagihan ?? []" :key="tagihan.id"
-            class="flex items-center justify-between py-2 text-sm">
-            <div>
-              <p class="font-medium">{{ tagihan.nomor_tagihan }}</p>
-              <p class="text-xs text-muted-foreground">Periode {{ tagihan.periode_bulan }}-{{ tagihan.periode_tahun }}
-              </p>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="font-medium">{{ formatRupiah(tagihan.total_tagihan) }}</span>
-              <StatusBadge :value="tagihan.status_pembayaran" :map="statusPembayaranEnum" />
+      <!-- ===== Riwayat Permohonan ===== -->
+      <Card v-if="pelanggan.permohonan_layanan?.length">
+        <CardHeader><CardTitle class="flex items-center gap-2"><FileText class="size-4" /> Riwayat Permohonan</CardTitle></CardHeader>
+        <CardContent>
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div v-for="p in pelanggan.permohonan_layanan" :key="p.id" class="rounded-lg border p-3 text-sm">
+              <div class="flex items-center justify-between gap-2">
+                <p class="font-medium font-mono">{{ p.nomor_permohonan }}</p>
+                <StatusBadge :value="p.status" :map="statusPermohonanEnum" />
+              </div>
+              <p class="text-muted-foreground">{{ p.jenis_permohonan }}</p>
+              <p class="text-xs text-muted-foreground">{{ formatTanggal(p.created_at) }}</p>
             </div>
           </div>
-          <p v-if="!(layanan?.tagihan?.length)" class="py-2 text-xs text-muted-foreground">Belum ada tagihan.</p>
         </CardContent>
       </Card>
     </template>
+
+    <!-- ===== Dialog Buat Tagihan Pertama ===== -->
     <BuatTagihanPertamaDialog v-model:open="showBuatTagihanPertama" :pelanggan-id="Number(id)" @success="refetch" />
   </div>
 </template>

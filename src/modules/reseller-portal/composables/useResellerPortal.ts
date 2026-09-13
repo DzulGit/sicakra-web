@@ -25,10 +25,15 @@ export function useResellerDashboard() {
   })
 }
 
-export function useResellerPelangganList() {
+export function useResellerPelangganList(cari?: MaybeRefOrGetter<string>) {
   return useQuery({
-    queryKey: ['reseller-portal', 'pelanggan'],
-    queryFn: () => getResellerPelangganList().then((res) => res.data.data),
+    queryKey: ['reseller-portal', 'pelanggan', toValue(cari) ?? ''],
+    queryFn: () => {
+      const params: Record<string, string> = {}
+      const nilai = toValue(cari)
+      if (nilai) params.cari = nilai
+      return getResellerPelangganList(params).then((res) => res.data.data)
+    },
   })
 }
 

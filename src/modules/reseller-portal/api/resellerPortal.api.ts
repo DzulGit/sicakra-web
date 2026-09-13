@@ -42,8 +42,8 @@ export function getResellerDashboard() {
   return httpClient.get<ApiResponse<ResellerDashboardData>>(`${BASE}/dashboard`)
 }
 
-export function getResellerPelangganList() {
-  return httpClient.get<PaginatedResponse<Pelanggan>>(`${BASE}/pelanggan`)
+export function getResellerPelangganList(params?: Record<string, string>) {
+  return httpClient.get<PaginatedResponse<Pelanggan>>(`${BASE}/pelanggan`, { params })
 }
 
 export function getResellerPelangganDetail(id: number | string) {
