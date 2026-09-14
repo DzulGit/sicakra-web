@@ -290,6 +290,7 @@ export function useRegenerateInvoice() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['riwayat-pembayaran-pelanggan'] })
     },
   })
 }

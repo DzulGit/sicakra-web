@@ -181,5 +181,5 @@ export function getRiwayatPembayaran(params: Record<string, string> = {}) {
 }
 
 export function regenerateInvoice(id: number | string) {
-  return httpClient.post<ApiResponse<Tagihan>>(`${BASE_PELANGGAN}/${id}/regenerate-invoice`)
+  return httpClient.post<ApiResponse<Pembayaran>>(`${BASE_PELANGGAN}/${id}/regenerate-invoice`)
 }
