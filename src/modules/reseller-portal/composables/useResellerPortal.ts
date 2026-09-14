@@ -47,8 +47,8 @@ export function useResellerPelangganDetail(id: MaybeRefOrGetter<number | string>
 export function useDaftarkanPelanggan() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ form, fotoKtp, fotoSelfie }: { form: DaftarkanPelangganForm; fotoKtp?: File | null; fotoSelfie?: File | null }) =>
-      daftarkanPelanggan(form, fotoKtp, fotoSelfie),
+    mutationFn: ({ form, fotoKtp }: { form: DaftarkanPelangganForm; fotoKtp?: File | null }) =>
+      daftarkanPelanggan(form, fotoKtp),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reseller-portal'] }),
   })
 }

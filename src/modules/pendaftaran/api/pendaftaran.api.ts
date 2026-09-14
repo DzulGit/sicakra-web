@@ -8,7 +8,7 @@ interface DaftarResponseData {
 
 /**
  * Endpoint publik multipart/form-data — payload dirakit manual jadi FormData
- * (bukan JSON) karena ada 2 file upload (foto_ktp, foto_selfie_ktp).
+ * (bukan JSON) karena ada 1 file upload (foto_ktp).
  */
 export function daftar(payload: DaftarForm) {
   const formData = new FormData()
@@ -38,7 +38,6 @@ export function daftar(payload: DaftarForm) {
   }
 
   formData.append('foto_ktp', payload.foto_ktp)
-  if (payload.foto_selfie_ktp) formData.append('foto_selfie_ktp', payload.foto_selfie_ktp)
 
   return httpClient.post<ApiResponse<DaftarResponseData>>('/pendaftaran', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

@@ -69,16 +69,13 @@ const [alamatPemasangan, alamatPemasanganAttrs] = defineField('alamat_pemasangan
 const [detailAlamat, detailAlamatAttrs] = defineField('detail_alamat')
 defineField('paket_internet_id')
 defineField('foto_ktp')
-defineField('foto_selfie_ktp')
 defineField('latitude')
 defineField('longitude')
 
 const fotoKtp = ref<File | null>(null)
-const fotoSelfieKtp = ref<File | null>(null)
 const lokasiPeta = ref<{ lat: number; lng: number; address?: string; provinsi?: string; kota?: string; detail?: string } | null>(null)
 
 watch(fotoKtp, (f) => setFieldValue('foto_ktp', f ?? undefined))
-watch(fotoSelfieKtp, (f) => setFieldValue('foto_selfie_ktp', f ?? undefined))
 watch(lokasiPeta, (l) => {
   setFieldValue('latitude', l?.lat)
   setFieldValue('longitude', l?.lng)
@@ -114,7 +111,6 @@ const onSubmit = handleSubmit((fv) => {
     {
       form: fv,
       fotoKtp: fotoKtp.value,
-      fotoSelfie: fotoSelfieKtp.value,
     },
     {
       onSuccess: ({ data }) => {
@@ -146,7 +142,6 @@ const ringkasan = computed(() => ({
   email: email.value || '-',
   hp: nomorHp.value || '-',
   fotoKtp: fotoKtp.value?.name,
-  fotoSelfie: fotoSelfieKtp.value?.name,
 }))
 </script>
 
@@ -280,10 +275,8 @@ const ringkasan = computed(() => ({
             <Input id="email" v-model="email" v-bind="emailAttrs" type="email" :aria-invalid="!!errors.email" />
             <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
           </div>
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             <FileInputFoto v-model="fotoKtp" label="Foto KTP" :error="errors.foto_ktp" />
-            <FileInputFoto v-model="fotoSelfieKtp" label="Foto Selfie dengan KTP" hint="Opsional"
-              :error="errors.foto_selfie_ktp" />
           </div>
         </div>
         <Button @click="lanjutKeReview"
@@ -339,9 +332,6 @@ const ringkasan = computed(() => ({
               <div class="space-y-1.5 text-sm">
                 <p><span class="text-slate-400">Foto KTP:</span>
                   <span class="font-medium">{{ ringkasan.fotoKtp || '-' }}</span>
-                </p>
-                <p><span class="text-slate-400">Foto Selfie:</span>
-                  <span class="font-medium">{{ ringkasan.fotoSelfie || '-' }}</span>
                 </p>
               </div>
             </div>

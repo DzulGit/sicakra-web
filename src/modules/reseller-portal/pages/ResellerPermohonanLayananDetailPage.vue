@@ -179,22 +179,16 @@ const prosesVerifikasi = verifikasiSubmit(async (form) => {
               </p>
             </div>
           </div>
-          <div v-if="permohonan.pelanggan?.foto_ktp || permohonan.pelanggan?.foto_selfie_ktp" class="space-y-1.5">
+          <div v-if="permohonan.pelanggan?.foto_ktp" class="space-y-1.5">
             <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ImageIcon class="size-3.5" /> Dokumen Identitas
             </p>
             <div class="flex flex-wrap gap-3">
-              <a v-if="permohonan.pelanggan.foto_ktp" :href="permohonan.pelanggan.foto_ktp" target="_blank"
+              <a :href="permohonan.pelanggan.foto_ktp" target="_blank"
                 rel="noopener" class="group text-left">
                 <img :src="permohonan.pelanggan.foto_ktp" alt="Foto KTP"
                   class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
                 <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
-              </a>
-              <a v-if="permohonan.pelanggan.foto_selfie_ktp" :href="permohonan.pelanggan.foto_selfie_ktp"
-                target="_blank" rel="noopener" class="group text-left">
-                <img :src="permohonan.pelanggan.foto_selfie_ktp" alt="Selfie KTP"
-                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
-                <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Selfie KTP</p>
               </a>
             </div>
           </div>

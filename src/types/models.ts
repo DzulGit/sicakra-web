@@ -8,9 +8,7 @@ export interface Pelanggan {
   nomor_hp: string
   email: string | null
   foto_ktp?: string | null
-  foto_selfie_ktp?: string | null
   foto_ktp_url?: string | null
-  foto_selfie_ktp_url?: string | null
   password_sudah_dibuat?: boolean
   tanggal_tagihan?: number
   created_at?: string

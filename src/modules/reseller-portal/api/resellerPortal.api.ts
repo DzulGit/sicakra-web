@@ -50,15 +50,14 @@ export function getResellerPelangganDetail(id: number | string) {
   return httpClient.get<ApiResponse<Pelanggan>>(`${BASE}/pelanggan/${id}`)
 }
 
-/** Foto KTP & selfie opsional (diunggah kalau ada) — sisanya form terisi. */
-export function daftarkanPelanggan(form: DaftarkanPelangganForm, fotoKtp?: File | null, fotoSelfie?: File | null) {
+/** Foto KTP opsional (diunggah kalau ada) — sisanya form terisi. */
+export function daftarkanPelanggan(form: DaftarkanPelangganForm, fotoKtp?: File | null) {
   const payload = new FormData()
   for (const [key, value] of Object.entries(form)) {
-    if (key === 'foto_ktp' || key === 'foto_selfie_ktp') continue
+    if (key === 'foto_ktp') continue
     if (value !== undefined && value !== '') payload.append(key, String(value))
   }
   if (fotoKtp) payload.append('foto_ktp', fotoKtp)
-  if (fotoSelfie) payload.append('foto_selfie_ktp', fotoSelfie)
   return httpClient.post<ApiResponse<{id: number, nomor_pelanggan: string, nama_lengkap: string, layanan: Pelanggan['layanan_internet']}>>(
     `${BASE}/pelanggan`,
     payload,

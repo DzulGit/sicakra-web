@@ -41,7 +41,6 @@ export function buatPelangganBaru(payload: BuatPelangganForm) {
   }
 
   if (payload.foto_ktp) formData.append('foto_ktp', payload.foto_ktp)
-  if (payload.foto_selfie_ktp) formData.append('foto_selfie_ktp', payload.foto_selfie_ktp)
 
   return httpClient.post<ApiResponse<BuatPelangganResponseData>>('/admin/operasional/pelanggan/buat-baru', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
