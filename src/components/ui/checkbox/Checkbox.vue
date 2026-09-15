@@ -24,7 +24,7 @@ const emit = defineEmits<{
   'update:model-value': [value: boolean]
 }>()
 
-const modelValue = computed(() => props.checked ?? props.modelValue ?? false)
+const modelValue = computed(() => props.modelValue ?? props.checked ?? false)
 
 function handleUpdate(val: boolean | 'indeterminate') {
   if (val === 'indeterminate') return

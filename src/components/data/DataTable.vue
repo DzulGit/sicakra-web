@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="TData">
 import { FlexRender, useVueTable, getCoreRowModel, type ColumnDef } from '@tanstack/vue-table'
+import { shallowRef, watch } from 'vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import EmptyState from './EmptyState.vue'
 
@@ -24,10 +25,19 @@ const props = withDefaults(
   },
 )
 
-const table = useVueTable({
-  get data() {
-    return props.data
+// TanStack hanya reaktif bila `data` adalah ref (jalur IS_REACTIVE). Dengan
+// getter biasa, ganti props tidak me-redraw baris sehingga sel (mis. checkbox)
+// tidak pernah memakai nilai terbaru. Data dijaga sebagai shallowRef.
+const dataRef = shallowRef<TData[]>(props.data)
+watch(
+  () => props.data,
+  (d) => {
+    dataRef.value = d
   },
+)
+
+const table = useVueTable({
+  data: dataRef,
   get columns() {
     return props.columns
   },

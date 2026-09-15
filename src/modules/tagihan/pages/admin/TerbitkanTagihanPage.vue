@@ -8,7 +8,7 @@ import Pagination from '@/components/data/Pagination.vue'
 import FilterBar from '@/components/data/FilterBar.vue'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
+import NominalInput from '@/components/data/NominalInput.vue'
 import {
   Dialog,
   DialogContent,
@@ -51,7 +51,11 @@ function toggleOne(id: number) {
 }
 
 function formatRupiah(v: string | number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(v))
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(Number(v))
 }
 
 function getNominalDefault(t: DraftTagihan) {
@@ -85,57 +89,70 @@ async function handleTerbitkan() {
   }
 }
 
-const col = createColumnHelper<DraftTagihan>()
+// TanStack hanya me-redraw baris saat identitas array data berubah. Slice baru
+// per pemilihan -> row model dihitung ulang -> sel memakai nilai terbaru.
+const tabelData = computed<DraftTagihan[]>(() => {
+  selectedIds.value
+  return [...(hasil.value?.data ?? [])]
+})
 
-const columns: ColumnDef<DraftTagihan, any>[] = [
-  {
-    id: 'select',
-    header: () =>
-      h(Checkbox, {
-        modelValue: semuaDipilih.value,
-        'onUpdate:modelValue': toggleSemua,
-      }),
-    cell: ({ row }) =>
-      h(Checkbox, {
-        modelValue: selectedIds.value.has(row.original.id),
-        'onUpdate:modelValue': () => toggleOne(row.original.id),
-      }),
-    size: 40,
-  },
-  col.accessor('nomor_tagihan', { header: 'Nomor' }),
-  col.accessor((row) => row.layanan_internet?.pelanggan?.nama_lengkap, {
-    id: 'nama_pelanggan',
-    header: 'Pelanggan',
-    cell: ({ getValue }) => getValue() || '—',
-  }),
-  col.accessor((row) => row.layanan_internet?.paket_internet?.nama_paket ?? row.nama_paket_snapshot, {
-    id: 'paket',
-    header: 'Paket',
-    cell: ({ getValue }) => getValue() || '—',
-  }),
-  col.accessor('periode_bulan', {
-    header: 'Periode',
-    cell: ({ row }) => `${row.original.periode_bulan}/${row.original.periode_tahun}`,
-  }),
-  col.accessor('total_tagihan', {
-    header: 'Harga Default',
-    cell: ({ getValue }) => formatRupiah(getValue()),
-  }),
-  {
-    id: 'nominal',
-    header: 'Nominal',
-    cell: ({ row }) =>
-      h(Input, {
-        type: 'number',
-        class: 'w-32 h-8 text-xs',
-        modelValue: String(getNominalDefault(row.original)),
-        'onUpdate:modelValue': (v: string | number) => {
-          nominalOverrides.value[row.original.id] = Number(v)
-        },
-      }),
-    size: 140,
-  },
-]
+const col = createColumnHelper<DraftTagihan>()
+const columns = computed<ColumnDef<DraftTagihan, any>[]>(() => {
+  return [
+    {
+      id: 'select',
+      header: () =>
+        h(Checkbox, {
+          modelValue: semuaDipilih.value,
+          'onUpdate:modelValue': toggleSemua,
+        }),
+      cell: ({ row }) =>
+        h(Checkbox, {
+          modelValue: selectedIds.value.has(row.original.id),
+          'onUpdate:modelValue': () => toggleOne(row.original.id),
+        }),
+      size: 40,
+    },
+    col.accessor('nomor_tagihan', { header: 'Nomor' }),
+    col.accessor((row) => row.layanan_internet?.pelanggan?.nama_lengkap, {
+      id: 'nama_pelanggan',
+      header: 'Pelanggan',
+      cell: ({ getValue }) => getValue() || '—',
+    }),
+    col.accessor(
+      (row) => row.layanan_internet?.paket_internet?.nama_paket ?? row.nama_paket_snapshot,
+      {
+        id: 'paket',
+        header: 'Paket',
+        cell: ({ getValue }) => getValue() || '—',
+      },
+    ),
+    col.accessor('periode_bulan', {
+      header: 'Periode',
+      cell: ({ row }) => `${row.original.periode_bulan}/${row.original.periode_tahun}`,
+    }),
+    col.accessor('total_tagihan', {
+      header: 'Harga Default',
+      cell: ({ getValue }) => formatRupiah(getValue()),
+    }),
+    {
+      id: 'nominal',
+      header: 'Nominal',
+      cell: ({ row }) =>
+        h(NominalInput, {
+          modelValue: getNominalDefault(row.original),
+          'onUpdate:modelValue': (v: number | null) => {
+            if (v === null) {
+              delete nominalOverrides.value[row.original.id]
+            } else {
+              nominalOverrides.value[row.original.id] = v
+            }
+          },
+        }),
+      size: 160,
+    },
+  ]
+})
 </script>
 
 <template>
@@ -155,23 +172,42 @@ const columns: ColumnDef<DraftTagihan, any>[] = [
       </Button>
     </div>
 
-    <FilterBar :fields="[
-      { key: 'periode_bulan', label: 'Bulan', placeholder: 'Semua Bulan', options: [
-        { label: 'Januari', value: '1' }, { label: 'Februari', value: '2' },
-        { label: 'Maret', value: '3' }, { label: 'April', value: '4' },
-        { label: 'Mei', value: '5' }, { label: 'Juni', value: '6' },
-        { label: 'Juli', value: '7' }, { label: 'Agustus', value: '8' },
-        { label: 'September', value: '9' }, { label: 'Oktober', value: '10' },
-        { label: 'November', value: '11' }, { label: 'Desember', value: '12' },
-      ]},
-      { key: 'periode_tahun', label: 'Tahun', placeholder: 'Semua Tahun', options: [
-        { label: '2026', value: '2026' }, { label: '2025', value: '2025' },
-      ]},
-    ]" />
+    <FilterBar
+      :fields="[
+        {
+          key: 'periode_bulan',
+          label: 'Bulan',
+          placeholder: 'Semua Bulan',
+          options: [
+            { label: 'Januari', value: '1' },
+            { label: 'Februari', value: '2' },
+            { label: 'Maret', value: '3' },
+            { label: 'April', value: '4' },
+            { label: 'Mei', value: '5' },
+            { label: 'Juni', value: '6' },
+            { label: 'Juli', value: '7' },
+            { label: 'Agustus', value: '8' },
+            { label: 'September', value: '9' },
+            { label: 'Oktober', value: '10' },
+            { label: 'November', value: '11' },
+            { label: 'Desember', value: '12' },
+          ],
+        },
+        {
+          key: 'periode_tahun',
+          label: 'Tahun',
+          placeholder: 'Semua Tahun',
+          options: [
+            { label: '2026', value: '2026' },
+            { label: '2025', value: '2025' },
+          ],
+        },
+      ]"
+    />
 
     <DataTable
       :columns="columns"
-      :data="hasil?.data ?? []"
+      :data="tabelData"
       :loading="isLoading"
       empty-judul="Tidak ada tagihan draft"
     />
@@ -183,8 +219,8 @@ const columns: ColumnDef<DraftTagihan, any>[] = [
         <DialogHeader>
           <DialogTitle>Konfirmasi Terbitkan Tagihan</DialogTitle>
           <DialogDescription>
-            Anda akan menerbitkan {{ selectedIds.size }} tagihan. Tagihan akan langsung aktif
-            dan link pembayaran akan dikirim ke pelanggan.
+            Anda akan menerbitkan {{ selectedIds.size }} tagihan. Tagihan akan langsung aktif dan
+            link pembayaran akan dikirim ke pelanggan.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
