@@ -17,7 +17,7 @@ interface Props {
   class?: string
 }
 
-const props = withDefaults(defineProps<Props>(), { checked: false })
+const props = withDefaults(defineProps<Props>(), { checked: undefined })
 
 const emit = defineEmits<{
   'update:checked': [value: boolean]

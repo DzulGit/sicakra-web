@@ -78,7 +78,6 @@ function formatAngka(nilai: string) {
       { key: 'status_pembayaran', label: 'Status', placeholder: 'Semua Status', options: [
         { label: 'Belum Bayar', value: 'belum_bayar' },
         { label: 'Sudah Bayar', value: 'sudah_bayar' },
-        { label: 'Kedaluwarsa', value: 'kedaluwarsa' },
       ]},
     ]" />
 

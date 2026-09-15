@@ -125,7 +125,6 @@ function formatAngka(nilai: string | number) {
           options: [
             { label: 'Belum Bayar', value: 'belum_bayar' },
             { label: 'Sudah Bayar', value: 'sudah_bayar' },
-            { label: 'Kedaluwarsa', value: 'kedaluwarsa' },
           ],
         },
       ]"

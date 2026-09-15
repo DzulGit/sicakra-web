@@ -17,7 +17,6 @@ import {
   getTunggakan,
   gunakanDeposit,
   perbaruiLinkTagihan,
-  regenerateInvoice,
   regenerateTagihan,
   previewTagihanPertama,
   generateTagihanPertama,
@@ -280,18 +279,6 @@ export function useRiwayatPembayaran() {
   return useQuery({
     queryKey: ['riwayat-pembayaran-pelanggan', params],
     queryFn: () => getRiwayatPembayaran(params.value).then((res) => res.data.data),
-  })
-}
-
-export function useRegenerateInvoice() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (id: number | string) => regenerateInvoice(id).then((res) => res.data.data),
-    onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'detail', id] })
-      queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya', 'list'] })
-      queryClient.invalidateQueries({ queryKey: ['riwayat-pembayaran-pelanggan'] })
-    },
   })
 }
 

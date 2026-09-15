@@ -163,6 +163,56 @@ export interface Pembayaran {
   mutasi_saldo_kredit?: MutasiSaldoKredit[]
 }
 
+export interface AlokasiTagihanRingkas {
+  id: number
+  tagihan_id: number
+  jumlah_dialokasikan: number
+  nomor_tagihan: string | null
+  periode_tagihan: string | null
+  tagihan?: Tagihan
+}
+
+export interface PembayaranAdmin
+  extends Omit<Pembayaran, 'alokasi_tagihan' | 'mutasi_saldo_kredit' | 'jumlah_dibayar' | 'created_at'> {
+  pelanggan: { id: number; nama_lengkap: string; nomor_pelanggan: string | null } | null
+  jumlah_dibayar: number
+  created_at: string | null
+  nomor_pembayaran: string
+  waktu_wib: string | null
+  total_alokasi: number
+  saldo_kredit_terbentuk: number
+  alokasi_tagihan: AlokasiTagihanRingkas[]
+}
+
+export interface TimelinePembayaranTagihan {
+  jenis: 'pembayaran' | 'kredit'
+  waktu_wib: string
+  jumlah: number
+  keterangan?: string | null
+  nomor_pembayaran?: string | null
+  metode_pembayaran?: string | null
+  provider?: string | null
+  status_transaksi?: string | null
+  sisa_setelah: number
+}
+
+export interface MutasiSaldoKreditAdmin {
+  id: number
+  jenis: 'kredit' | 'pemakaian'
+  jumlah: number
+  keterangan: string | null
+  waktu_wib: string | null
+  nomor_pembayaran: string | null
+  nomor_tagihan: string | null
+  saldo_setelah: number
+}
+
+export interface SaldoKreditInfo {
+  pelanggan: { id: number; nama_lengkap: string; nomor_pelanggan: string | null }
+  saldo_deposit: number
+  mutasi: MutasiSaldoKreditAdmin[]
+}
+
 export interface MutasiSaldoKredit {
   id: number
   pelanggan_id: number
@@ -233,7 +283,7 @@ export interface Tagihan {
   harga_snapshot: string
   total_tagihan: string
   jumlah_bulan: number
-  status_pembayaran: 'belum_diterbitkan' | 'belum_bayar' | 'sudah_bayar' | 'kedaluwarsa'
+  status_pembayaran: 'belum_diterbitkan' | 'belum_bayar' | 'sudah_bayar'
   xendit_invoice_id: string | null
   xendit_external_id: string | null
   sisa_tagihan?: number
@@ -251,6 +301,10 @@ export interface Tagihan {
   layanan_internet?: LayananInternetRingkas
   pembayaran?: Pembayaran[]
   riwayat_pembayaran?: Pembayaran[]
+  /** Tambahan backend (lihat PembayaranAllocationService::detailTagihan). */
+  status_tampilan?: 'belum_bayar' | 'sedang_dicicil' | 'lunas'
+  tanggal_lunas?: string | null
+  timeline_pembayaran?: TimelinePembayaranTagihan[]
 }
 
 export interface RingkasanOmzet {

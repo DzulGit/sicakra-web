@@ -8,21 +8,18 @@ import {
   useTagihanSayaDetail,
   useBayarTagihan,
   useDeposit,
-  useRegenerateInvoice,
-  useRiwayatPembayaran,
 } from '../../composables/useKeuanganTagihan'
-import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
+import RupiahInput from '@/components/data/RupiahInput.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import ConfirmDialog from '@/components/feedback/ConfirmDialog.vue'
 import { toast } from 'vue-sonner'
-import { ExternalLink, Wifi, AlertTriangle } from 'lucide-vue-next'
+import type { EnumMap } from '@/lib/enums'
+import { Wifi } from 'lucide-vue-next'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -30,20 +27,16 @@ const id = computed(() => route.params.id as string)
 const { data: tagihan, isLoading, refetch } = useTagihanSayaDetail(id)
 const { data: deposit } = useDeposit()
 const { bayarSatu } = useBayarTagihan()
-const { mutateAsync: gantiInvoice, isPending: isMenggantiInvoice } = useRegenerateInvoice()
-const { data: riwayatPembayaran } = useRiwayatPembayaran()
 
-const jumlahDibayar = ref('')
+const jumlahDibayar = ref<number | null>(null)
 const pakaiDeposit = ref(false)
-const konfirmasiGanti = ref(false)
-const baruSajaBuatBayaranBaru = ref(false)
 
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 watch(
   tagihan,
   (baru) => {
-    if (baru?.status_pembayaran === 'belum_bayar') {
+    if (baru?.status_pembayaran === 'belum_bayar' || Number(baru?.sisa_tagihan ?? 0) > 0) {
       if (!intervalId) {
         intervalId = setInterval(() => {
           if (refetch) refetch()
@@ -65,67 +58,103 @@ onUnmounted(() => {
 
 const sisaTagihan = computed(() => Number(tagihan.value?.sisa_tagihan ?? tagihan.value?.total_tagihan ?? 0))
 const saldoKredit = computed(() => Number(deposit.value?.saldo_deposit ?? 0))
-
-const riwayatLista = computed(() => riwayatPembayaran.value?.data ?? [])
-
-const pembayaranPending = computed(() =>
-  riwayatLista.value.find(
-    (p) => p.status === 'pending' && !!p.payment_url && (p.tagihan_terpilih ?? []).includes(Number(id.value)),
-  ),
+const sudahTerbayar = computed(
+  () => Number(tagihan.value?.sudah_dibayar ?? 0) + Number(tagihan.value?.saldo_kredit_digunakan ?? 0) > 0,
 )
 
-const adaPendingTanpaUrl = computed(() =>
-  riwayatLista.value.some(
-    (p) => p.status === 'pending' && !p.payment_url && (p.tagihan_terpilih ?? []).includes(Number(id.value)),
-  ),
-)
+// Status customer dihitung dari kondisi finansial aktual tagihan,
+// bukan status transaksi provider (PENDING bukan status tagihan).
+const statusPembayaranSaya = computed((): string => {
+  const t = tagihan.value
+  if (!t) return ''
+  if (sisaTagihan.value <= 0) return 'lunas'
+  if (t.status_pembayaran === 'belum_bayar') return sudahTerbayar.value ? 'sedang_dicicil' : 'belum_bayar'
+  if (t.status_pembayaran === 'belum_diterbitkan') return 'belum_diterbitkan'
+  return 'tidak_dapat_dibayar'
+})
+
+const mapStatusTagihanSaya: EnumMap = {
+  belum_bayar: { label: 'Belum Dibayar', badgeVariant: 'warning' },
+  sedang_dicicil: { label: 'Sedang Dicicil', badgeVariant: 'info' },
+  lunas: { label: 'Lunas', badgeVariant: 'success' },
+  belum_diterbitkan: { label: 'Belum Diterbitkan', badgeVariant: 'secondary' },
+  tidak_dapat_dibayar: { label: 'Tidak Dapat Dibayar', badgeVariant: 'outline' },
+}
 
 const bisaDibayar = computed(
-  () => tagihan.value?.status_pembayaran === 'belum_bayar' && sisaTagihan.value > 0 && !pembayaranPending.value,
+  () => tagihan.value?.status_pembayaran === 'belum_bayar' && sisaTagihan.value > 0,
 )
 
-const tampilkanFormBayar = computed(
-  () =>
-    bisaDibayar.value ||
-    (baruSajaBuatBayaranBaru.value &&
-      tagihan.value?.status_pembayaran === 'belum_bayar' &&
-      sisaTagihan.value > 0),
-)
+const tampilkanFormBayar = computed(() => bisaDibayar.value)
 
 watch(
   tagihan,
   (t) => {
-    if (t?.status_pembayaran === 'belum_bayar' && !jumlahDibayar.value) {
-      jumlahDibayar.value = String(Number(t.sisa_tagihan ?? t.total_tagihan))
+    if (t?.status_pembayaran === 'belum_bayar' && t && !jumlahDibayar.value) {
+      jumlahDibayar.value = Number(t.sisa_tagihan ?? t.total_tagihan)
     }
   },
   { immediate: true },
 )
 
 const nominalBayar = computed(() => {
-  const n = Number(jumlahDibayar.value)
-  return Number.isFinite(n) && n > 0 ? n : sisaTagihan.value
+  const n = jumlahDibayar.value
+  if (n !== null && n > 0) return n
+  return pakaiDeposit.value ? nominalHarusDibayar.value : sisaTagihan.value
 })
 
-const labelTombolBayar = computed(() =>
-  pembayaranPending.value && baruSajaBuatBayaranBaru.value
-    ? 'Bayar Sekarang'
-    : `Bayar ${formatRupiah(nominalBayar.value)}`,
+const saldoDigunakanPreview = computed(() =>
+  pakaiDeposit.value && sisaTagihan.value > 0
+    ? Math.min(saldoKredit.value, sisaTagihan.value)
+    : 0,
 )
+
+const nominalHarusDibayar = computed(() =>
+  Math.max(0, sisaTagihan.value - saldoDigunakanPreview.value),
+)
+
+const sisaSaldoKreditPreview = computed(() =>
+  Math.max(0, saldoKredit.value - saldoDigunakanPreview.value),
+)
+
+const depositCukupSemua = computed(() => pakaiDeposit.value && nominalHarusDibayar.value <= 0)
+
+const catatanBayar = computed(() => {
+  const target = pakaiDeposit.value ? nominalHarusDibayar.value : sisaTagihan.value
+  const jumlah = nominalBayar.value
+
+  if (jumlah < target) {
+    return pakaiDeposit.value
+      ? 'Pembayaran ini belum menutup seluruh tagihan setelah saldo kredit dipakai.'
+      : 'Pembayaran ini belum melunasi tagihan.'
+  }
+
+  if (jumlah > target) {
+    return 'Pembayaran lebih dari kebutuhan akan menjadi saldo kredit.'
+  }
+
+  return pakaiDeposit.value
+    ? 'Tagihan akan lunas setelah pembayaran dan saldo kredit dipakai.'
+    : 'Tagihan akan lunas setelah pembayaran berhasil.'
+})
+
+watch(pakaiDeposit, (aktif) => {
+  const target = aktif ? nominalHarusDibayar.value : sisaTagihan.value
+  jumlahDibayar.value = target > 0 ? target : null
+})
 
 const statusTeks = computed(() => {
   const t = tagihan.value
   if (!t) return ''
-  if (pembayaranPending.value) return 'Pembayaran belum selesai'
-  if (t.status_pembayaran === 'belum_bayar') return 'Belum dibayar'
-  if (t.status_pembayaran === 'sudah_bayar') return 'Sudah dibayar'
+  if (sisaTagihan.value <= 0) return 'Lunas'
+  if (t.status_pembayaran === 'belum_bayar') return sudahTerbayar.value ? 'Sedang dicicil' : 'Belum dibayar'
   if (t.status_pembayaran === 'belum_diterbitkan') return 'Belum diterbitkan'
   return 'Tidak dapat dibayar'
 })
 
 const statusTeksClass = computed(() => {
-  if (pembayaranPending.value) return 'text-amber-700'
-  if (tagihan.value?.status_pembayaran === 'sudah_bayar') return 'text-emerald-700'
+  if (sisaTagihan.value <= 0) return 'text-emerald-700'
+  if (sudahTerbayar.value) return 'text-primary'
   return 'text-muted-foreground'
 })
 
@@ -177,6 +206,11 @@ function pesanError(e: unknown) {
 }
 
 async function bayar() {
+  if (depositCukupSemua.value) {
+    toast.error('Saldo kredit Anda sudah cukup. Tidak ada pembayaran tunai yang diperlukan.')
+    return
+  }
+
   try {
     const hasilBayar = await bayarSatu.mutateAsync({
       id: id.value,
@@ -191,18 +225,6 @@ async function bayar() {
     toast.error(pesanError(e) ?? 'Gagal membuat pembayaran')
   }
 }
-
-async function konfirmasiGantiInvoice() {
-  try {
-    await gantiInvoice(id.value)
-    konfirmasiGanti.value = false
-    baruSajaBuatBayaranBaru.value = true
-    refetch?.()
-    toast.success('Pembayaran baru berhasil dibuat.')
-  } catch (e: unknown) {
-    toast.error(pesanError(e) ?? 'Gagal membuat pembayaran baru')
-  }
-}
 </script>
 
 <template>
@@ -215,7 +237,7 @@ async function konfirmasiGantiInvoice() {
       <CardContent class="p-5">
         <div class="flex items-center justify-between gap-3">
           <p class="text-xs text-muted-foreground">{{ tagihan.nomor_tagihan }}</p>
-          <StatusBadge :value="tagihan.status_pembayaran" :map="statusPembayaranEnum" />
+          <StatusBadge :value="statusPembayaranSaya" :map="mapStatusTagihanSaya" />
         </div>
         <p class="mt-4 text-sm font-medium text-muted-foreground">{{ teksPeriode(tagihan) }}</p>
         <p class="mt-1 text-3xl font-semibold tabular-nums">{{ formatRupiah(tagihan.total_tagihan) }}</p>
@@ -259,83 +281,59 @@ async function konfirmasiGantiInvoice() {
 
     <Card class="rounded-xl border shadow-none">
       <CardContent class="space-y-3 p-5">
-        <template
-          v-if="
-            (tampilkanFormBayar || pembayaranPending || adaPendingTanpaUrl) &&
-            tagihan.status_pembayaran !== 'sudah_bayar'
-          "
-        >
-          <template v-if="pembayaranPending">
-            <div class="flex items-start gap-2 text-amber-800">
-              <AlertTriangle class="mt-0.5 size-4 shrink-0" />
-              <p class="text-sm font-medium">Pembayaran belum selesai</p>
-            </div>
-            <Button variant="outline" class="w-full" @click="bukaHalamanBayar(pembayaranPending.payment_url)">
-              <ExternalLink class="mr-2 size-4" />
-              Lanjutkan Pembayaran
-            </Button>
-          </template>
+        <template v-if="tampilkanFormBayar">
+          <div>
+            <p class="text-sm font-medium">Sisa tagihan</p>
+            <p class="text-2xl font-semibold tabular-nums">{{ formatRupiah(sisaTagihan) }}</p>
+          </div>
+          <div class="grid gap-1.5">
+            <Label for="jumlah-bayar">Mau bayar berapa?</Label>
+            <RupiahInput id="jumlah-bayar" v-model="jumlahDibayar" />
+          </div>
+          <p class="text-xs text-muted-foreground">
+            {{ catatanBayar }}
+          </p>
 
-          <template v-else-if="adaPendingTanpaUrl">
-            <p class="flex items-center gap-2 text-sm font-medium text-amber-800">
-              <AlertTriangle class="size-4" />
-              Pembayaran belum selesai
-            </p>
-            <p class="text-xs text-muted-foreground">
-              Ada pembayaran yang masih diproses. Muat ulang halaman ini sebentar lagi.
-            </p>
-          </template>
-
-          <template v-if="tampilkanFormBayar">
-            <div>
-              <p class="text-sm font-medium">Sisa tagihan</p>
-              <p class="text-2xl font-semibold tabular-nums">{{ formatRupiah(sisaTagihan) }}</p>
+          <div v-if="pakaiDeposit" class="space-y-1.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-muted-foreground">Sisa tagihan</span>
+              <span class="tabular-nums">{{ formatRupiah(sisaTagihan) }}</span>
             </div>
-            <div class="grid gap-1.5">
-              <Label for="jumlah-bayar">Mau bayar berapa?</Label>
-              <Input id="jumlah-bayar" v-model="jumlahDibayar" type="number" min="1" />
+            <div class="flex items-center justify-between text-emerald-700">
+              <span>Saldo kredit digunakan</span>
+              <span class="tabular-nums">-{{ formatRupiah(saldoDigunakanPreview) }}</span>
             </div>
-            <p class="text-xs text-muted-foreground">
-              <template v-if="nominalBayar < sisaTagihan">
-                Pembayaran ini belum melunasi tagihan.
-              </template>
-              <template v-else-if="nominalBayar > sisaTagihan">
-                Pembayaran lebih dari sisa tagihan akan menjadi saldo kredit.
-              </template>
-              <template v-else>
-                Tagihan akan lunas setelah pembayaran berhasil.
-              </template>
-            </p>
-            <label v-if="saldoKredit > 0" class="flex items-center gap-2 text-sm">
-              <Checkbox v-model="pakaiDeposit" aria-label="Gunakan saldo kredit" />
-              <span>Gunakan saldo kredit ({{ formatRupiah(saldoKredit) }})</span>
-            </label>
-            <Button class="w-full" :disabled="bayarSatu.isPending.value" @click="bayar">
-              <ExternalLink class="mr-2 size-4" />
-              {{ labelTombolBayar }}
-            </Button>
-          </template>
+            <div class="flex items-center justify-between border-t pt-1.5 font-medium">
+              <span>Yang harus dibayar</span>
+              <span class="tabular-nums">{{ formatRupiah(nominalHarusDibayar) }}</span>
+            </div>
+            <div v-if="sisaSaldoKreditPreview > 0" class="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Sisa saldo kredit</span>
+              <span class="tabular-nums">{{ formatRupiah(sisaSaldoKreditPreview) }}</span>
+            </div>
+          </div>
 
-          <template v-if="pembayaranPending">
-            <button
-              type="button"
-              class="w-full text-center text-xs font-medium text-primary underline underline-offset-2"
-              @click="konfirmasiGanti = true"
-            >
-              Buat pembayaran baru
-            </button>
-            <p class="text-xs text-muted-foreground">
-              Buat pembayaran baru hanya jika Anda tidak ingin melanjutkan pembayaran sebelumnya.
-            </p>
-          </template>
+          <label v-if="saldoKredit > 0" class="flex items-center gap-2 text-sm">
+            <Checkbox v-model="pakaiDeposit" aria-label="Gunakan saldo kredit" />
+            <span>Gunakan saldo kredit ({{ formatRupiah(saldoKredit) }})</span>
+          </label>
+
+          <p v-if="depositCukupSemua" class="text-xs font-medium text-amber-700">
+            Saldo kredit Anda sudah cukup menutup tagihan ini. Tidak perlu pembayaran tambahan.
+          </p>
+
+          <Button class="w-full" :disabled="bayarSatu.isPending.value || depositCukupSemua" @click="bayar">
+            Bayar Sekarang
+          </Button>
         </template>
 
         <div
-          v-else-if="tagihan.status_pembayaran === 'sudah_bayar'"
+          v-else-if="sisaTagihan <= 0"
           class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900"
         >
-          <p class="font-medium">Sudah dibayar</p>
-          <p class="mt-0.5 text-sm text-emerald-800/80">
+          <p class="font-medium">Lunas</p>
+          <p class="mt-0.5 text-sm text-emerald-800/80">Tagihan sudah dibayar.</p>
+          <p v-if="tagihan.dibayar_pada" class="mt-0.5 text-sm text-emerald-800/80">
             Dibayar {{ formatTanggal(tagihan.dibayar_pada) }}
           </p>
         </div>
@@ -360,16 +358,5 @@ async function konfirmasiGantiInvoice() {
         <RiwayatPembayaranTable :pembayaran="tagihan.riwayat_pembayaran" />
       </CardContent>
     </Card>
-
-    <ConfirmDialog
-      :open="konfirmasiGanti"
-      judul="Buat pembayaran baru?"
-      deskripsi="Pembayaran sebelumnya akan digantikan dengan pembayaran baru."
-      label-konfirmasi="Buat Pembayaran Baru"
-      label-batal="Batal"
-      :loading="isMenggantiInvoice"
-      @update:open="(v: boolean) => !v && (konfirmasiGanti = false)"
-      @confirm="konfirmasiGantiInvoice"
-    />
   </div>
 </template>

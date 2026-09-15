@@ -179,7 +179,3 @@ export function gunakanDeposit() {
 export function getRiwayatPembayaran(params: Record<string, string> = {}) {
   return httpClient.get<PaginatedResponse<Pembayaran>>('/pelanggan/pembayaran', { params })
 }
-
-export function regenerateInvoice(id: number | string) {
-  return httpClient.post<ApiResponse<Pembayaran>>(`${BASE_PELANGGAN}/${id}/regenerate-invoice`)
-}

@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
+import RupiahInput from '@/components/data/RupiahInput.vue'
 
 type ModeTagihan = 'prorata' | 'full'
 
@@ -153,7 +153,7 @@ function gunakanNominalRekomendasi() {
  * Ketika user mulai mengetik nominal,
  * nilai tersebut menjadi nominal manual.
  */
-function handleNominalInput(value: string | number) {
+function handleNominalInput(value: string | number | null) {
   if (value === '' || value === null || value === undefined) {
     nominalManual.value = null
     return
@@ -502,7 +502,7 @@ watch(
             </Label>
 
             <div class="flex gap-2">
-              <Input id="nominal-tagihan" :model-value="nominalTerpilih" type="number" min="0" step="1000"
+              <RupiahInput id="nominal-tagihan" :model-value="nominalManual"
                 @update:model-value="handleNominalInput" />
 
               <Button v-if="nominalDiubah" type="button" variant="outline" @click="gunakanNominalRekomendasi">

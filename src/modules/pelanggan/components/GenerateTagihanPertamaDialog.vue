@@ -10,9 +10,9 @@ import {
 } from '@/modules/tagihan/composables/useKeuanganTagihan'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import RupiahInput from '@/components/data/RupiahInput.vue'
 
 import {
   Dialog,
@@ -83,7 +83,7 @@ const {
 const previewData = ref<PreviewItem[]>([])
 const layananTerpilih = ref('')
 const mode = ref<'prorata' | 'full'>('prorata')
-const nominalManual = ref('')
+const nominalManual = ref<number | null>(null)
 const error = ref('')
 
 const isPending = computed(
@@ -109,11 +109,11 @@ const nominalTerhitung = computed(() =>
 )
 
 const nominalAkhir = computed(() => {
-  if (nominalManual.value === '') {
+  if (nominalManual.value === null) {
     return nominalTerhitung.value
   }
 
-  const nilai = Number(nominalManual.value)
+  const nilai = nominalManual.value
 
   return Number.isFinite(nilai) && nilai >= 0
     ? nilai
@@ -131,7 +131,7 @@ function resetForm() {
   previewData.value = []
   layananTerpilih.value = ''
   mode.value = 'prorata'
-  nominalManual.value = ''
+  nominalManual.value = null
   error.value = ''
 }
 
@@ -153,8 +153,8 @@ function ambilPreview() {
           : ''
 
         nominalManual.value = pertama
-          ? String(pertama.prorata.nominal_terhitung)
-          : ''
+          ? pertama.prorata.nominal_terhitung
+          : null
       },
 
       onError: (e: Error) => {
@@ -184,13 +184,11 @@ watch(
   [layananTerpilih, mode],
   () => {
     if (!perhitungan.value) {
-      nominalManual.value = ''
+      nominalManual.value = null
       return
     }
 
-    nominalManual.value = String(
-      perhitungan.value.nominal_terhitung,
-    )
+    nominalManual.value = perhitungan.value.nominal_terhitung
   },
 )
 
@@ -211,9 +209,7 @@ function konfirmasi() {
     return
   }
 
-  const nominal = Number(nominalManual.value)
-
-  if (!Number.isFinite(nominal) || nominal < 0) {
+  if (nominalManual.value !== null && (nominalManual.value < 0 || !Number.isFinite(nominalManual.value))) {
     error.value = 'Nominal tagihan tidak valid.'
     return
   }
@@ -226,7 +222,7 @@ function konfirmasi() {
       payload: {
         layanan_internet_id: layanan.value.layanan_internet_id,
         mode: mode.value,
-        nominal_manual: nominal,
+        nominal_manual: nominalManual.value ?? undefined,
       },
     },
     {
@@ -436,12 +432,9 @@ function konfirmasi() {
                 Nominal Tagihan
               </Label>
 
-              <Input
+              <RupiahInput
                 id="nominal-manual"
                 v-model="nominalManual"
-                type="number"
-                min="0"
-                step="1"
                 :disabled="isPending || !perhitungan"
               />
 

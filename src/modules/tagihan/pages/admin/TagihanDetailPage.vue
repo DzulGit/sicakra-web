@@ -111,6 +111,21 @@ function formatTanggal(iso: string | null) {
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
 }
 
+const mapStatusTampilan = {
+  belum_bayar: { label: 'Belum Bayar', badgeVariant: 'warning' },
+  sedang_dicicil: { label: 'Sedang Dicicil', badgeVariant: 'info' },
+  lunas: { label: 'Lunas', badgeVariant: 'success' },
+} as const
+
+const statusTampilan = computed(() => tagihan.value?.status_tampilan ?? tagihan.value?.status_pembayaran ?? '')
+
+// Timeline = urutan pembayaran berhasil + pemakaian saldo kredit (paling baru di atas).
+const timeline = computed(() => tagihan.value?.timeline_pembayaran ?? [])
+
+function labelJenisTimeline(jenis: string) {
+  return jenis === 'kredit' ? 'Pemakaian saldo kredit' : 'Pembayaran diterima'
+}
+
 const layanan = computed(() => tagihan.value?.layanan_internet)
 const pelanggan = computed(() => layanan.value?.pelanggan)
 
@@ -198,9 +213,13 @@ function waHref(nomor: string) {
               <span class="text-muted-foreground">Total Tagihan</span>
               <span class="font-semibold">{{ formatRupiah(tagihan.total_tagihan) }}</span>
             </div>
-            <div v-if="tagihan.dibayar_pada" class="flex justify-between">
-              <span class="text-muted-foreground">Dibayar Pada</span>
-              <span>{{ formatTanggal(tagihan.dibayar_pada) }}</span>
+            <div class="flex items-center justify-between">
+              <span class="text-muted-foreground">Status</span>
+              <StatusBadge :value="statusTampilan" :map="mapStatusTampilan" />
+            </div>
+            <div class="flex justify-between">
+              <span class="text-muted-foreground">Lunas Pada</span>
+              <span>{{ tagihan.tanggal_lunas ? `${tagihan.tanggal_lunas} WIB` : '—' }}</span>
             </div>
           </CardContent>
         </Card>
@@ -359,6 +378,33 @@ function waHref(nomor: string) {
         </CardHeader>
         <CardContent>
           <RiwayatPembayaranTable :pembayaran="tagihan.riwayat_pembayaran ?? []" />
+        </CardContent>
+      </Card>
+
+      <!-- Timeline Pembayaran -->
+      <Card v-if="timeline.length">
+        <CardHeader>
+          <CardTitle class="text-base">Timeline Pembayaran Tagihan</CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-3">
+          <div v-for="(ev, i) in timeline" :key="i" class="flex gap-3">
+            <div class="flex flex-col items-center">
+              <span class="mt-1.5 size-2.5 shrink-0 rounded-full" :class="ev.jenis === 'kredit' ? 'bg-sky-500' : 'bg-emerald-500'"></span>
+              <span v-if="i < timeline.length - 1" class="w-px flex-1 bg-muted"></span>
+            </div>
+            <div class="min-w-0 flex-1 space-y-0.5 pb-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-sm font-medium">{{ labelJenisTimeline(ev.jenis) }}</p>
+                <p class="text-sm font-semibold tabular-nums">{{ formatRupiah(String(ev.jumlah)) }}</p>
+              </div>
+              <p class="text-xs text-muted-foreground">{{ ev.waktu_wib }} WIB</p>
+              <p class="text-xs text-muted-foreground">
+                <template v-if="ev.nomor_pembayaran">{{ ev.nomor_pembayaran }}</template>
+                <template v-if="ev.metode_pembayaran"> · {{ ev.metode_pembayaran }}</template>
+              </p>
+              <p class="text-xs">Sisa setelah transaksi: <span class="font-medium tabular-nums">{{ formatRupiah(String(ev.sisa_setelah)) }}</span></p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </template>

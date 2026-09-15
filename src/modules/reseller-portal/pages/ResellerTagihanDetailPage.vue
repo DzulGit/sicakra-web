@@ -7,7 +7,6 @@ import {
   useResellerBayarTunaiTagihan,
   useResellerPerbaruiLinkTagihan,
 } from '../composables/useResellerTagihan'
-import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
 import {
@@ -103,6 +102,29 @@ const layanan = computed(
 const pelanggan = computed(
   () => layanan.value?.pelanggan,
 )
+
+const mapStatusTampilan = {
+  belum_bayar: { label: 'Belum Bayar', badgeVariant: 'warning' },
+  sedang_dicicil: { label: 'Sedang Dicicil', badgeVariant: 'info' },
+  lunas: { label: 'Lunas', badgeVariant: 'success' },
+} as const
+
+const statusTampilan = computed(
+  () =>
+    tagihan.value?.status_tampilan ??
+    tagihan.value?.status_pembayaran ??
+    '',
+)
+
+const timeline = computed(
+  () => tagihan.value?.timeline_pembayaran ?? [],
+)
+
+function labelJenisTimeline(jenis: string) {
+  return jenis === 'kredit'
+    ? 'Pemakaian saldo kredit'
+    : 'Pembayaran diterima'
+}
 
 function handlePerbaruiLink() {
   perbaruiLink(id.value, {
@@ -346,8 +368,8 @@ function waHref(nomor: string) {
               {{ tagihan.nomor_tagihan }}
 
               <StatusBadge
-                :value="tagihan.status_pembayaran"
-                :map="statusPembayaranEnum"
+                :value="statusTampilan"
+                :map="mapStatusTampilan"
               />
             </CardTitle>
           </CardHeader>
@@ -432,20 +454,19 @@ function waHref(nomor: string) {
             </div>
 
             <div
-              v-if="tagihan.dibayar_pada"
               class="flex justify-between"
             >
               <span
                 class="text-muted-foreground"
               >
-                Dibayar Pada
+                Lunas Pada
               </span>
 
               <span>
                 {{
-                  formatTanggal(
-                    tagihan.dibayar_pada,
-                  )
+                  tagihan.tanggal_lunas
+                    ? `${tagihan.tanggal_lunas} WIB`
+                    : '—'
                 }}
               </span>
             </div>
@@ -737,6 +758,91 @@ function waHref(nomor: string) {
           <RiwayatPembayaranTable
             :pembayaran="tagihan.pembayaran ?? []"
           />
+        </CardContent>
+      </Card>
+
+      <!-- Timeline Pembayaran Tagihan -->
+      <Card v-if="timeline.length">
+        <CardHeader>
+          <CardTitle class="text-base">
+            Timeline Pembayaran Tagihan
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent class="space-y-3">
+          <div
+            v-for="(ev, i) in timeline"
+            :key="i"
+            class="flex gap-3"
+          >
+            <div class="flex flex-col items-center">
+              <span
+                class="mt-1.5 size-2.5 shrink-0 rounded-full"
+                :class="
+                  ev.jenis === 'kredit'
+                    ? 'bg-sky-500'
+                    : 'bg-emerald-500'
+                "
+              />
+              <span
+                v-if="i < timeline.length - 1"
+                class="w-px flex-1 bg-muted"
+              />
+            </div>
+
+            <div
+              class="min-w-0 flex-1 space-y-0.5 pb-4"
+            >
+              <div
+                class="flex flex-wrap items-center justify-between gap-2"
+              >
+                <p class="text-sm font-medium">
+                  {{ labelJenisTimeline(ev.jenis) }}
+                </p>
+
+                <p
+                  class="text-sm font-semibold tabular-nums"
+                >
+                  {{
+                    formatRupiah(
+                      String(ev.jumlah),
+                    )
+                  }}
+                </p>
+              </div>
+
+              <p class="text-xs text-muted-foreground">
+                {{ ev.waktu_wib }} WIB
+              </p>
+
+              <p class="text-xs text-muted-foreground">
+                <template
+                  v-if="ev.nomor_pembayaran"
+                >
+                  {{ ev.nomor_pembayaran }}
+                </template>
+
+                <template
+                  v-if="ev.metode_pembayaran"
+                >
+                  · {{ ev.metode_pembayaran }}
+                </template>
+              </p>
+
+              <p class="text-xs">
+                Sisa setelah transaksi:
+                <span
+                  class="font-medium tabular-nums"
+                >
+                  {{
+                    formatRupiah(
+                      String(ev.sisa_setelah),
+                    )
+                  }}
+                </span>
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </template>

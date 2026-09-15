@@ -14,6 +14,9 @@ const ResellerTagihanDetailPage = () => import('@/modules/reseller-portal/pages/
 const ResellerTerbitkanTagihanPage = () => import('@/modules/reseller-portal/pages/ResellerTerbitkanTagihanPage.vue')
 const ResellerPermohonanLayananListPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananListPage.vue')
 const ResellerPermohonanLayananDetailPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananDetailPage.vue')
+const PembayaranListPage = () => import('@/modules/tagihan/pages/PembayaranListPage.vue')
+const PembayaranDetailPage = () => import('@/modules/tagihan/pages/PembayaranDetailPage.vue')
+const SaldoKreditPage = () => import('@/modules/tagihan/pages/SaldoKreditPage.vue')
 /**
  * Route PORTAL RESELLER — mitra eksternal memakai sistem, data dibatasi
  * (scoped) pelanggan milik reseller tsb. Pisah total dari rute admin internal
@@ -201,6 +204,42 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Detail Tagihan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/pembayaran',
+    name: 'reseller.pembayaran',
+    component: PembayaranListPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Riwayat Pembayaran',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/pembayaran/:id',
+    name: 'reseller.pembayaran.detail',
+    component: PembayaranDetailPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Detail Pembayaran',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/saldo-kredit/:pelanggan',
+    name: 'reseller.saldo-kredit',
+    component: SaldoKreditPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Saldo Kredit Pelanggan',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],
