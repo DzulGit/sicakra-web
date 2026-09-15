@@ -2,10 +2,7 @@
 import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createColumnHelper, type ColumnDef } from '@tanstack/vue-table'
-import { FileDown, FileSpreadsheet } from 'lucide-vue-next'
-import { toast } from 'vue-sonner'
 import { useRiwayatPembayaranAdmin } from '../composables/usePembayaranHistory'
-import { pembayaranAdminApi, pembayaranResellerApi } from '../api/pembayaranHistory.api'
 import { formatRupiah } from '@/lib/currency'
 import DataTable from '@/components/data/DataTable.vue'
 import Pagination from '@/components/data/Pagination.vue'
@@ -19,7 +16,6 @@ const router = useRouter()
 
 const scope = computed(() => (route.path.startsWith('/reseller') ? 'reseller' : 'admin'))
 const basePath = computed(() => (scope.value === 'reseller' ? '/reseller' : '/admin/keuangan'))
-const api = computed(() => (scope.value === 'reseller' ? pembayaranResellerApi : pembayaranAdminApi))
 
 const STATUS_TRANSAKSI: Record<string, { label: string; kelas: string }> = {
   pending: { label: 'Pending', kelas: 'bg-amber-100 text-amber-800' },
@@ -83,30 +79,6 @@ function nilaiQuery(key: string): string {
   const v = route.query[key]
   return typeof v === 'string' ? v : ''
 }
-
-async function unduhBlob(fetcher: () => Promise<{ data: Blob }>, nama: string) {
-  try {
-    const res = await fetcher()
-    const blob = res.data instanceof Blob ? res.data : new Blob([res.data])
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = nama
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    toast.error('Gagal mengunduh laporan.')
-  }
-}
-
-function paramsLaporan(): Record<string, string> {
-  const p: Record<string, string> = {}
-  for (const key of ['dari', 'sampai', 'no_tagihan', 'no_pembayaran', 'status', 'status_tagihan', 'metode']) {
-    const v = nilaiQuery(key)
-    if (v) p[key] = v
-  }
-  return p
-}
 </script>
 
 <template>
@@ -117,15 +89,6 @@ function paramsLaporan(): Record<string, string> {
         <p v-if="hasil" class="text-sm text-muted-foreground">
           {{ new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(hasil.data.total) }} transaksi
         </p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" @click="unduhBlob(() => api.exportExcel(paramsLaporan()), 'riwayat-pembayaran.xlsx')">
-          <FileSpreadsheet class="mr-2 size-4" /> Excel
-        </Button>
-        <Button variant="outline" size="sm" @click="unduhBlob(() => api.exportPdf(paramsLaporan()), 'riwayat-pembayaran.pdf')">
-          <FileDown class="mr-2 size-4" /> PDF
-        </Button>
       </div>
     </div>
 
