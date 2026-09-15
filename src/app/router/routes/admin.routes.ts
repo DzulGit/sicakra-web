@@ -26,6 +26,7 @@ const TimTeknisiEditPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiE
 const PelangganListPage = () => import('@/modules/pelanggan/pages/PelangganListPage.vue')
 const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDetailPage.vue')
 const BuatPelangganPage = () => import('@/modules/buat-pelanggan/pages/BuatPelangganPage.vue')
+const BuatTagihanPertamaAdminPage = () => import('@/modules/tagihan/pages/admin/BuatTagihanPertamaPage.vue')
 const ResellerListPage = () => import('@/modules/reseller/pages/ResellerListPage.vue')
 const ResellerPelangganListPage = () => import('@/modules/reseller/pages/ResellerPelangganListPage.vue')
 const ResellerPaketListPage = () => import('@/modules/reseller/pages/ResellerPaketListPage.vue')
@@ -371,6 +372,18 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Pendaftar Baru',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['keuangan'],
+    },
+  },
+  {
+    path: '/admin/keuangan/buat-tagihan-pertama/:pelangganId',
+    name: 'admin.keuangan.buat-tagihan-pertama',
+    component: BuatTagihanPertamaAdminPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Buat Tagihan Pertama',
       requiresAuth: true,
       guard: 'admin',
       peran: ['keuangan'],

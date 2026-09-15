@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, h, ref } from 'vue'
+import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, CalendarClock, ReceiptText, UserRound, FileText } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { useResellerPelangganDetail } from '../composables/useResellerPortal'
-import BuatTagihanPertamaDialog from '../components/BuatTagihanPertamaDialog.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,9 +19,7 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => String(route.params.id))
 
-const { data: pelanggan, isLoading, isError, refetch } = useResellerPelangganDetail(id)
-
-const showBuatTagihanPertama = ref(false)
+const { data: pelanggan, isLoading, isError } = useResellerPelangganDetail(id)
 
 const layananList = computed<LayananInternetDetail[]>(() => pelanggan.value?.layanan_internet ?? [])
 
@@ -83,9 +80,11 @@ function formatTanggal(iso?: string | null) {
       <Button variant="ghost" size="sm" @click="router.back()">
         <ArrowLeft class="size-4" /> Kembali
       </Button>
-      <Button v-if="bisaBuatTagihanPertama" variant="outline" @click="showBuatTagihanPertama = true">
-        <ReceiptText class="mr-2 size-4" />
-        Buat Tagihan Pertama
+      <Button v-if="bisaBuatTagihanPertama" variant="outline" as-child>
+        <RouterLink :to="`/reseller/pelanggan/${id}/buat-tagihan-pertama`">
+          <ReceiptText class="mr-2 size-4" />
+          Buat Tagihan Pertama
+        </RouterLink>
       </Button>
     </div>
 
@@ -241,8 +240,5 @@ function formatTanggal(iso?: string | null) {
         </CardContent>
       </Card>
     </template>
-
-    <!-- ===== Dialog Buat Tagihan Pertama ===== -->
-    <BuatTagihanPertamaDialog v-model:open="showBuatTagihanPertama" :pelanggan-id="Number(id)" @success="refetch" />
   </div>
 </template>

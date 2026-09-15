@@ -12,6 +12,7 @@ const ResellerPaketInternetFormPage = () => import('@/modules/reseller-portal/pa
 const ResellerTagihanListPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanListPage.vue')
 const ResellerTagihanDetailPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanDetailPage.vue')
 const ResellerTerbitkanTagihanPage = () => import('@/modules/reseller-portal/pages/ResellerTerbitkanTagihanPage.vue')
+const BuatTagihanPertamaResellerPage = () => import('@/modules/reseller-portal/pages/BuatTagihanPertamaPage.vue')
 const ResellerPermohonanLayananListPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananListPage.vue')
 const ResellerPermohonanLayananDetailPage = () => import('@/modules/reseller-portal/pages/ResellerPermohonanLayananDetailPage.vue')
 const PembayaranListPage = () => import('@/modules/tagihan/pages/PembayaranListPage.vue')
@@ -96,6 +97,18 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Detail Pelanggan',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['reseller'],
+    },
+  },
+  {
+    path: '/reseller/pelanggan/:id/buat-tagihan-pertama',
+    name: 'reseller.pelanggan.buat-tagihan-pertama',
+    component: BuatTagihanPertamaResellerPage,
+    meta: {
+      layout: 'dashboard',
+      judul: 'Buat Tagihan Pertama',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],

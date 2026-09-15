@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
 import { toast } from 'vue-sonner'
 import {
@@ -10,7 +10,6 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { usePelangganDetail, useAturTanggalTagihan } from '../composables/usePelanggan'
 import EditSiklusDialog from '../components/EditSiklusDialog.vue'
 import GenerateTagihanDialog from '../components/GenerateTagihanDialog.vue'
-import GenerateTagihanPertamaDialog from '../components/GenerateTagihanPertamaDialog.vue'
 import ResetPasswordDialog from '../components/ResetPasswordDialog.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,7 +39,6 @@ const bolehKelolaBilling = authStore.peranAdmin === 'keuangan' || authStore.pera
 const bolehResetPassword = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
 
 const generateDialogTerbuka = ref(false)
-const generateTagihanPertamaTerbuka = ref(false)
 const resetPasswordTerbuka = ref(false)
 const tanggalTagihan = ref('20')
 const editSiklusLayanan = ref<LayananInternetDetail | null>(null)
@@ -145,10 +143,12 @@ function formatTanggal(iso?: string | null) {
       <Button
         v-if="bolehKelolaBilling && bisaBuatTagihanPertama"
         variant="outline"
-        @click="generateTagihanPertamaTerbuka = true"
+        as-child
       >
-        <ReceiptText class="mr-2 size-4" />
-        Buat Tagihan Pertama
+        <RouterLink :to="`/admin/keuangan/buat-tagihan-pertama/${pelangganId}?nama=${encodeURIComponent(pelanggan?.nama_lengkap ?? '')}`">
+          <ReceiptText class="mr-2 size-4" />
+          Buat Tagihan Pertama
+        </RouterLink>
       </Button>
       <Button v-if="bolehResetPassword" variant="outline" @click="resetPasswordTerbuka = true">
         <KeyRound class="mr-2 size-4" />
@@ -343,15 +343,6 @@ function formatTanggal(iso?: string | null) {
       :pelanggan="pelanggan ?? null"
       @update:open="(v) => (generateDialogTerbuka = v)"
       @saved="generateDialogTerbuka = false"
-    />
-
-    <!-- ===== Dialog Generate Tagihan Pertama ===== -->
-    <GenerateTagihanPertamaDialog
-      :open="generateTagihanPertamaTerbuka"
-      :pelanggan-id="pelangganId"
-      :nama-pelanggan="pelanggan?.nama_lengkap"
-      @update:open="(v) => (generateTagihanPertamaTerbuka = v)"
-      @saved="generateTagihanPertamaTerbuka = false"
     />
 
     <!-- ===== Dialog Reset Password ===== -->
