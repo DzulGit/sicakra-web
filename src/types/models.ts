@@ -172,18 +172,6 @@ export interface AlokasiTagihanRingkas {
   tagihan?: Tagihan
 }
 
-export interface PembayaranAdmin
-  extends Omit<Pembayaran, 'alokasi_tagihan' | 'mutasi_saldo_kredit' | 'jumlah_dibayar' | 'created_at'> {
-  pelanggan: { id: number; nama_lengkap: string; nomor_pelanggan: string | null } | null
-  jumlah_dibayar: number
-  created_at: string | null
-  nomor_pembayaran: string
-  waktu_wib: string | null
-  total_alokasi: number
-  saldo_kredit_terbentuk: number
-  alokasi_tagihan: AlokasiTagihanRingkas[]
-}
-
 export interface TimelinePembayaranTagihan {
   jenis: 'pembayaran' | 'kredit'
   waktu_wib: string
@@ -289,6 +277,12 @@ export interface Tagihan {
   sisa_tagihan?: number
   sudah_dibayar?: number
   saldo_kredit_digunakan?: number
+  /** Tambahan backend (lihat PembayaranAllocationService::detailTagihan). */
+  telah_terbayar?: number
+  /** Signed: negatif = kekurangan, positif = kelebihan pembayaran. */
+  sisa?: number
+  /** Status keuangan: 'Lunas' | 'Tertunggak' | 'Sedang Cicil' | 'Belum Bayar'. */
+  status?: string
   xendit_invoice_url: string | null
   xendit_invoice_status: string | null
   xendit_invoice_expires_at: string | null

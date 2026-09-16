@@ -8,7 +8,6 @@ import {
   generateTagihanManual,
   getDeposit,
   getPendaftarBaru,
-  getRiwayatPembayaran,
   getRingkasanOmzet,
   getTagihanDetail,
   getTagihanList,
@@ -202,7 +201,6 @@ export function useBayarTagihan() {
     queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya'] })
     queryClient.invalidateQueries({ queryKey: ['deposit-pelanggan'] })
     queryClient.invalidateQueries({ queryKey: ['tunggakan-pelanggan'] })
-    queryClient.invalidateQueries({ queryKey: ['riwayat-pembayaran-pelanggan'] })
     queryClient.invalidateQueries({ queryKey: ['dashboard-pelanggan'] })
   }
 
@@ -261,24 +259,8 @@ export function useGunakanDeposit() {
       queryClient.invalidateQueries({ queryKey: ['deposit-pelanggan'] })
       queryClient.invalidateQueries({ queryKey: ['tunggakan-pelanggan'] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'saya'] })
-      queryClient.invalidateQueries({ queryKey: ['riwayat-pembayaran-pelanggan'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-pelanggan'] })
     },
-  })
-}
-
-export function useRiwayatPembayaran() {
-  const route = useRoute()
-  const params = computed(() => {
-    const p: Record<string, string> = {}
-    for (const [key, value] of Object.entries(route.query)) {
-      if (typeof value === 'string') p[key] = value
-    }
-    return p
-  })
-  return useQuery({
-    queryKey: ['riwayat-pembayaran-pelanggan', params],
-    queryFn: () => getRiwayatPembayaran(params.value).then((res) => res.data.data),
   })
 }
 

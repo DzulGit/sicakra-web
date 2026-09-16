@@ -16,8 +16,6 @@ const PendaftarBaruPage = () => import('@/modules/tagihan/pages/admin/PendaftarB
 const TagihanDetailPage = () => import('@/modules/tagihan/pages/admin/TagihanDetailPage.vue')
 const TerbitkanTagihanPage = () => import('@/modules/tagihan/pages/admin/TerbitkanTagihanPage.vue')
 const PendapatanPage = () => import('@/modules/pendapatan/pages/PendapatanPage.vue')
-const PembayaranListPage = () => import('@/modules/tagihan/pages/PembayaranListPage.vue')
-const PembayaranDetailPage = () => import('@/modules/tagihan/pages/PembayaranDetailPage.vue')
 const SaldoKreditPage = () => import('@/modules/tagihan/pages/SaldoKreditPage.vue')
 const AdminListPage = () => import('@/modules/admin-management/pages/AdminListPage.vue')
 const TimTeknisiListPage = () => import('@/modules/tim-teknisi/pages/TimTeknisiListPage.vue')
@@ -408,30 +406,6 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Pendapatan',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['keuangan'],
-    },
-  },
-  {
-    path: '/admin/keuangan/pembayaran',
-    name: 'admin.keuangan.pembayaran',
-    component: PembayaranListPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Riwayat Pembayaran',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['keuangan'],
-    },
-  },
-  {
-    path: '/admin/keuangan/pembayaran/:id',
-    name: 'admin.keuangan.pembayaran.detail',
-    component: PembayaranDetailPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Detail Pembayaran',
       requiresAuth: true,
       guard: 'admin',
       peran: ['keuangan'],

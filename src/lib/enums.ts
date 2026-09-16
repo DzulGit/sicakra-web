@@ -49,6 +49,15 @@ export const statusTransaksiEnum: EnumMap = {
   gagal: { label: 'Gagal', badgeVariant: 'destructive' },
 }
 
+// Status keuangan dinamis Tagihan (dihitung backend dari alokasi + pemakaian
+// saldo kredit). Key = nilai kolom `status` pada detailTagihan / index tagihan.
+export const statusTagihanFinanceEnum: EnumMap = {
+  'Lunas': { label: 'Lunas', badgeVariant: 'success' },
+  'Sedang Cicil': { label: 'Sedang Cicil', badgeVariant: 'warning' },
+  'Belum Bayar': { label: 'Belum Bayar', badgeVariant: 'secondary' },
+  'Tertunggak': { label: 'Tertunggak', badgeVariant: 'destructive' },
+}
+
 export const hasilKerjaEnum: EnumMap = {
   selesai: { label: 'Selesai', badgeVariant: 'success' },
   kendala: { label: 'Kendala', badgeVariant: 'warning' },
