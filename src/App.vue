@@ -2,6 +2,7 @@
 import { useHead } from '@unhead/vue'
 import { useRoute } from 'vue-router'
 import { computed, ref, onMounted } from 'vue'
+import router from '@/app/router'
 import { Toaster } from '@/components/ui/sonner'
 import LandingLayout from '@/components/layout/LandingLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
@@ -26,7 +27,10 @@ const layoutAktif = computed(() => layoutPerRoute[route.meta.layout])
 
 const loading = ref(true);
 onMounted(async () => {
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  const mulai = performance.now();
+  await router.isReady();
+  const sisa = 600 - (performance.now() - mulai);
+  if (sisa > 0) await new Promise(resolve => setTimeout(resolve, sisa));
   await SplashScreen.hide();
   loading.value = false;
 });

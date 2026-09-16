@@ -57,6 +57,7 @@ onUnmounted(() => {
 
     <div class="animate-core-enter relative z-10 flex flex-col items-center">
       <div class="relative flex items-center justify-center">
+        <div class="animate-spin absolute -inset-4 rounded-full border-2 border-landing-signal/25 border-t-landing-signal" />
         <svg viewBox="0 0 300 300" class="absolute h-72 w-72 sm:h-80 sm:w-80 md:h-96 md:w-96" aria-hidden="true">
           <defs>
             <radialGradient id="hubGlow" cx="50%" cy="50%" r="50%">
