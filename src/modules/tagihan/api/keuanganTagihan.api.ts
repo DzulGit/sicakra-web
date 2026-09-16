@@ -175,7 +175,3 @@ export function getTunggakan() {
 export function gunakanDeposit() {
   return httpClient.post<ApiResponse<GunakanDepositResult>>('/pelanggan/deposit/gunakan')
 }
-
-export function getRiwayatPembayaran(params: Record<string, string> = {}) {
-  return httpClient.get<PaginatedResponse<Pembayaran>>('/pelanggan/pembayaran', { params })
-}

@@ -3,7 +3,8 @@ import { h } from 'vue'
 import { useRouter } from 'vue-router'
 import { createColumnHelper, type ColumnDef } from '@tanstack/vue-table'
 import { useTagihanList } from '../../composables/useKeuanganTagihan'
-import { statusPembayaranEnum } from '@/lib/enums'
+import { statusTagihanFinanceEnum } from '@/lib/enums'
+import { formatRupiah, formatRupiahBertanda } from '@/lib/currency'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import DataTable from '@/components/data/DataTable.vue'
 import Pagination from '@/components/data/Pagination.vue'
@@ -29,25 +30,20 @@ const columns = [
     cell: ({ row }) => `${row.original.periode_bulan}/${row.original.periode_tahun}`,
   }),
   col.accessor('total_tagihan', {
-    header: 'Total',
-    cell: ({ getValue }) => {
-      const v = Number(getValue())
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v)
-    },
+    header: 'Total Tagihan',
+    cell: ({ getValue }) => formatRupiah(getValue()),
   }),
-  col.accessor((row) => row.sisa_tagihan ?? row.total_tagihan, {
-    id: 'sisa_tagihan',
+  col.accessor('telah_terbayar', {
+    header: 'Telah Terbayar',
+    cell: ({ getValue }) => formatRupiah(getValue()),
+  }),
+  col.accessor('sisa', {
     header: 'Sisa',
-    cell: ({ row }) => {
-      const sisa = Number(row.original.sisa_tagihan ?? row.original.total_tagihan)
-      const total = Number(row.original.total_tagihan)
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
-        .format(sisa) + (sisa !== total ? ` / ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(total)}` : '')
-    },
+    cell: ({ getValue }) => formatRupiahBertanda(getValue()),
   }),
-  col.accessor('status_pembayaran', {
+  col.accessor('status', {
     header: 'Status',
-    cell: ({ getValue }) => h(StatusBadge, { value: getValue(), map: statusPembayaranEnum }),
+    cell: ({ getValue }) => h(StatusBadge, { value: getValue() ?? 'Belum Bayar', map: statusTagihanFinanceEnum }),
   }),
   col.accessor('id', {
     header: '',

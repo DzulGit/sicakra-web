@@ -13,6 +13,15 @@ export function formatRupiah(nilai: string | number | null | undefined): string 
   return FORMATTER_IDR.format(n)
 }
 
+// Rupiah bertanda untuk selisih/sisa: -Rp150.000 / +Rp50.000 / Rp0.
+export function formatRupiahBertanda(nilai: string | number | null | undefined): string {
+  const n = Number(nilai ?? 0)
+  if (!Number.isFinite(n)) return FORMATTER_IDR.format(0)
+  if (n < 0) return `-${FORMATTER_IDR.format(Math.abs(n))}`
+  if (n > 0) return `+${FORMATTER_IDR.format(n)}`
+  return FORMATTER_IDR.format(0)
+}
+
 export function formatAngka(nilai: string | number | null | undefined): string {
   const n = Number(nilai ?? 0)
   if (!Number.isFinite(n)) return '0'

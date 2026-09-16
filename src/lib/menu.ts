@@ -15,7 +15,6 @@ import {
   Wallet,
   Bell,
   Store,
-  History,
 } from 'lucide-vue-next'
 import type { PeranAdmin, TipePengguna } from '@/stores/auth.store'
 
@@ -53,7 +52,6 @@ const menuKeuangan: MenuItem[] = [
   { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt },
   { label: 'Terbitkan Tagihan', to: '/admin/keuangan/terbitkan-tagihan', icon: Send },
   { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet },
-  { label: 'Riwayat Pembayaran', to: '/admin/keuangan/pembayaran', icon: History },
   { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: Contact },
   { label: 'Notifikasi', to: '/admin/notifikasi', icon: Bell },
 ]
@@ -80,7 +78,6 @@ const menuReseller: MenuItem[] = [
   { label: 'Tagihan', to: '/reseller/tagihan', icon: Receipt },
   { label: 'Terbitkan Tagihan', to: '/reseller/terbitkan-tagihan', icon: Send },
   { label: 'Pendapatan', to: '/reseller/pendapatan', icon: Wallet },
-  { label: 'Riwayat Pembayaran', to: '/reseller/pembayaran', icon: History },
   { label: 'Notifikasi', to: '/reseller/notifikasi', icon: Bell },
   { label: 'Profil', to: '/reseller/profil', icon: UserCircle },
 ]
