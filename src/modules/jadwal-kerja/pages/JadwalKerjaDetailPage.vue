@@ -113,7 +113,7 @@ function gunakanLokasiSaya() {
 }
 
 function bukaMaps(lat: string, lng: string) {
-  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank')
+  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank', 'noopener,noreferrer')
 }
 
 const onSubmit = handleSubmit((values) => {

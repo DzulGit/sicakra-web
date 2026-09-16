@@ -499,17 +499,4 @@ export const adminRoutes: RouteRecordRaw[] = [
       peran: ['operasional'],
     },
   },
-
-  // ----- Notifikasi (semua peran admin) -----
-  {
-    path: '/admin/notifikasi',
-    name: 'admin.notifikasi',
-    component: NotifikasiListPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Notifikasi',
-      requiresAuth: true,
-      guard: 'admin',
-    },
-  },
 ]

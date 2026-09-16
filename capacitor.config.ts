@@ -4,30 +4,16 @@ const config: CapacitorConfig = {
   appId: 'com.sicakra.app',
   appName: ' sicakra',
   webDir: 'dist',
-  server: {
-    androidScheme: 'http',
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    cleartext: true
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: false,
-      backgroundColor: "#FFFFFF",
-      androidSplashResourceName: "splash",
-      androidScaleType: "CENTER_INSIDE",
+      backgroundColor: '#FFFFFF',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_INSIDE',
       showSpinner: false,
     },
-  }
-=======
-    cleartext: true,
   },
->>>>>>> Stashed changes
-=======
-    cleartext: true,
-  },
->>>>>>> Stashed changes
 };
 
 export default config;

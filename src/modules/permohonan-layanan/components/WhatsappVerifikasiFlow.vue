@@ -278,7 +278,7 @@ const onSubmit = handleSubmit((formValues) => {
 })
 
 function bukaWhatsApp() {
-  if (waMessage.value.waUrl) window.open(waMessage.value.waUrl, '_blank')
+  if (waMessage.value.waUrl) window.open(waMessage.value.waUrl, '_blank', 'noopener,noreferrer')
 }
 
 const butuhJadwal = computed(

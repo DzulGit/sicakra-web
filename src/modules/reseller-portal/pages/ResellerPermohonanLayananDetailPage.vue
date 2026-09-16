@@ -52,7 +52,7 @@ function formatTanggal(iso: string) {
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
 }
 function bukaMaps(lat: string, lng: string) {
-  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank')
+  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank', 'noopener,noreferrer')
 }
 
 // ===== Dialog Verifikasi =====

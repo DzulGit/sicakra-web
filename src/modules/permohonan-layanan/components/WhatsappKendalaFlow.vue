@@ -51,7 +51,7 @@ const waMessage = computed(() => {
 })
 
 function bukaWhatsApp() {
-  if (waMessage.value.url) window.open(waMessage.value.url, '_blank')
+  if (waMessage.value.url) window.open(waMessage.value.url, '_blank', 'noopener,noreferrer')
 }
 
 function salinPesan() {
