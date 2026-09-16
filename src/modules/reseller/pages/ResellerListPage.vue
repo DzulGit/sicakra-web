@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { httpClient } from '@/app/providers/httpClient'
 
 const { data: hasil, isLoading } = useResellerList()
 const { data: statistik, isLoading: statistikLoading } = useResellerStatistikGlobal()
@@ -39,6 +40,24 @@ function onTolakEmail(id: number | string, nama: string) {
     onSuccess: () => toast.success(`Permintaan ganti email ${nama} ditolak.`),
     onError: () => toast.error('Gagal menolak permintaan, coba lagi.'),
   })
+}
+
+/** Shadow login: buka portal reseller di tab baru tanpa mengganggu sesi admin. */
+async function onShadow(id: number | string, nama: string) {
+  try {
+    const { data } = await httpClient.post(`/admin/operasional/reseller/${id}/shadow`)
+    const { token: shadowToken, reseller } = data.data
+
+    const params = new URLSearchParams({
+      shadow_token: shadowToken,
+      shadow_id: String(reseller.id),
+      shadow_nama: reseller.nama_lengkap,
+    })
+
+    window.open(`${window.location.origin}/reseller/overview?${params.toString()}`, '_blank', 'noopener,noreferrer')
+  } catch {
+    toast.error(`Gagal membuka shadow ${nama}. Coba lagi.`)
+  }
 }
 
 function formatRupiah(value: number) {
@@ -94,6 +113,11 @@ const columns: ColumnDef<AdminLengkap, unknown>[] = [
           Button,
           { as: RouterLink, to: `/admin/operasional/reseller/${row.original.id}/pelanggan`, variant: 'outline', size: 'sm' },
           () => 'Monitor',
+        ),
+        h(
+          Button,
+          { variant: 'secondary', size: 'sm', onClick: () => onShadow(row.original.id, row.original.nama_lengkap) },
+          () => 'Shadow',
         ),
       ]
 

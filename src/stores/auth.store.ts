@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import { useLocalStorage, StorageSerializers } from '@vueuse/core'
+import { useLocalStorage, useSessionStorage, StorageSerializers } from '@vueuse/core'
 
 /**
  * Tipe pengguna yang login — cermin 2 model backend (Admin vs Pelanggan).
@@ -24,18 +24,38 @@ export interface SesiPengguna {
  * Pinia store — HANYA client/UI state (sesi auth).
  * Data dari API (permohonan, tagihan, dst) TIDAK pernah masuk ke sini —
  * itu semua tanggung jawab TanStack Query. Lihat docs/frontend/arsitektur/data-fetching.md.
+ *
+ * Shadow session (login as) menggunakan sessionStorage supaya tab baru
+ * punya sesi sendiri tanpa menimpa sesi admin di tab asal (localStorage).
  */
 export const useAuthStore = defineStore('auth', () => {
+  // Sesi normal — persist di localStorage (shared lintas tab).
   const token = useLocalStorage<string | null>('sicakra_token', null)
   const pengguna = useLocalStorage<SesiPengguna | null>('sicakra_pengguna', null, {
     serializer: StorageSerializers.object
   })
 
-  const sudahLogin = computed(() => !!token.value && !!pengguna.value)
+  // Sesi shadow — persist di sessionStorage (per-tab, tidak sync antar tab).
+  const shadowToken = useSessionStorage<string | null>('sicakra_shadow_token', null)
+  const shadowPengguna = useSessionStorage<SesiPengguna | null>('sicakra_shadow_pengguna', null, {
+    serializer: StorageSerializers.object
+  })
+
+  // --- Computed aktif: shadow menimpa normal jika ada ---
+
+  const isShadow = computed(() => !!shadowToken.value)
+
+  const sudahLogin = computed(() =>
+    !!(shadowToken.value || token.value) && !!(shadowPengguna.value || pengguna.value),
+  )
+
+  const activePengguna = computed(() => shadowPengguna.value || pengguna.value)
+
   const tipePengguna = computed<TipePengguna | null>(
-  () => pengguna.value?.tipe ?? ((pengguna.value as { tipe_pengguna?: TipePengguna } | null)?.tipe_pengguna ?? null),
-)
-  const peranAdmin = computed<PeranAdmin | null>(() => pengguna.value?.peran ?? null)
+    () => activePengguna.value?.tipe ?? ((activePengguna.value as { tipe_pengguna?: TipePengguna } | null)?.tipe_pengguna ?? null),
+  )
+
+  const peranAdmin = computed<PeranAdmin | null>(() => activePengguna.value?.peran ?? null)
 
   // Halaman "home" setelah login — dipakai auto-redirect dari halaman login
   // dan navigasi default. Reseller punya portal sendiri (/reseller), terpisah
@@ -49,36 +69,70 @@ export const useAuthStore = defineStore('auth', () => {
   }
   const ruteHome = computed(() => {
     if (tipePengguna.value === 'pelanggan') return '/pelanggan/dashboard'
-    return rutePerPeran[pengguna.value?.peran ?? ''] ?? '/admin/masuk'
+    return rutePerPeran[activePengguna.value?.peran ?? ''] ?? '/admin/masuk'
   })
+
   const wajibBuatPassword = computed(
-    () => pengguna.value?.tipe === 'pelanggan' && pengguna.value.password_sudah_dibuat === false,
+    () => activePengguna.value?.tipe === 'pelanggan' && activePengguna.value.password_sudah_dibuat === false,
   )
 
+  // --- Akses token aktif untuk httpClient ---
+
+  const activeToken = computed(() => shadowToken.value || token.value)
+
+  // --- Mutasi ---
+
   function setSesi(tokenBaru: string, penggunaBaru: SesiPengguna) {
-    token.value = tokenBaru
-    pengguna.value = penggunaBaru
+    if (shadowToken.value) {
+      shadowToken.value = tokenBaru
+      shadowPengguna.value = penggunaBaru
+    } else {
+      token.value = tokenBaru
+      pengguna.value = penggunaBaru
+    }
+  }
+
+  /** Inisialisasi sesi shadow dari URL param (dipanggil oleh router guard). */
+  function setShadow(tokenBaru: string, penggunaBaru: SesiPengguna) {
+    shadowToken.value = tokenBaru
+    shadowPengguna.value = penggunaBaru
   }
 
   function perbaruiPengguna(perubahan: Partial<SesiPengguna>) {
-    if (!pengguna.value) return
-    pengguna.value = { ...pengguna.value, ...perubahan }
+    const active = shadowPengguna.value || pengguna.value
+    if (!active) return
+    const updated = { ...active, ...perubahan }
+    if (shadowPengguna.value) {
+      shadowPengguna.value = updated
+    } else {
+      pengguna.value = updated
+    }
   }
 
+  /** Hanya clear sesi aktif (shadow → clear shadow; normal → clear normal). */
   function bersihkanSesi() {
-    token.value = null
-    pengguna.value = null
+    if (shadowToken.value) {
+      shadowToken.value = null
+      shadowPengguna.value = null
+    } else {
+      token.value = null
+      pengguna.value = null
+    }
   }
 
   return {
-    token,
-    pengguna,
+    token: activeToken,
+    pengguna: activePengguna,
+    shadowToken,
+    shadowPengguna,
+    isShadow,
     sudahLogin,
     tipePengguna,
     peranAdmin,
     ruteHome,
     wajibBuatPassword,
     setSesi,
+    setShadow,
     perbaruiPengguna,
     bersihkanSesi,
   }
