@@ -10,6 +10,22 @@ export function setupRouterGuards(router: Router) {
   router.beforeEach((to) => {
     const authStore = useAuthStore()
 
+    // Deteksi shadow login — token temporary dari admin operasional.
+    // Simpan ke sessionStorage (per-tab) supaya sesi admin tidak terganggu.
+    const shadowToken = to.query.shadow_token as string | undefined
+    if (shadowToken) {
+      authStore.setShadow(shadowToken, {
+        id: Number(to.query.shadow_id),
+        nama_lengkap: String(to.query.shadow_nama ?? ''),
+        tipe: 'admin',
+        peran: 'reseller',
+      })
+
+      // Redirect tanpa query param supaya guard tidak trigger ulang.
+      const { shadow_token: _, shadow_id: _2, shadow_nama: _3, ...restQuery } = to.query
+      return { path: to.path, query: restQuery, replace: true }
+    }
+
     // Halaman login (hanyaGuest): sesi valid -> jangan tampilkan form login,
     // langsung lompat ke dashboard sesuai tipe/peran pengguna.
     if (to.meta.hanyaGuest && authStore.sudahLogin) {

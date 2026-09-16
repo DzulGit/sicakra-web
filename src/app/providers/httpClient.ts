@@ -56,8 +56,15 @@ httpClient.interceptors.response.use(
       
       // Jika tipeSebelumnya null, deteksi dari URL yang sedang aktif
       const isPelanggan = tipeSebelumnya === 'pelanggan' || pathSekarang.startsWith('/pelanggan')
+      const isReseller = pathSekarang.startsWith('/reseller')
       
-      router.push(isPelanggan ? '/pelanggan/masuk' : '/admin/masuk')
+      if (isPelanggan) {
+        router.push('/pelanggan/masuk')
+      } else if (isReseller) {
+        router.push('/reseller/masuk')
+      } else {
+        router.push('/admin/masuk')
+      }
     } else if (status === 403) {
       toast.error(error.response?.data?.message ?? 'Anda tidak memiliki izin untuk aksi ini.')
     } else if (status && status >= 500) {
