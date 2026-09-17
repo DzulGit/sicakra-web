@@ -178,6 +178,12 @@ const columns = computed<ColumnDef<DraftTagihan, any>[]>(() => {
     <FilterBar
       :fields="[
         {
+          key: 'search',
+          label: 'Cari pelanggan',
+          placeholder: 'Cari NIK / Nama / No. Pelanggan',
+          type: 'text',
+        },
+        {
           key: 'periode_bulan',
           label: 'Bulan',
           placeholder: 'Semua Bulan',
@@ -215,7 +221,16 @@ const columns = computed<ColumnDef<DraftTagihan, any>[]>(() => {
       empty-judul="Tidak ada tagihan draft"
     />
 
-    <Pagination v-if="hasil" :meta="hasil" />
+    <Pagination
+      v-if="hasil"
+      :meta="hasil"
+      :page-sizes="[
+        { label: '10', value: '10' },
+        { label: '20', value: '20' },
+        { label: '50', value: '50' },
+        { label: 'All', value: 'all' },
+      ]"
+    />
 
     <Dialog v-model:open="showConfirm">
       <DialogContent>
