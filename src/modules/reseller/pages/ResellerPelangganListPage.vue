@@ -154,7 +154,7 @@ const columns: ColumnDef<Pelanggan, unknown>[] = [
         :icon="AlertTriangle"
         label="Tagihan Belum Bayar"
         :value="statistik?.stats.tagihan_belum_bayar ?? 0"
-        subtitle="dari {{ statistik?.stats.tagihan_dibuat ?? 0 }} tagihan dibuat"
+        :subtitle="`dari ${statistik?.stats.tagihan_dibuat ?? 0} tagihan dibuat`"
         :loading="statistikLoading"
       />
     </div>

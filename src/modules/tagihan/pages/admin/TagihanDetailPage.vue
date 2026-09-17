@@ -5,7 +5,6 @@ import { AxiosError } from 'axios'
 import { useTagihanDetail, useRegenerateTagihan, useBayarTunaiTagihan, usePerbaruiLinkTagihan } from '../../composables/useKeuanganTagihan'
 import { statusPembayaranEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
-import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -370,16 +369,6 @@ function waHref(nomor: string) {
           </DialogContent>
         </Dialog>
       </div>
-
-      <!-- Riwayat Pembayaran -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-base">Riwayat Pembayaran</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RiwayatPembayaranTable :pembayaran="tagihan.riwayat_pembayaran ?? []" />
-        </CardContent>
-      </Card>
 
       <!-- Timeline Pembayaran -->
       <Card v-if="timeline.length">
