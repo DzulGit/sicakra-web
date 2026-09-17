@@ -8,6 +8,7 @@ import {
 import type { DraftTagihan } from '../api/resellerTagihan.api'
 import DataTable from '@/components/data/DataTable.vue'
 import Pagination from '@/components/data/Pagination.vue'
+import PageSizeSelect from '@/components/data/PageSizeSelect.vue'
 import FilterBar from '@/components/data/FilterBar.vue'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -167,16 +168,34 @@ const columns = computed<ColumnDef<DraftTagihan, any>[]>(() => {
           {{ hasil.total }} tagihan draft menunggu diterbitkan
         </p>
       </div>
-      <Button
-        :disabled="selectedIds.size === 0 || terbitkanMut.isPending.value"
-        @click="showConfirm = true"
-      >
-        Terbitkan Tagihan ({{ selectedIds.size }})
-      </Button>
+      <div class="flex items-center gap-2">
+        <PageSizeSelect
+          v-if="hasil"
+          :per-page="hasil.per_page"
+          :page-sizes="[
+            { label: '10', value: '10' },
+            { label: '20', value: '20' },
+            { label: '50', value: '50' },
+            { label: 'All', value: 'all' },
+          ]"
+        />
+        <Button
+          :disabled="selectedIds.size === 0 || terbitkanMut.isPending.value"
+          @click="showConfirm = true"
+        >
+          Terbitkan Tagihan ({{ selectedIds.size }})
+        </Button>
+      </div>
     </div>
 
     <FilterBar
       :fields="[
+        {
+          key: 'search',
+          label: 'Cari pelanggan',
+          placeholder: 'Cari NIK / Nama / No. Pelanggan',
+          type: 'text',
+        },
         {
           key: 'periode_bulan',
           label: 'Bulan',

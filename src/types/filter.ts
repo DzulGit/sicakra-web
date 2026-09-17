@@ -7,5 +7,7 @@ export interface FilterFieldConfig {
   key: string
   label: string
   placeholder?: string
-  options: FilterOption[]
+  /** 'select' (default) menampilkan dropdown, 'text' menampilkan input pencarian. */
+  type?: 'select' | 'text'
+  options?: FilterOption[]
 }
