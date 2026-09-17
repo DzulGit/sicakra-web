@@ -8,7 +8,6 @@ import {
   useResellerPerbaruiLinkTagihan,
 } from '../composables/useResellerTagihan'
 import StatusBadge from '@/components/data/StatusBadge.vue'
-import RiwayatPembayaranTable from '@/components/data/RiwayatPembayaranTable.vue'
 import {
   Card,
   CardHeader,
@@ -745,21 +744,6 @@ function waHref(nomor: string) {
           </DialogContent>
         </Dialog>
       </div>
-
-      <!-- Riwayat Pembayaran -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-base">
-            Riwayat Pembayaran
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <RiwayatPembayaranTable
-            :pembayaran="tagihan.pembayaran ?? []"
-          />
-        </CardContent>
-      </Card>
 
       <!-- Timeline Pembayaran Tagihan -->
       <Card v-if="timeline.length">
