@@ -85,9 +85,11 @@ function formatAngka(nilai: string | number) {
 
     <FilterBar :fields="[
       { key: 'search', label: 'Cari pelanggan', placeholder: 'Cari NIK / Nama / No. Pelanggan', type: 'text' },
-      { key: 'status_pembayaran', label: 'Status', placeholder: 'Semua Status', options: [
+      { key: 'status', label: 'Status', placeholder: 'Semua Status', options: [
+        { label: 'Lunas', value: 'lunas' },
         { label: 'Belum Bayar', value: 'belum_bayar' },
-        { label: 'Lunas', value: 'sudah_bayar' },
+        { label: 'Tertunggak', value: 'tertunggak' },
+        { label: 'Sedang Cicil', value: 'sedang_dicicil' },
       ]},
     ]" />
 
