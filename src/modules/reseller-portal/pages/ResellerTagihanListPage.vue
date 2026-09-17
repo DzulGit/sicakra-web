@@ -8,6 +8,7 @@ import { formatRupiah, formatRupiahBertanda } from '@/lib/currency'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import DataTable from '@/components/data/DataTable.vue'
 import Pagination from '@/components/data/Pagination.vue'
+import PageSizeSelect from '@/components/data/PageSizeSelect.vue'
 import FilterBar from '@/components/data/FilterBar.vue'
 import { Button } from '@/components/ui/button'
 
@@ -63,14 +64,27 @@ function formatAngka(nilai: string | number) {
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Tagihan</h1>
-      <p v-if="hasil" class="text-sm text-muted-foreground">
-        {{ formatAngka(hasil.total) }} Total tagihan
-      </p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-semibold">Tagihan</h1>
+        <p v-if="hasil" class="text-sm text-muted-foreground">
+          {{ formatAngka(hasil.total) }} Total tagihan
+        </p>
+      </div>
+      <PageSizeSelect
+        v-if="hasil"
+        :per-page="hasil.per_page"
+        :page-sizes="[
+          { label: '10', value: '10' },
+          { label: '20', value: '20' },
+          { label: '50', value: '50' },
+          { label: 'All', value: 'all' },
+        ]"
+      />
     </div>
 
     <FilterBar :fields="[
+      { key: 'search', label: 'Cari pelanggan', placeholder: 'Cari NIK / Nama / No. Pelanggan', type: 'text' },
       { key: 'status_pembayaran', label: 'Status', placeholder: 'Semua Status', options: [
         { label: 'Belum Bayar', value: 'belum_bayar' },
         { label: 'Sudah Bayar', value: 'sudah_bayar' },
