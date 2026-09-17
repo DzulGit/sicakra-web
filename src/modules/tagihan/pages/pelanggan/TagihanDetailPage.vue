@@ -75,7 +75,7 @@ const statusPembayaranSaya = computed((): string => {
 
 const mapStatusTagihanSaya: EnumMap = {
   belum_bayar: { label: 'Belum Dibayar', badgeVariant: 'warning' },
-  sedang_dicicil: { label: 'Sedang Dicicil', badgeVariant: 'info' },
+  sedang_dicicil: { label: 'Sedang Cicil', badgeVariant: 'info' },
   lunas: { label: 'Lunas', badgeVariant: 'success' },
   belum_diterbitkan: { label: 'Belum Diterbitkan', badgeVariant: 'secondary' },
   tidak_dapat_dibayar: { label: 'Tidak Dapat Dibayar', badgeVariant: 'outline' },

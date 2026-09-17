@@ -104,7 +104,7 @@ const pelanggan = computed(
 
 const mapStatusTampilan = {
   belum_bayar: { label: 'Belum Bayar', badgeVariant: 'warning' },
-  sedang_dicicil: { label: 'Sedang Dicicil', badgeVariant: 'info' },
+  sedang_dicicil: { label: 'Sedang Cicil', badgeVariant: 'info' },
   lunas: { label: 'Lunas', badgeVariant: 'success' },
 } as const
 

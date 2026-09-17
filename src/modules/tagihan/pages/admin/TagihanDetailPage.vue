@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
 import { useTagihanDetail, useRegenerateTagihan, useBayarTunaiTagihan, usePerbaruiLinkTagihan } from '../../composables/useKeuanganTagihan'
-import { statusPembayaranEnum } from '@/lib/enums'
+
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -112,7 +112,7 @@ function formatTanggal(iso: string | null) {
 
 const mapStatusTampilan = {
   belum_bayar: { label: 'Belum Bayar', badgeVariant: 'warning' },
-  sedang_dicicil: { label: 'Sedang Dicicil', badgeVariant: 'info' },
+  sedang_dicicil: { label: 'Sedang Cicil', badgeVariant: 'info' },
   lunas: { label: 'Lunas', badgeVariant: 'success' },
 } as const
 
@@ -187,7 +187,7 @@ function waHref(nomor: string) {
           <CardHeader>
             <CardTitle class="flex items-center gap-2 text-base">
               {{ tagihan.nomor_tagihan }}
-              <StatusBadge :value="tagihan.status_pembayaran" :map="statusPembayaranEnum" />
+              <StatusBadge :value="statusTampilan" :map="mapStatusTampilan" />
             </CardTitle>
           </CardHeader>
           <CardContent class="space-y-2 text-sm">

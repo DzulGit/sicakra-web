@@ -73,7 +73,7 @@ function formatAngka(nilai: string) {
     <FilterBar :fields="[
       { key: 'status_pembayaran', label: 'Status', placeholder: 'Semua Status', options: [
         { label: 'Belum Bayar', value: 'belum_bayar' },
-        { label: 'Sudah Bayar', value: 'sudah_bayar' },
+        { label: 'Lunas', value: 'sudah_bayar' },
       ]},
     ]" />
 
