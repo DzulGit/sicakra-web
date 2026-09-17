@@ -18,8 +18,9 @@ function nilaiFilter(key: string): string | undefined {
 
 function setFilter(key: string, nilai: string | null) {
   const query: Record<string, string> = {}
+  const kunciDikenal = new Set([...props.fields.map((f) => f.key), 'page', 'per_page'])
   for (const [k, v] of Object.entries(route.query)) {
-    if (typeof v === 'string' && k !== 'page') query[k] = v
+    if (typeof v === 'string' && kunciDikenal.has(k)) query[k] = v
   }
   if (nilai) query[key] = nilai
   else delete query[key]
