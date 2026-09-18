@@ -176,6 +176,10 @@ export interface TimelinePembayaranTagihan {
   jenis: 'pembayaran' | 'kredit'
   waktu_wib: string
   jumlah: number
+  /** Total uang yang dibayar pelanggan pada pembayaran ini (sebelum alokasi). */
+  jumlah_dibayar?: number
+  /** Kelebihan pembayaran ini yang masuk saldo kredit (dari MutasiSaldoKredit). */
+  jumlah_kredit?: number
   keterangan?: string | null
   nomor_pembayaran?: string | null
   metode_pembayaran?: string | null

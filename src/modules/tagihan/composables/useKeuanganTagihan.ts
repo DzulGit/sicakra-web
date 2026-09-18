@@ -162,8 +162,8 @@ export function usePerbaruiLinkTagihan() {
 export function useBayarTunaiTagihan() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, jumlahBulan }: { id: number | string; jumlahBulan: number }) =>
-      bayarTunaiTagihan(id, jumlahBulan).then((res) => res.data.data),
+    mutationFn: ({ id, jumlahDibayar }: { id: number | string; jumlahDibayar: number }) =>
+      bayarTunaiTagihan(id, jumlahDibayar).then((res) => res.data.data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'detail', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['tagihan', 'keuangan', 'list'] })

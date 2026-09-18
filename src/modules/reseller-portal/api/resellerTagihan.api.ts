@@ -72,9 +72,9 @@ export function perbaruiLinkResellerTagihan(id: number | string) {
   return httpClient.post<ApiResponse<Tagihan>>(`${BASE}/${id}/perbarui-link`)
 }
 
-export function bayarTunaiResellerTagihan(id: number | string, jumlahBulan: number) {
+export function bayarTunaiResellerTagihan(id: number | string, jumlahDibayar: number) {
   return httpClient.post<ApiResponse<Tagihan>>(`${BASE}/${id}/bayar-tunai`, {
-    jumlah_bulan: jumlahBulan,
+    jumlah_dibayar: jumlahDibayar,
   })
 }
 
