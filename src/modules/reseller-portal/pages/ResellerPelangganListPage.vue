@@ -56,11 +56,6 @@ const columns: ColumnDef<Pelanggan, unknown>[] = [
   { accessorKey: 'nik', header: 'NIK' },
   { accessorKey: 'nomor_hp', header: 'No. HP' },
   {
-    id: 'tanggal_tagihan',
-    header: 'Tagihan Tgl',
-    cell: ({ row }) => row.original.tanggal_tagihan ?? '-',
-  },
-  {
     id: 'paket',
     header: 'Paket',
     cell: ({ row }) => {

@@ -56,6 +56,7 @@ export const statusTagihanFinanceEnum: EnumMap = {
   'Sedang Cicil': { label: 'Sedang Cicil', badgeVariant: 'warning' },
   'Belum Bayar': { label: 'Belum Bayar', badgeVariant: 'secondary' },
   'Tertunggak': { label: 'Tertunggak', badgeVariant: 'destructive' },
+  'Belum Diterbitkan': { label: 'Belum Diterbitkan', badgeVariant: 'secondary' },
 }
 
 export const hasilKerjaEnum: EnumMap = {

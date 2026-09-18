@@ -16,19 +16,6 @@ export function resetAkunPelanggan(id: number | string) {
   return httpClient.patch<ApiResponse<{ username: string; password: string }>>(`${BASE}/${id}/reset-akun`)
 }
 
-export function aturTanggalTagihan(id: number | string, tanggalTagihan: number) {
-  return httpClient.patch<ApiResponse<Pelanggan>>(`${BASE}/${id}/tanggal-tagihan`, {
-    tanggal_tagihan: tanggalTagihan,
-  })
-}
-
-export function bulkAturTanggalTagihan(tanggalTagihan: number, pelangganIds?: number[]) {
-  return httpClient.post<ApiResponse<{ ter_update: number }>>(`${BASE}/tanggal-tagihan/bulk`, {
-    tanggal_tagihan: tanggalTagihan,
-    pelanggan_ids: pelangganIds,
-  })
-}
-
 /** Override siklus penagihan per layanan (bebas_tagihan_bulan &/atau tanggal_mulai_penagihan). */
 export function aturSiklusLayanan(
   id: number | string,

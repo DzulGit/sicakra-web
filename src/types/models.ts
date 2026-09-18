@@ -17,6 +17,13 @@ export interface Pelanggan {
   permohonan_layanan?: PermohonanLayanan[]
   username?: string
   foto_profil?: string | null;
+  /** Jumlah tagihan per status finansial (draft belum_diterbitkan tidak dihitung). */
+  ringkasan_tagihan?: {
+    belum_bayar: number
+    sedang_cicil: number
+    tertunggak: number
+    lunas: number
+  }
 }
 
 export interface PaketInternet {
@@ -285,7 +292,7 @@ export interface Tagihan {
   telah_terbayar?: number
   /** Signed: negatif = kekurangan, positif = kelebihan pembayaran. */
   sisa?: number
-  /** Status keuangan: 'Lunas' | 'Tertunggak' | 'Sedang Cicil' | 'Belum Bayar'. */
+  /** Status keuangan: 'Lunas' | 'Tertunggak' | 'Sedang Cicil' | 'Belum Bayar' | 'Belum Diterbitkan'. */
   status?: string
   xendit_invoice_url: string | null
   xendit_invoice_status: string | null
@@ -295,12 +302,13 @@ export interface Tagihan {
   periode_akhir_bulan?: number
   periode_akhir_tahun?: number
   dibayar_pada: string | null
+  diterbitkan_pada?: string | null
   created_at: string
   layanan_internet?: LayananInternetRingkas
   pembayaran?: Pembayaran[]
   riwayat_pembayaran?: Pembayaran[]
   /** Tambahan backend (lihat PembayaranAllocationService::detailTagihan). */
-  status_tampilan?: 'belum_bayar' | 'sedang_dicicil' | 'lunas'
+  status_tampilan?: 'belum_bayar' | 'sedang_dicicil' | 'lunas' | 'belum_diterbitkan'
   tanggal_lunas?: string | null
   timeline_pembayaran?: TimelinePembayaranTagihan[]
 }

@@ -1,61 +1,33 @@
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import { AxiosError } from 'axios'
-import { toast } from 'vue-sonner'
-import { Search, X, UserCheck, Users, CalendarClock, UserPlus } from 'lucide-vue-next'
+import { RouterLink, useRoute } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
+import { UserCheck, Users, UserPlus } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Component } from 'vue'
 import { getPelangganList } from '../api/pelanggan.api'
-import { useBulkAturTanggalTagihan } from '../composables/usePelanggan'
 import { usePendaftarBaru } from '@/modules/tagihan/composables/useKeuanganTagihan'
 import { getPermohonanLayananList } from '@/modules/permohonan-layanan/api/permohonanLayanan.api'
 import { statusPermohonanEnum } from '@/lib/enums'
 import { useAuthStore } from '@/stores/auth.store'
 import DataTable from '@/components/data/DataTable.vue'
 import Pagination from '@/components/data/Pagination.vue'
+import PageSizeSelect from '@/components/data/PageSizeSelect.vue'
+import FilterBar from '@/components/data/FilterBar.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import type { ApiErrorResponse } from '@/types/api'
-import type { Pelanggan, PermohonanLayanan } from '@/types/models'  
+import type { Pelanggan, PermohonanLayanan } from '@/types/models'
 import type { PendaftarBaru } from '@/modules/tagihan/api/keuanganTagihan.api'
 
 type TabId = 'aktif' | 'terverifikasi' | 'pendaftar-baru'
 
 const tabAktif = ref<TabId>('aktif')
-const cariPelanggan = ref('')
 
+const route = useRoute()
 const authStore = useAuthStore()
-const queryClient = useQueryClient()
-const bolehBulkTanggal = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
 const bolehTerverifikasi = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
 const bolehBuatPelanggan = authStore.peranAdmin === 'operasional' || authStore.peranAdmin === 'super_admin'
 const bolehPendaftarBaru = authStore.peranAdmin === 'keuangan' || authStore.peranAdmin === 'super_admin'
-
-const showBulkDialog = ref(false)
-const tanggalTagihanBulk = ref('20')
-const { mutate: bulkTanggal, isPending: isBulkPending } = useBulkAturTanggalTagihan()
-
-function terapkanSemua() {
-  bulkTanggal(
-    { tanggalTagihan: Number(tanggalTagihanBulk.value) },
-    {
-      onSuccess: (res) => {
-        showBulkDialog.value = false
-        toast.success(`Tanggal penagihan diterapkan ke ${res?.ter_update ?? 0} pelanggan.`)
-        queryClient.invalidateQueries({ queryKey: ['pelanggan'] })
-      },
-      onError: (e: Error) => {
-        const pesan = e instanceof AxiosError ? (e.response?.data as ApiErrorResponse | undefined)?.message : undefined
-        toast.error(pesan ?? 'Gagal menerapkan tanggal penagihan.')
-      },
-    },
-  )
-}
 
 const tabs = computed<{ id: TabId; label: string; icon: Component }[]>(() => {
   const daftar: { id: TabId; label: string; icon: Component }[] = [
@@ -71,14 +43,17 @@ const tabs = computed<{ id: TabId; label: string; icon: Component }[]>(() => {
   })
 })
 
+// Sinkron ke query-string (cari/page/per_page), konsisten dengan halaman Terbitkan Tagihan.
 const paramsPelanggan = computed(() => {
   const p: Record<string, string> = { jenis: 'aktif' }
-  if (cariPelanggan.value) p.cari = cariPelanggan.value
+  for (const [k, v] of Object.entries(route.query)) {
+    if (typeof v === 'string' && (k === 'cari' || k === 'page' || k === 'per_page')) p[k] = v
+  }
   return p
 })
 
 const { data: dataPelanggan, isLoading: loadingPelanggan } = useQuery({
-  queryKey: ['pelanggan', 'list', 'aktif', cariPelanggan],
+  queryKey: ['pelanggan', 'list', 'aktif', paramsPelanggan],
   queryFn: () => getPelangganList(paramsPelanggan.value).then((r) => r.data.data),
   enabled: () => tabAktif.value === 'aktif',
 })
@@ -103,11 +78,6 @@ const columnsPelanggan: ColumnDef<Pelanggan, unknown>[] = [
   { accessorKey: 'nama_lengkap', header: 'Nama' },
   { accessorKey: 'nik', header: 'NIK' },
   { accessorKey: 'nomor_hp', header: 'No. HP' },
-  {
-    id: 'tanggal_tagihan',
-    header: 'Tagihan Tgl',
-    cell: ({ row }) => row.original.tanggal_tagihan ?? '-',
-  },
   {
     id: 'paket',
     header: 'Paket',
@@ -236,47 +206,23 @@ const columnsPendaftarBaru: ColumnDef<PendaftarBaru, unknown>[] = [
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Pelanggan</h1>
       <div class="flex gap-2">
+        <PageSizeSelect
+          v-if="tabAktif === 'aktif' && dataPelanggan"
+          :per-page="dataPelanggan.per_page"
+          :page-sizes="[
+            { label: '10', value: '10' },
+            { label: '20', value: '20' },
+            { label: '50', value: '50' },
+            { label: 'All', value: 'all' },
+          ]"
+        />
         <RouterLink v-if="bolehBuatPelanggan" :to="'/admin/operasional/pelanggan/baru'">
           <Button size="sm" class="gap-1.5">
             <UserPlus class="size-4" /> Buat Pelanggan Baru
           </Button>
         </RouterLink>
-        <Button v-if="bolehBulkTanggal" variant="outline" size="sm" class="gap-1.5" @click="showBulkDialog = true">
-          <CalendarClock class="size-4" /> Terapkan Tanggal Tagihan (Semua)
-        </Button>
       </div>
     </div>
-
-    <Dialog :open="showBulkDialog" @update:open="(v) => (showBulkDialog = v)">
-      <DialogContent class="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Terapkan untuk Semua</DialogTitle>
-          <DialogDescription>
-            Set tanggal penagihan yang sama untuk semua pelanggan aktif. Bisa tetap diedit manual
-            satu per satu dari halaman detail pelanggan.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div class="space-y-2">
-          <p class="text-sm text-muted-foreground">Tanggal penagihan</p>
-          <Select v-model="tanggalTagihanBulk" :disabled="isBulkPending">
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih tanggal" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="hari in 31" :key="hari" :value="String(hari)">Tanggal {{ hari }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <DialogFooter class="gap-2 sm:gap-0">
-          <Button variant="outline" @click="showBulkDialog = false" :disabled="isBulkPending">Batal</Button>
-          <Button :disabled="isBulkPending" @click="terapkanSemua">
-            {{ isBulkPending ? 'Menerapkan...' : 'Terapkan' }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
 
     <div class="flex gap-1 rounded-lg border bg-muted/30 p-1 w-fit">
       <button
@@ -291,17 +237,17 @@ const columnsPendaftarBaru: ColumnDef<PendaftarBaru, unknown>[] = [
       </button>
     </div>
 
-    <div v-if="tabAktif === 'aktif'" class="relative w-full max-w-sm">
-      <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input v-model="cariPelanggan" placeholder="Cari nama / nomor / NIK / HP..." class="pl-9" />
-      <button
-        v-if="cariPelanggan"
-        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-        @click="cariPelanggan = ''"
-      >
-        <X class="size-4" />
-      </button>
-    </div>
+    <FilterBar
+      v-if="tabAktif === 'aktif'"
+      :fields="[
+        {
+          key: 'cari',
+          label: 'Cari pelanggan',
+          placeholder: 'Cari NIK / Nama / No. Pelanggan',
+          type: 'text',
+        },
+      ]"
+    />
 
     <DataTable
       v-if="tabAktif === 'aktif'"
