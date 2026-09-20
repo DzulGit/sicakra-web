@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { h, ref, computed } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { toast } from 'vue-sonner'
 import { useAdminPaketInternetList, useHapusPaketInternet } from '../composables/usePaketInternet'
@@ -7,13 +7,36 @@ import { statusAktifEnum } from '@/lib/enums'
 import DataTable from '@/components/data/DataTable.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import ConfirmDialog from '@/components/feedback/ConfirmDialog.vue'
+import PaketInternetDialog from '../components/PaketInternetDialog.vue'
 import { Button } from '@/components/ui/button'
 import type { PaketInternet } from '@/types/models'
-import { RouterLink } from 'vue-router'
 
 const { data: daftarPaket, isLoading } = useAdminPaketInternetList()
 const paketDihapus = ref<PaketInternet | null>(null)
 const { mutate: hapus, isPending: isPendingHapus } = useHapusPaketInternet()
+
+// Dialog tambah/ubah paket
+const dialogTerbuka = ref(false)
+const paketDiubah = ref<PaketInternet | null>(null)
+const modeDialog = computed<'tambah' | 'ubah'>(() => (paketDiubah.value ? 'ubah' : 'tambah'))
+const paketIdDialog = computed(() => paketDiubah.value?.id ?? null)
+
+function bukaTambah() {
+  paketDiubah.value = null
+  dialogTerbuka.value = true
+}
+
+function bukaUbah(paket: PaketInternet) {
+  paketDiubah.value = paket
+  dialogTerbuka.value = true
+}
+
+function tutupDialog(terbuka: boolean) {
+  if (!terbuka) {
+    dialogTerbuka.value = false
+    paketDiubah.value = null
+  }
+}
 
 function handleHapus() {
   if (!paketDihapus.value) return
@@ -50,7 +73,7 @@ const columns: ColumnDef<PaketInternet, unknown>[] = [
     header: '',
     cell: ({ row }) =>
       h('div', { class: 'flex justify-end gap-2' }, [
-        h(Button, { as: RouterLink, to: `/admin/operasional/paket-internet/${row.original.id}/ubah`, variant: 'outline', size: 'sm' }, () => 'Ubah'),
+        h(Button, { variant: 'outline', size: 'sm', onClick: () => bukaUbah(row.original) }, () => 'Ubah'),
         h(Button, { variant: 'destructive', size: 'sm', onClick: () => (paketDihapus.value = row.original) }, () => 'Hapus'),
       ]),
   },
@@ -61,10 +84,17 @@ const columns: ColumnDef<PaketInternet, unknown>[] = [
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Paket Internet</h1>
-      <Button :as="RouterLink" to="/admin/operasional/paket-internet/baru">Tambah Paket</Button>
+      <Button @click="bukaTambah">Tambah Paket</Button>
     </div>
 
     <DataTable :columns="columns" :data="daftarPaket ?? []" :loading="isLoading" empty-judul="Belum ada paket internet" />
+
+    <PaketInternetDialog
+      :open="dialogTerbuka"
+      :mode="modeDialog"
+      :paket-id="paketIdDialog"
+      @update:open="tutupDialog"
+    />
 
     <ConfirmDialog
       :open="!!paketDihapus"

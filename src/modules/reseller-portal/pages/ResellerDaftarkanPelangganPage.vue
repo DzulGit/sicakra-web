@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useQuery } from '@tanstack/vue-query'
@@ -14,6 +14,7 @@ import type { PaketInternet } from '@/types/models'
 import { daftarkanPelangganSchema } from '@/schemas/reseller-portal.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { getResellerPaketInternetList } from '@/modules/paket-internet/api/reseller/resellerPaketInternet.api'
+import ResellerPaketInternetDialog from '@/modules/reseller-portal/components/ResellerPaketInternetDialog.vue'
 import FileInputFoto from '@/modules/pendaftaran/components/FileInputFoto.vue'
 import LocationPicker from '@/modules/pendaftaran/components/PemilihanLokasi.vue'
 import { useDaftarkanPelanggan } from '../composables/useResellerPortal'
@@ -42,6 +43,11 @@ const currentStep = ref(1)
 const selectedPaket = ref<PaketInternet | null>(null)
 const isModalOpen = ref(false)
 const setujuKirim = ref(false)
+const dialogPaketTerbuka = ref(false)
+
+function bukaDialogPaket() {
+  dialogPaketTerbuka.value = true
+}
 
 const steps = [
   { id: 1, label: 'Pilih Paket', icon: Package },
@@ -202,7 +208,7 @@ const ringkasan = computed(() => ({
       <div v-else class="flex flex-col items-center justify-center gap-3 rounded-2xl border bg-white p-10 text-center">
         <ShoppingCart class="size-10 text-slate-300" />
         <p class="text-sm text-slate-400">Belum ada paket aktif milik Anda.</p>
-        <Button :as="RouterLink" to="/reseller/paket-internet/baru" variant="outline" size="sm">
+        <Button variant="outline" size="sm" @click="bukaDialogPaket">
           <Plus class="mr-1.5 size-4" /> Buat Paket Internet
         </Button>
       </div>
@@ -438,5 +444,8 @@ const ringkasan = computed(() => ({
         </div>
       </DialogContent>
     </Dialog>
+
+    <!-- Dialog Tambah/Ubah Paket Internet -->
+    <ResellerPaketInternetDialog v-model:open="dialogPaketTerbuka" mode="tambah" />
   </div>
 </template>

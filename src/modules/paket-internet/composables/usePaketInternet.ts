@@ -25,10 +25,11 @@ export function useAdminPaketInternetList() {
   })
 }
 
-export function useAdminPaketInternetDetail(id: MaybeRefOrGetter<number | string>) {
+export function useAdminPaketInternetDetail(id: MaybeRefOrGetter<number | string | undefined>) {
   return useQuery({
     queryKey: ['paket-internet', 'admin', 'detail', id],
-    queryFn: () => getPaketInternetDetail(toValue(id)).then((res) => res.data.data),
+    enabled: () => !!toValue(id),
+    queryFn: () => getPaketInternetDetail(toValue(id)!).then((res) => res.data.data),
   })
 }
 
