@@ -8,7 +8,6 @@ const PendapatanResellerPage = () => import('@/modules/pendapatan-reseller/pages
 const ProfilResellerPage = () => import('@/modules/profil-reseller/pages/ProfilResellerPage.vue')
 const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
 const ResellerPaketInternetListPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetListPage.vue')
-const ResellerPaketInternetFormPage = () => import('@/modules/reseller-portal/pages/ResellerPaketInternetFormPage.vue')
 const ResellerTagihanListPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanListPage.vue')
 const ResellerTagihanDetailPage = () => import('@/modules/reseller-portal/pages/ResellerTagihanDetailPage.vue')
 const ResellerTerbitkanTagihanPage = () => import('@/modules/reseller-portal/pages/ResellerTerbitkanTagihanPage.vue')
@@ -131,30 +130,6 @@ export const resellerRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Paket Internet',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['reseller'],
-    },
-  },
-  {
-    path: '/reseller/paket-internet/baru',
-    name: 'reseller.paket-internet.baru',
-    component: ResellerPaketInternetFormPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Tambah Paket Internet',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['reseller'],
-    },
-  },
-  {
-    path: '/reseller/paket-internet/:id/ubah',
-    name: 'reseller.paket-internet.ubah',
-    component: ResellerPaketInternetFormPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Ubah Paket Internet',
       requiresAuth: true,
       guard: 'admin',
       peran: ['reseller'],

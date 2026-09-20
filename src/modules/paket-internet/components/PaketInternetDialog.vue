@@ -11,10 +11,10 @@ import {
 } from '@/schemas/paket-internet.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import {
-  useSimpanResellerPaketInternet,
-  useUbahResellerPaketInternet,
-  useResellerPaketInternetDetail,
-} from '@/modules/paket-internet/composables/reseller/useResellerPaketInternet'
+  useAdminPaketInternetDetail,
+  useSimpanPaketInternet,
+  useUbahPaketInternet,
+} from '../composables/usePaketInternet'
 import type { PaketInternet } from '@/types/models'
 
 // UI Components
@@ -71,8 +71,8 @@ const [deskripsi, deskripsiAttrs] = defineField('deskripsi')
 const [statusAktif] = defineField('status_aktif')
 
 // Load paket saat mode edit
-const { data: paket, isLoading: isLoadingDetail } = useResellerPaketInternetDetail(
-  computed(() => (modeEdit.value && props.paketId != null ? Number(props.paketId) : undefined)),
+const { data: paket, isLoading: isLoadingDetail } = useAdminPaketInternetDetail(
+  computed(() => (modeEdit.value && props.paketId != null ? props.paketId : undefined)),
 )
 
 function isiForm(nilai: PaketInternet) {
@@ -104,8 +104,8 @@ watch(
 // ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
-const { mutate: simpan, isPending: isPendingSimpan } = useSimpanResellerPaketInternet()
-const { mutate: ubah, isPending: isPendingUbah } = useUbahResellerPaketInternet()
+const { mutate: simpan, isPending: isPendingSimpan } = useSimpanPaketInternet()
+const { mutate: ubah, isPending: isPendingUbah } = useUbahPaketInternet()
 const isPending = computed(() => isPendingSimpan.value || isPendingUbah.value)
 
 const onSubmit = handleSubmit((values) => {
@@ -154,7 +154,7 @@ function handleClose() {
           {{ modeEdit ? 'Ubah Paket Internet' : 'Tambah Paket Internet' }}
         </DialogTitle>
         <DialogDescription>
-          {{ modeEdit ? 'Perbarui detail paket internet ini.' : 'Buat paket internet baru untuk pelanggan Anda.' }}
+          {{ modeEdit ? 'Perbarui detail paket internet ini.' : 'Buat paket internet baru untuk pelanggan.' }}
         </DialogDescription>
       </DialogHeader>
 
@@ -250,7 +250,7 @@ function handleClose() {
             @update:model-value="(v) => setFieldValue('status_aktif', v === true)"
           />
           <Label for="status_aktif" class="cursor-pointer font-normal">
-            Paket aktif
+            Paket aktif (tampil di halaman publik)
           </Label>
         </div>
 

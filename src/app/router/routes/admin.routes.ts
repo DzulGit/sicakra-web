@@ -31,7 +31,6 @@ const ResellerPaketListPage = () => import('@/modules/reseller/pages/ResellerPak
 const ResellerTagihanListPage = () => import('@/modules/reseller/pages/ResellerTagihanListPage.vue')
 const ResellerPelangganDetailPage = () => import('@/modules/reseller/pages/ResellerPelangganDetailPage.vue')
 const PaketInternetListPage = () => import('@/modules/paket-internet/pages/PaketInternetListPage.vue')
-const PaketInternetFormPage = () => import('@/modules/paket-internet/pages/PaketInternetFormPage.vue')
 const NotifikasiListPage = () => import('@/modules/notifikasi/pages/NotifikasiListPage.vue')
 
 /**
@@ -160,30 +159,6 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Paket Internet',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['operasional'],
-    },
-  },
-  {
-    path: '/admin/operasional/paket-internet/baru',
-    name: 'admin.operasional.paket-internet.create',
-    component: PaketInternetFormPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Tambah Paket Internet',
-      requiresAuth: true,
-      guard: 'admin',
-      peran: ['operasional'],
-    },
-  },
-  {
-    path: '/admin/operasional/paket-internet/:id/ubah',
-    name: 'admin.operasional.paket-internet.edit',
-    component: PaketInternetFormPage,
-    meta: {
-      layout: 'dashboard',
-      judul: 'Ubah Paket Internet',
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional'],
