@@ -64,13 +64,6 @@ const jadwalTerdekat = computed(() => {
   )[0]
 })
 
-const STORAGE_BASE = 'https://hrwyxwwtbpmtrxhdlvud.supabase.co/storage/v1/object/public/wifi-storage/'
-
-function urlFoto(path?: string | null): string | null {
-  if (!path) return null
-  return path.startsWith('http') ? path : `${STORAGE_BASE}${path}`
-}
-
 function bukaGambar(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer')
 }
@@ -179,14 +172,14 @@ function bukaGambar(url: string) {
             </div>
           </div>
 
-          <div v-if="permohonan.pelanggan?.foto_ktp" class="space-y-1.5">
+          <div v-if="permohonan.pelanggan?.foto_ktp_url" class="space-y-1.5">
             <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ImageIcon class="size-3.5" /> Dokumen Identitas
             </p>
             <div class="flex flex-wrap gap-3">
               <button class="group text-left"
-                @click="bukaGambar(urlFoto(permohonan.pelanggan.foto_ktp)!)">
-                <img :src="urlFoto(permohonan.pelanggan.foto_ktp) ?? ''" alt="Foto KTP"
+                @click="bukaGambar(permohonan.pelanggan.foto_ktp_url)">
+                <img :src="permohonan.pelanggan.foto_ktp_url" alt="Foto KTP"
                   class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
                 <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
               </button>
