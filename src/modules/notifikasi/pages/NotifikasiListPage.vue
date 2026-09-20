@@ -27,15 +27,17 @@ function bukaNotifikasi(id: string, actionUrl: string | null, sudahDibaca: boole
 }
 
 function relativeTime(dateStr: string) {
+  const parsed = new Date(dateStr)
+  if (isNaN(parsed.getTime())) return dateStr
+
   const now = Date.now()
-  const then = new Date(dateStr).getTime()
-  const diff = Math.floor((now - then) / 1000)
+  const diff = Math.floor((now - parsed.getTime()) / 1000)
 
   if (diff < 60) return 'Baru saja'
   if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`
   if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`
   if (diff < 604800) return `${Math.floor(diff / 86400)} hari lalu`
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  return parsed.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>
 
