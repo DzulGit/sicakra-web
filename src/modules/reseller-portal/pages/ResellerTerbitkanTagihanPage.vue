@@ -193,7 +193,7 @@ const columns = computed<ColumnDef<DraftTagihan, any>[]>(() => {
         {
           key: 'search',
           label: 'Cari pelanggan',
-          placeholder: 'Cari NIK / Nama / No. Pelanggan',
+          placeholder: 'Cari Nama / No. Pelanggan',
           type: 'text',
         },
         {

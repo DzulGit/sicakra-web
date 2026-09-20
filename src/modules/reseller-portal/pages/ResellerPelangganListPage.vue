@@ -120,7 +120,7 @@ const columns: ColumnDef<Pelanggan, unknown>[] = [
 
     <div class="relative w-full max-w-sm">
       <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input v-model="cariPelanggan" placeholder="Cari nama / nomor / NIK / HP..." class="pl-9" />
+      <Input v-model="cariPelanggan" placeholder="Cari nama / nomor / HP..." class="pl-9" />
       <button
         v-if="cariPelanggan"
         class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"

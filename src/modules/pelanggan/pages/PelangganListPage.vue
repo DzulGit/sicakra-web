@@ -243,7 +243,7 @@ const columnsPendaftarBaru: ColumnDef<PendaftarBaru, unknown>[] = [
         {
           key: 'cari',
           label: 'Cari pelanggan',
-          placeholder: 'Cari NIK / Nama / No. Pelanggan',
+          placeholder: 'Cari Nama / No. Pelanggan',
           type: 'text',
         },
       ]"
