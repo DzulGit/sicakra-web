@@ -146,6 +146,26 @@ const { handleSubmit, errors, defineField, setErrors, setFieldValue } = useForm(
   },
 })
 
+// Pra-pilih paket ketika datang dari menu Paket Internet (?paket_internet_id=…):
+// paket langsung terisi dan lewati langkah pilih paket.
+const paketDariQuery = computed(() => {
+  const id = route.query.paket_internet_id
+  if (typeof id !== 'string' || !id) return null
+  const list = Array.isArray(daftarPaket.value) ? daftarPaket.value : []
+  return list.find((p) => String(p.id) === id) ?? null
+})
+
+watch(
+  paketDariQuery,
+  (paket) => {
+    if (!paket) return
+    selectedPaket.value = paket
+    setFieldValue('paket_internet_id', String(paket.id))
+    if (currentStep.value === 1) currentStep.value = 2
+  },
+  { immediate: true },
+)
+
 const [namaLengkap, namaLengkapAttrs] = defineField('nama_lengkap')
 const [nik, nikAttrs] = defineField('nik')
 const [nomorHp, nomorHpAttrs] = defineField('nomor_hp')
@@ -411,6 +431,20 @@ function lanjutDariCustom() {
 
       <!-- STEP 2: Lokasi -->
       <div v-if="currentStep === 2" class="mx-auto max-w-3xl">
+        <div
+          v-if="selectedPaket"
+          class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-landing-teal/30 bg-landing-teal/5 px-4 py-3"
+        >
+          <p class="min-w-0 text-sm text-slate-600">
+            <span class="font-semibold text-landing-ink">Paket dipilih:</span>
+            {{ selectedPaket.nama_paket }} — {{ selectedPaket.kecepatan_mbps }} Mbps ·
+            <span class="font-mono font-semibold text-landing-teal">Rp
+              {{ Number(selectedPaket.harga).toLocaleString('id-ID') }}/bln</span>
+          </p>
+          <Button variant="outline" size="sm" class="shrink-0" @click="currentStep = 1">
+            Ganti Paket
+          </Button>
+        </div>
         <Button variant="ghost" class="mb-4 pl-0" @click="currentStep = 1">
           <ChevronLeft class="mr-1 size-4" /> Kembali
         </Button>
