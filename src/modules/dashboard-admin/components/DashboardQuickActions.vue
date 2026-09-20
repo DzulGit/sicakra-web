@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Component } from 'vue'
-import { FileText, UserPlus, Wifi, MessageSquareWarning, UsersRound, Calendar, Receipt, DollarSign, Activity } from 'lucide-vue-next'
+import { FileText, UserPlus, Wifi, MessageSquareWarning, UsersRound, Calendar, Receipt, Activity, Wallet } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 
 const authStore = useAuthStore()
@@ -27,7 +27,7 @@ const roleActions: Record<string, Action[]> = {
   ],
   keuangan: [
     { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt, variant: 'default' },
-    { label: 'Pendapatan', to: '/admin/keuangan/tagihan', icon: DollarSign, variant: 'outline' },
+    { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet, variant: 'outline' },
   ],
   teknisi: [
     { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar, variant: 'default' },
@@ -38,6 +38,7 @@ const roleActions: Record<string, Action[]> = {
     { label: 'Permohonan', to: '/admin/operasional/permohonan-layanan', icon: FileText, variant: 'outline' },
     { label: 'Pelanggan', to: '/admin/operasional/pelanggan', icon: UserPlus, variant: 'outline' },
     { label: 'Tagihan', to: '/admin/keuangan/tagihan', icon: Receipt, variant: 'outline' },
+    { label: 'Pendapatan', to: '/admin/keuangan/pendapatan', icon: Wallet, variant: 'outline' },
     { label: 'Laporan Kendala', to: '/admin/operasional/laporan-kendala', icon: MessageSquareWarning, variant: 'outline' },
     { label: 'Jadwal Kerja', to: '/admin/teknisi/jadwal-kerja', icon: Calendar, variant: 'outline' },
   ],
