@@ -146,10 +146,10 @@ const onSubmit = handleSubmit((values) => {
   )
 })
 
-function salinUsername() {
+function salinNomorPelanggan() {
   if (!ringkasanAktivasi.value?.nomor_pelanggan) return
   navigator.clipboard.writeText(ringkasanAktivasi.value.nomor_pelanggan)
-  toast.success('Username disalin.')
+  toast.success('Nomor pelanggan disalin.')
 }
 
 const permohonan = computed(() => jadwal.value?.permohonan_layanan)
@@ -179,10 +179,10 @@ function formatTanggal(iso: string) {
       </CardHeader>
       <CardContent class="space-y-4 text-sm">
         <div>
-          <p class="text-muted-foreground">Username / Nomor Pelanggan</p>
+          <p class="text-muted-foreground">Nomor Pelanggan</p>
           <div class="flex items-center gap-2">
             <p class="font-mono text-lg font-semibold">{{ ringkasanAktivasi.nomor_pelanggan }}</p>
-            <Button type="button" variant="ghost" size="icon" @click="salinUsername">
+            <Button type="button" variant="ghost" size="icon" @click="salinNomorPelanggan">
               <Copy class="size-4" />
             </Button>
           </div>
@@ -200,8 +200,9 @@ function formatTanggal(iso: string) {
           <p class="capitalize">{{ ringkasanAktivasi.status }}</p>
         </div>
         <p class="rounded-md bg-muted p-3 text-xs text-muted-foreground">
-          Sampaikan ke pelanggan: username di atas dipakai untuk login pertama kali di dashboard
-          pelanggan (bersama nomor HP terdaftar), lalu pelanggan akan diminta buat password sendiri.
+          Sampaikan ke pelanggan: nomor pelanggan di atas dipakai untuk login
+          (password awal sama dengan nomor pelanggan). Segera sarankan ganti
+          password sendiri lewat halaman Profil untuk keamanan.
         </p>
       </CardContent>
     </Card>

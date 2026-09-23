@@ -6,7 +6,6 @@ export interface PelangganData {
   id: number
   nama_lengkap: string
   nomor_pelanggan: string | null
-  username: string | null
   password_sudah_dibuat?: boolean
 }
 

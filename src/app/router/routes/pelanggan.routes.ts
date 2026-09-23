@@ -15,9 +15,9 @@ const NotifikasiPage = () => import('@/modules/notifikasi/pages/NotifikasiPage.v
 
 /**
  * Route Pelanggan — dibangun Fase 3 (auth) & Fase 9 (dashboard).
- * Ganti username/password dilakukan di halaman Profil (bukan halaman
- * terpisah), ditawarkan lewat banner opsional di dashboard — lihat
- * DashboardPelangganPage.vue & ProfilPage.vue.
+ * Ganti password dilakukan di halaman Profil (bukan halaman terpisah),
+ * ditawarkan lewat banner opsional di dashboard — lihat
+ * DashboardPelangganPage.vue & ProfilPage.vue. Login memakai nomor_pelanggan.
  */
 export const pelangganRoutes: RouteRecordRaw[] = [
   {

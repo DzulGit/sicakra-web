@@ -13,7 +13,7 @@ export function getPelangganDetail(id: number | string) {
 }
 
 export function resetAkunPelanggan(id: number | string) {
-  return httpClient.patch<ApiResponse<{ username: string; password: string }>>(`${BASE}/${id}/reset-akun`)
+  return httpClient.patch<ApiResponse<{ nomor_pelanggan: string | null; password: string }>>(`${BASE}/${id}/reset-akun`)
 }
 
 /** Override siklus penagihan per layanan (bebas_tagihan_bulan &/atau tanggal_mulai_penagihan). */

@@ -14,7 +14,6 @@ export interface Pelanggan {
   updated_at?: string
   layanan_internet?: LayananInternetDetail[]
   permohonan_layanan?: PermohonanLayanan[]
-  username?: string
   foto_profil?: string | null;
   /** Jumlah tagihan per status finansial (draft belum_diterbitkan tidak dihitung). */
   ringkasan_tagihan?: {

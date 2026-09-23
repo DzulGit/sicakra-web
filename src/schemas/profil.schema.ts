@@ -7,16 +7,6 @@ export const ubahProfilSchema = z.object({
 })
 export type UbahProfilForm = z.infer<typeof ubahProfilSchema>
 
-// app/Http/Requests/Pelanggan/UbahUsernameRequest.php
-export const ubahUsernameSchema = z.object({
-  username: z
-    .string()
-    .min(4, 'Username minimal 4 karakter')
-    .max(30, 'Username maksimal 30 karakter')
-    .regex(/^[a-zA-Z0-9_.]+$/, 'Username hanya boleh huruf, angka, titik, dan underscore'),
-})
-export type UbahUsernameForm = z.infer<typeof ubahUsernameSchema>
-
 /**
  * app/Http/Requests/Pelanggan/UbahPasswordRequest.php
  *

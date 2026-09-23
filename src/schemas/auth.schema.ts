@@ -12,7 +12,7 @@ export type LoginAdminForm = z.infer<typeof loginAdminSchema>
 
 // app/Http/Requests/Auth/LoginPelangganRequest.php
 export const loginPelangganSchema = z.object({
-  username: z.string().min(1, 'Username wajib diisi'),
+  nomor_pelanggan: z.string().min(1, 'Nomor pelanggan wajib diisi'),
   password: z.string().min(1, 'Password wajib diisi'),
 })
 export type LoginPelangganForm = z.infer<typeof loginPelangganSchema>

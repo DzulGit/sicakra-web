@@ -171,10 +171,6 @@ function formatTanggal(iso?: string | null) {
                 <p class="font-medium break-all">{{ pelanggan.email ?? '-' }}</p>
               </div>
               <div>
-                <p class="text-xs text-muted-foreground">Username</p>
-                <p class="font-medium">{{ pelanggan.username ?? '-' }}</p>
-              </div>
-              <div>
                 <p class="text-xs text-muted-foreground">Status Akun</p>
                 <Badge :variant="pelanggan.password_sudah_dibuat ? 'success' : 'secondary'">
                   {{ pelanggan.password_sudah_dibuat ? 'Password dibuat' : 'Belum buat password' }}

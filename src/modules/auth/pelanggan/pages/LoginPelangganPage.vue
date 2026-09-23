@@ -27,7 +27,7 @@ const router = useRouter()
 const form = useForm({
   validationSchema: toTypedSchema(loginPelangganSchema),
 })
-const [nomorPelanggan, nomorPelangganAttrs] = form.defineField('username')
+const [nomorPelanggan, nomorPelangganAttrs] = form.defineField('nomor_pelanggan')
 const [password, passwordAttrs] = form.defineField('password')
 const { mutate: login, isPending } = useLoginPelanggan()
 
@@ -138,11 +138,11 @@ const submitLogin = form.handleSubmit((values) => {
         <form class="mt-8 space-y-5" novalidate @submit="submitLogin">
           <div class="space-y-2">
             <Label for="nomor_pelanggan" class="text-landing-ink/80">Nomor Pelanggan</Label>
-            <Input id="username" v-model="nomorPelanggan" v-bind="nomorPelangganAttrs" placeholder="PLG000001"
+            <Input id="nomor_pelanggan" v-model="nomorPelanggan" v-bind="nomorPelangganAttrs" placeholder="PLG000001"
               autocomplete="username" class="h-11 border-landing-ink/15 bg-white focus-visible:ring-landing-signal"
-              :aria-invalid="!!form.errors.value.username" />
-            <p v-if="form.errors.value.username" class="text-xs text-destructive">
-              {{ form.errors.value.username }}
+              :aria-invalid="!!form.errors.value.nomor_pelanggan" />
+            <p v-if="form.errors.value.nomor_pelanggan" class="text-xs text-destructive">
+              {{ form.errors.value.nomor_pelanggan }}
             </p>
           </div>
 

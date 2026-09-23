@@ -61,7 +61,7 @@ const sapaan = () => {
       <div class="flex-1 text-sm">
         <p class="font-medium">Amankan akun kamu</p>
         <p class="mt-0.5 text-amber-800/80">
-          Kamu masih pakai username & password default (nomor pelanggan). Yuk ganti supaya akun
+          Kamu masih pakai password default (nomor pelanggan). Yuk ganti supaya akun
           kamu lebih aman — bisa dilakukan kapan saja lewat halaman Profil.
         </p>
         <Button

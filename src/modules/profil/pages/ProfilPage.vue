@@ -3,14 +3,13 @@ import { computed, watch, ref } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { toast } from 'vue-sonner'
-import { Camera, User, Lock, AtSign } from 'lucide-vue-next'
+import { Camera, User, Lock } from 'lucide-vue-next'
 import {
   ubahProfilSchema,
-  ubahUsernameSchema,
   buatUbahPasswordSchema,
 } from '@/schemas/profil.schema'
 import { mapValidationErrors } from '@/lib/errors'
-import { useProfil, useUbahProfil, useUbahUsername, useUbahPassword, useUbahFotoProfil } from '../composables/useProfil'
+import { useProfil, useUbahProfil, useUbahPassword, useUbahFotoProfil } from '../composables/useProfil'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,7 +21,7 @@ import { Separator } from '@/components/ui/separator'
 const { data: profil, isLoading } = useProfil()
 
 // State untuk sistem navigasi Tab di kolom kanan
-const activeTab = ref<'profil' | 'username' | 'keamanan'>('profil')
+const activeTab = ref<'profil' | 'keamanan'>('profil')
 const isDialogPasswordTerbuka = ref(false)
 
 // ---------- Form: Ubah Data (Nama & Email) ----------
@@ -44,42 +43,6 @@ const onSubmit = handleSubmit((values) => {
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)
       if (fieldErrors) setErrors(fieldErrors)
-      else toast.error('Terjadi kesalahan, coba lagi.')
-    },
-  })
-})
-
-// ---------- Form: Ubah Username ----------
-const {
-  handleSubmit: handleSubmitUsername,
-  errors: errorsUsername,
-  defineField: defineFieldUsername,
-  setErrors: setErrorsUsername,
-  setValues: setValuesUsername,
-} = useForm({
-  validationSchema: toTypedSchema(ubahUsernameSchema),
-})
-const [username, usernameAttrs] = defineFieldUsername('username')
-
-const isEditingUsername = ref(false)
-
-function resetFormUsername() {
-  if (profil.value) setValuesUsername({ username: profil.value?.username ?? '' })
-  isEditingUsername.value = false
-}
-
-watch(profil, (nilai) => {
-  if (nilai) setValuesUsername({ username: nilai.username ?? '' })
-}, { immediate: true })
-
-const { mutate: submitUsername, isPending: isPendingUsername } = useUbahUsername()
-
-const onSubmitUsername = handleSubmitUsername((values) => {
-  submitUsername(values, {
-    onSuccess: () => toast.success('Username berhasil diperbarui.'),
-    onError: (error) => {
-      const fieldErrors = mapValidationErrors(error)
-      if (fieldErrors) setErrorsUsername(fieldErrors)
       else toast.error('Terjadi kesalahan, coba lagi.')
     },
   })
@@ -219,11 +182,6 @@ const urlFotoProfil = computed(() => {
               Pengaturan Akun
             </button>
             <button 
-              @click="activeTab = 'username'" 
-              :class="['px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap', activeTab === 'username' ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground']">
-              Ubah Username
-            </button>
-            <button 
               @click="activeTab = 'keamanan'" 
               :class="['px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap', activeTab === 'keamanan' ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground']">
               Keamanan
@@ -251,40 +209,6 @@ const urlFotoProfil = computed(() => {
                 <Button type="submit" class="mt-2" :disabled="isPending">
                   <User class="size-4 mr-2" /> {{ isPending ? 'Menyimpan...' : 'Simpan Perubahan' }}
                 </Button>
-              </form>
-            </div>
-
-            <!-- TAB: USERNAME -->
-            <div v-else-if="activeTab === 'username'" class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div class="mb-4 flex items-center justify-between">
-                <div>
-                  <h3 class="text-lg font-medium">Username Login</h3>
-                  <p class="text-sm text-muted-foreground">Ubah username yang digunakan untuk masuk ke aplikasi.</p>
-                </div>
-                <Button v-if="!isEditingUsername" variant="outline" size="sm" @click="isEditingUsername = true">
-                  Edit
-                </Button>
-              </div>
-              
-              <!-- Mode Baca -->
-              <div v-if="!isEditingUsername" class="rounded-lg border p-4 max-w-md">
-                <p class="text-sm text-muted-foreground">Username saat ini</p>
-                <p class="font-medium text-base mt-1">{{ profil?.username }}</p>
-              </div>
-
-              <!-- Mode Edit -->
-              <form v-else class="space-y-4 max-w-md p-4 border rounded-lg" novalidate @submit="onSubmitUsername">
-                <div class="space-y-2">
-                  <Label for="username">Username Baru</Label>
-                  <Input id="username" v-model="username" v-bind="usernameAttrs" autocomplete="username" :aria-invalid="!!errorsUsername.username" />
-                  <p v-if="errorsUsername.username" class="text-xs text-destructive">{{ errorsUsername.username }}</p>
-                </div>
-                <div class="flex gap-2">
-                  <Button type="button" variant="outline" @click="resetFormUsername(); isEditingUsername = false">Batal</Button>
-                  <Button type="submit" :disabled="isPendingUsername">
-                    <AtSign class="size-4 mr-2" /> {{ isPendingUsername ? 'Menyimpan...' : 'Update Username' }}
-                  </Button>
-                </div>
               </form>
             </div>
 
