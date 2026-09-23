@@ -16,6 +16,7 @@ import { statusPermohonanEnum, jenisPermohonanEnum, tipePaketEnum } from '@/lib/
 import { mapValidationErrors } from '@/lib/errors'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import RiwayatStatusTimeline from '@/modules/permohonan-layanan/components/RiwayatStatusTimeline.vue'
+import FotoKtpPreview from '@/components/data/FotoKtpPreview.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -179,18 +180,11 @@ const prosesVerifikasi = verifikasiSubmit(async (form) => {
               </p>
             </div>
           </div>
-          <div v-if="permohonan.pelanggan?.foto_ktp_url" class="space-y-1.5">
+          <div v-if="permohonan.pelanggan?.foto_ktp && permohonan.pelanggan.id" class="space-y-1.5">
             <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ImageIcon class="size-3.5" /> Dokumen Identitas
             </p>
-            <div class="flex flex-wrap gap-3">
-              <a :href="permohonan.pelanggan.foto_ktp_url" target="_blank"
-                rel="noopener" class="group text-left">
-                <img :src="permohonan.pelanggan.foto_ktp_url" alt="Foto KTP"
-                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
-                <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
-              </a>
-            </div>
+            <FotoKtpPreview :pelanggan-id="permohonan.pelanggan.id" kategori="reseller" />
           </div>
         </CardContent>
       </Card>

@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import RiwayatStatusTimeline from '../components/RiwayatStatusTimeline.vue'
 import WhatsappVerifikasiFlow from '../components/WhatsappVerifikasiFlow.vue'
+import FotoKtpPreview from '@/components/data/FotoKtpPreview.vue'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
@@ -63,10 +64,6 @@ const jadwalTerdekat = computed(() => {
     (a, b) => new Date(a.tanggal_kerja).getTime() - new Date(b.tanggal_kerja).getTime(),
   )[0]
 })
-
-function bukaGambar(url: string) {
-  window.open(url, '_blank', 'noopener,noreferrer')
-}
 </script>
 
 <template>
@@ -172,18 +169,11 @@ function bukaGambar(url: string) {
             </div>
           </div>
 
-          <div v-if="permohonan.pelanggan?.foto_ktp_url" class="space-y-1.5">
+          <div v-if="permohonan.pelanggan?.foto_ktp && permohonan.pelanggan.id" class="space-y-1.5">
             <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ImageIcon class="size-3.5" /> Dokumen Identitas
             </p>
-            <div class="flex flex-wrap gap-3">
-              <button class="group text-left"
-                @click="bukaGambar(permohonan.pelanggan.foto_ktp_url)">
-                <img :src="permohonan.pelanggan.foto_ktp_url" alt="Foto KTP"
-                  class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
-                <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
-              </button>
-            </div>
+            <FotoKtpPreview :pelanggan-id="permohonan.pelanggan.id" kategori="admin" />
           </div>
         </CardContent>
       </Card>
