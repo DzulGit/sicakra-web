@@ -42,22 +42,25 @@ httpClient.interceptors.response.use(
     const status = error.response?.status
 
     if (status === 401) {
+      const isShadowSebelumnya = authStore.isShadow
       const tipeSebelumnya = authStore.tipePengguna
       const pathSekarang = router.currentRoute.value.path
-      
+
       authStore.bersihkanSesi()
 
       // Cegah redirect dan toast jika memang sudah ada di halaman login
-      if (pathSekarang === '/pelanggan/masuk' || pathSekarang === '/admin/masuk') {
+      if (pathSekarang === '/pelanggan/masuk' || pathSekarang === '/admin/masuk' || pathSekarang === '/reseller/masuk') {
         return Promise.reject(error)
       }
 
-      toast.error('Sesi berakhir, silakan login kembali.')
-      
+      toast.error(isShadowSebelumnya
+        ? 'Sesi shadow berakhir. Silakan hubungi admin untuk membuat sesi baru.'
+        : 'Sesi berakhir, silakan login kembali.')
+
       // Jika tipeSebelumnya null, deteksi dari URL yang sedang aktif
       const isPelanggan = tipeSebelumnya === 'pelanggan' || pathSekarang.startsWith('/pelanggan')
       const isReseller = pathSekarang.startsWith('/reseller')
-      
+
       if (isPelanggan) {
         router.push('/pelanggan/masuk')
       } else if (isReseller) {

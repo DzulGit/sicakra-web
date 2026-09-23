@@ -44,14 +44,14 @@ function onTolakEmail(id: number | string, nama: string) {
 
 /** Shadow login: buka portal reseller di tab baru tanpa mengganggu sesi admin. */
 async function onShadow(id: number | string, nama: string) {
+  if (!window.confirm(`Masuk ke portal reseller ${nama} sebagai shadow?`)) return
+
   try {
     const { data } = await httpClient.post(`/admin/operasional/reseller/${id}/shadow`)
-    const { token: shadowToken, reseller } = data.data
+    const { kode } = data.data
 
     const params = new URLSearchParams({
-      shadow_token: shadowToken,
-      shadow_id: String(reseller.id),
-      shadow_nama: reseller.nama_lengkap,
+      shadow_code: kode,
     })
 
     window.open(`${window.location.origin}/reseller/overview?${params.toString()}`, '_blank', 'noopener,noreferrer')

@@ -20,6 +20,11 @@ export interface SesiPengguna {
   foto_profil?: string | null;
 }
 
+export interface AdminPembuka {
+  id: number
+  nama_lengkap: string
+}
+
 /**
  * Pinia store — HANYA client/UI state (sesi auth).
  * Data dari API (permohonan, tagihan, dst) TIDAK pernah masuk ke sini —
@@ -27,6 +32,11 @@ export interface SesiPengguna {
  *
  * Shadow session (login as) menggunakan sessionStorage supaya tab baru
  * punya sesi sendiri tanpa menimpa sesi admin di tab asal (localStorage).
+ *
+ * Catatan keamanan: begitu tab masuk mode shadow (shadowMode = true), tab itu
+ * TIDAK boleh jatuh kembali ke token admin di localStorage meskipun token
+ * shadow habis/401 — sesi shadow harus dianggap berakhir, bukan "kembali
+ * login sebagai admin".
  */
 export const useAuthStore = defineStore('auth', () => {
   // Sesi normal — persist di localStorage (shared lintas tab).
@@ -36,20 +46,29 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   // Sesi shadow — persist di sessionStorage (per-tab, tidak sync antar tab).
+  const shadowMode = useSessionStorage('sicakra_shadow_mode', false)
   const shadowToken = useSessionStorage<string | null>('sicakra_shadow_token', null)
   const shadowPengguna = useSessionStorage<SesiPengguna | null>('sicakra_shadow_pengguna', null, {
     serializer: StorageSerializers.object
   })
+  const shadowAdmin = useSessionStorage<AdminPembuka | null>('sicakra_shadow_admin', null, {
+    serializer: StorageSerializers.object
+  })
 
-  // --- Computed aktif: shadow menimpa normal jika ada ---
+  // --- Computed aktif: mode shadow mengunci tab ke sesi shadow saja ---
 
-  const isShadow = computed(() => !!shadowToken.value)
+  const isShadow = computed(() => shadowMode.value && !!shadowToken.value && !!shadowAdmin.value)
 
-  const sudahLogin = computed(() =>
-    !!(shadowToken.value || token.value) && !!(shadowPengguna.value || pengguna.value),
+  const sudahLogin = computed(() => {
+    if (shadowMode.value) {
+      return !!shadowToken.value && !!shadowPengguna.value
+    }
+    return !!(token.value && pengguna.value)
+  })
+
+  const activePengguna = computed(() =>
+    shadowMode.value ? shadowPengguna.value : pengguna.value,
   )
-
-  const activePengguna = computed(() => shadowPengguna.value || pengguna.value)
 
   const tipePengguna = computed<TipePengguna | null>(
     () => activePengguna.value?.tipe ?? ((activePengguna.value as { tipe_pengguna?: TipePengguna } | null)?.tipe_pengguna ?? null),
@@ -78,46 +97,79 @@ export const useAuthStore = defineStore('auth', () => {
 
   // --- Akses token aktif untuk httpClient ---
 
-  const activeToken = computed(() => shadowToken.value || token.value)
+  const activeToken = computed(() =>
+    shadowMode.value ? shadowToken.value : token.value,
+  )
 
   // --- Mutasi ---
 
   function setSesi(tokenBaru: string, penggunaBaru: SesiPengguna) {
-    if (shadowToken.value) {
+    if (shadowMode.value) {
       shadowToken.value = tokenBaru
       shadowPengguna.value = penggunaBaru
     } else {
+      shadowMode.value = false
+      shadowToken.value = null
+      shadowPengguna.value = null
+      shadowAdmin.value = null
       token.value = tokenBaru
       pengguna.value = penggunaBaru
     }
   }
 
-  /** Inisialisasi sesi shadow dari URL param (dipanggil oleh router guard). */
-  function setShadow(tokenBaru: string, penggunaBaru: SesiPengguna) {
+  /**
+   * Inisialisasi sesi shadow setelah kode ditukar (dipanggil oleh router guard).
+   * Mengunci tab ke mode shadow — tidak kembali ke sesi admin saat token habis.
+   */
+  function setShadow(tokenBaru: string, penggunaBaru: SesiPengguna, adminBaru: AdminPembuka) {
+    shadowMode.value = true
     shadowToken.value = tokenBaru
     shadowPengguna.value = penggunaBaru
+    shadowAdmin.value = adminBaru
   }
 
   function perbaruiPengguna(perubahan: Partial<SesiPengguna>) {
-    const active = shadowPengguna.value || pengguna.value
+    const active = activePengguna.value
     if (!active) return
     const updated = { ...active, ...perubahan }
-    if (shadowPengguna.value) {
+    if (shadowMode.value) {
       shadowPengguna.value = updated
     } else {
       pengguna.value = updated
     }
   }
 
-  /** Hanya clear sesi aktif (shadow → clear shadow; normal → clear normal). */
+  /** Akhiri sesi shadow di tab ini — tab tidak boleh jatuh ke sesi admin. */
+  function akhiriShadow() {
+    shadowToken.value = null
+    shadowPengguna.value = null
+    shadowAdmin.value = null
+  }
+
+  /**
+   * Logout / sesi habis.
+   * - Mode shadow: token shadow dibuang tapi mode tetap ON, jadi tab ini tidak
+   *   pernah jatuh kembali ke token admin di localStorage (shared lintas tab).
+   *   Tab tetap berujung ke login reseller, bukan login admin.
+   * - Normal: bersihkan sesi normal.
+   */
   function bersihkanSesi() {
-    if (shadowToken.value) {
-      shadowToken.value = null
-      shadowPengguna.value = null
+    if (shadowMode.value) {
+      akhiriShadow()
     } else {
       token.value = null
       pengguna.value = null
     }
+  }
+
+  /**
+   * Kunci tab agar SELALU terisolasi ke portal reseller, tanpa menyentuh
+   * sesi admin di localStorage. Dipakai saat kode shadow gagal ditukar:
+   * tab baru itu jangan ikut menghapus/ memakai token admin tab asal.
+   */
+  function kunciKeModeReseller() {
+    shadowMode.value = true
+    akhiriShadow()
   }
 
   return {
@@ -125,6 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
     pengguna: activePengguna,
     shadowToken,
     shadowPengguna,
+    shadowAdmin,
     isShadow,
     sudahLogin,
     tipePengguna,
@@ -135,5 +188,6 @@ export const useAuthStore = defineStore('auth', () => {
     setShadow,
     perbaruiPengguna,
     bersihkanSesi,
+    kunciKeModeReseller,
   }
 })

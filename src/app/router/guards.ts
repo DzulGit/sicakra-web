@@ -1,5 +1,7 @@
 import type { Router } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { httpClient } from '@/app/providers/httpClient'
+import { toast } from 'vue-sonner'
 
 /**
  * Navigation guard global. Urutan pengecekan SENGAJA mencerminkan urutan
@@ -7,23 +9,33 @@ import { useAuthStore } from '@/stores/auth.store'
  * Lihat docs/frontend/auth/authorization.md.
  */
 export function setupRouterGuards(router: Router) {
-  router.beforeEach((to) => {
+  router.beforeEach(async (to) => {
     const authStore = useAuthStore()
 
-    // Deteksi shadow login — token temporary dari admin operasional.
-    // Simpan ke sessionStorage (per-tab) supaya sesi admin tidak terganggu.
-    const shadowToken = to.query.shadow_token as string | undefined
-    if (shadowToken) {
-      authStore.setShadow(shadowToken, {
-        id: Number(to.query.shadow_id),
-        nama_lengkap: String(to.query.shadow_nama ?? ''),
-        tipe: 'admin',
-        peran: 'reseller',
-      })
+    // Shadow login — kode sekali pakai dari admin operasional ditukar ke token
+    // shadow berumur pendek di endpoint /reseller/shadow/klaim. Token ASLI
+    // tidak pernah lewat URL; cuma kode (3 menit, sekali pakai) yang ada di sana.
+    const shadowCode = to.query.shadow_code as string | undefined
+    if (shadowCode) {
+      try {
+        const { data } = await httpClient.post('/reseller/shadow/klaim', { kode: shadowCode })
+        const { token, reseller, admin } = data.data
+        authStore.setShadow(token, {
+          id: reseller.id,
+          nama_lengkap: reseller.nama_lengkap,
+          tipe: 'admin',
+          peran: 'reseller',
+          foto_profil: reseller.foto_profil,
+        }, admin)
 
-      // Redirect tanpa query param supaya guard tidak trigger ulang.
-      const { shadow_token: _, shadow_id: _2, shadow_nama: _3, ...restQuery } = to.query
-      return { path: to.path, query: restQuery, replace: true }
+        // Redirect tanpa query param supaya guard tidak trigger ulang.
+        const { shadow_code: _, ...restQuery } = to.query
+        return { path: to.path, query: restQuery, replace: true }
+      } catch {
+        toast.error('Kode shadow tidak valid atau sudah kedaluwarsa.')
+        authStore.kunciKeModeReseller()
+        return { name: 'reseller.masuk' }
+      }
     }
 
     // Halaman login (hanyaGuest): sesi valid -> jangan tampilkan form login,
