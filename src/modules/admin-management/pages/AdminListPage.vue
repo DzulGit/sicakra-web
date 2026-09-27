@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { h, ref } from 'vue'
+import { z } from 'zod'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { toast } from 'vue-sonner'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useAdminList, useNonaktifkanAdmin, useSimpanAdmin, useUbahAdmin } from '../composables/useSuperAdminAdmin'
-import { simpanAdminSchema, ubahAdminSchema } from '@/schemas/admin.schema'
+import { simpanAdminSchema, ubahAdminSchema, validasiPasswordSuperAdminSchema } from '@/schemas/admin.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { peranAdminEnum } from '@/lib/enums'
 import { useAuthStore } from '@/stores/auth.store'
@@ -20,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { FilterFieldConfig } from '@/types/filter'
 import type { AdminLengkap } from '@/types/models'
 
@@ -82,28 +84,44 @@ const {
   handleSubmit: handleSubmitUbah,
   errors: errorsUbah,
   defineField: defineFieldUbah,
-  setErrors: setErrorsUbah,
   resetForm: resetFormUbah,
 } = useForm({ validationSchema: toTypedSchema(ubahAdminSchema) })
 const [namaLengkapUbah, namaLengkapUbahAttrs] = defineFieldUbah('nama_lengkap')
 const [emailUbah, emailUbahAttrs] = defineFieldUbah('email')
-const [passwordLama, passwordLamaAttrs] = defineFieldUbah('password_lama')
 const [passwordBaru, passwordBaruAttrs] = defineFieldUbah('password_baru')
-const { mutate: ubah, isPending: isPendingUbah } = useUbahAdmin()
 function bukaDialogUbah(admin: AdminLengkap) {
-  resetFormUbah({ values: { nama_lengkap: admin.nama_lengkap, email: admin.email, password_lama: '', password_baru: '' } })
+  resetFormUbah({ values: { nama_lengkap: admin.nama_lengkap, email: admin.email, password_baru: '' } })
   adminDiubah.value = admin
 }
+
+const draftUbah = ref<z.infer<typeof ubahAdminSchema> | null>(null)
+const dialogValidasiBuka = ref(false)
+const {
+  handleSubmit: handleSubmitValidasi,
+  errors: errorsValidasi,
+  defineField: defineFieldValidasi,
+  setErrors: setErrorsValidasi,
+  resetForm: resetFormValidasi,
+} = useForm({ validationSchema: toTypedSchema(validasiPasswordSuperAdminSchema) })
+const [passwordSuperadmin, passwordSuperadminAttrs] = defineFieldValidasi('password_superadmin')
+const { mutate: simpanUbah, isPending: isPendingValidasi } = useUbahAdmin()
 const onSubmitUbah = handleSubmitUbah((values) => {
   if (!adminDiubah.value) return
-  ubah({ id: adminDiubah.value.id, payload: values }, {
+  draftUbah.value = values
+  resetFormValidasi()
+  dialogValidasiBuka.value = true
+})
+const onSubmitValidasi = handleSubmitValidasi((values) => {
+  if (!adminDiubah.value || !draftUbah.value) return
+  simpanUbah({ id: adminDiubah.value.id, payload: { ...draftUbah.value, password_superadmin: values.password_superadmin } }, {
     onSuccess: () => {
       toast.success('Data admin berhasil diperbarui.')
       adminDiubah.value = null
+      dialogValidasiBuka.value = false
     },
     onError: (error) => {
       const fieldErrors = mapValidationErrors(error)
-      if (fieldErrors) setErrorsUbah(fieldErrors)
+      if (fieldErrors) setErrorsValidasi(fieldErrors)
       else toast.error('Terjadi kesalahan, coba lagi.')
     },
   })
@@ -167,31 +185,55 @@ const onSubmitUbah = handleSubmitUbah((values) => {
           <DialogDescription>Perbarui data {{ adminDiubah?.nama_lengkap }}.</DialogDescription>
         </DialogHeader>
         <form class="space-y-4" novalidate @submit="onSubmitUbah">
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="space-y-2">
-              <Label for="nama_lengkap_ubah">Nama Lengkap</Label>
-              <Input id="nama_lengkap_ubah" v-model="namaLengkapUbah" v-bind="namaLengkapUbahAttrs" placeholder="cth. Budi Santoso" :aria-invalid="!!errorsUbah.nama_lengkap" />
-              <p v-if="errorsUbah.nama_lengkap" class="text-xs text-destructive">{{ errorsUbah.nama_lengkap }}</p>
-            </div>
-            <div class="space-y-2">
-              <Label for="email_ubah">Email</Label>
-              <Input id="email_ubah" v-model="emailUbah" v-bind="emailUbahAttrs" type="email" placeholder="nama@perusahaan.id" :aria-invalid="!!errorsUbah.email" />
-              <p v-if="errorsUbah.email" class="text-xs text-destructive">{{ errorsUbah.email }}</p>
-            </div>
-            <div class="space-y-2">
-              <Label for="password_lama">Password Lama <span class="text-muted-foreground">(diisi jika ganti password)</span></Label>
-              <Input id="password_lama" v-model="passwordLama" v-bind="passwordLamaAttrs" type="password" placeholder="Diisi jika ingin ganti password" :aria-invalid="!!errorsUbah.password_lama" />
-              <p v-if="errorsUbah.password_lama" class="text-xs text-destructive">{{ errorsUbah.password_lama }}</p>
-            </div>
-            <div class="space-y-2">
-              <Label for="password_baru">Password Baru <span class="text-muted-foreground">(opsional)</span></Label>
-              <Input id="password_baru" v-model="passwordBaru" v-bind="passwordBaruAttrs" type="password" placeholder="Minimal 8 karakter" :aria-invalid="!!errorsUbah.password_baru" />
-              <p v-if="errorsUbah.password_baru" class="text-xs text-destructive">{{ errorsUbah.password_baru }}</p>
-            </div>
+          <Tabs default-value="ubah-data">
+            <TabsList>
+              <TabsTrigger value="ubah-data">Ubah Data</TabsTrigger>
+              <TabsTrigger value="ganti-password">Ganti Password</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ubah-data">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="space-y-2">
+                  <Label for="nama_lengkap_ubah">Nama Lengkap</Label>
+                  <Input id="nama_lengkap_ubah" v-model="namaLengkapUbah" v-bind="namaLengkapUbahAttrs" placeholder="cth. Budi Santoso" :aria-invalid="!!errorsUbah.nama_lengkap" />
+                  <p v-if="errorsUbah.nama_lengkap" class="text-xs text-destructive">{{ errorsUbah.nama_lengkap }}</p>
+                </div>
+                <div class="space-y-2">
+                  <Label for="email_ubah">Email</Label>
+                  <Input id="email_ubah" v-model="emailUbah" v-bind="emailUbahAttrs" type="email" placeholder="nama@perusahaan.id" :aria-invalid="!!errorsUbah.email" />
+                  <p v-if="errorsUbah.email" class="text-xs text-destructive">{{ errorsUbah.email }}</p>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="ganti-password">
+              <div class="space-y-2">
+                <Label for="password_baru">Password Baru</Label>
+                <Input id="password_baru" v-model="passwordBaru" v-bind="passwordBaruAttrs" type="password" placeholder="Minimal 8 karakter" :aria-invalid="!!errorsUbah.password_baru" />
+                <p v-if="errorsUbah.password_baru" class="text-xs text-destructive">{{ errorsUbah.password_baru }}</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+          <DialogFooter>
+            <Button type="button" variant="outline" @click="adminDiubah = null">Batal</Button>
+            <Button type="submit">Simpan Perubahan</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+    <Dialog :open="dialogValidasiBuka" @update:open="dialogValidasiBuka = $event">
+      <DialogContent class="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Konfirmasi Password</DialogTitle>
+          <DialogDescription>Masukkan password super admin untuk menyimpan perubahan {{ adminDiubah?.nama_lengkap }}.</DialogDescription>
+        </DialogHeader>
+        <form class="space-y-4" novalidate @submit="onSubmitValidasi">
+          <div class="space-y-2">
+            <Label for="password_superadmin">Password Super Admin</Label>
+            <Input id="password_superadmin" v-model="passwordSuperadmin" v-bind="passwordSuperadminAttrs" type="password" placeholder="Masukkan password super admin" :aria-invalid="!!errorsValidasi.password_superadmin" />
+            <p v-if="errorsValidasi.password_superadmin" class="text-xs text-destructive">{{ errorsValidasi.password_superadmin }}</p>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" :disabled="isPendingUbah" @click="adminDiubah = null">Batal</Button>
-            <Button type="submit" :disabled="isPendingUbah">{{ isPendingUbah ? 'Menyimpan...' : 'Simpan Perubahan' }}</Button>
+            <Button type="button" variant="outline" :disabled="isPendingValidasi" @click="dialogValidasiBuka = false">Batal</Button>
+            <Button type="submit" :disabled="isPendingValidasi">{{ isPendingValidasi ? 'Menyimpan...' : 'Simpan' }}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
