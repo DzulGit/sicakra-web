@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { toValue, type MaybeRefOrGetter } from 'vue'
+import { useRoute } from 'vue-router'
+import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import {
   getResellerList,
   getResellerPelangganList,
@@ -8,6 +9,7 @@ import {
   getResellerStatistikDetail,
   getResellerStatistikGlobal,
   getResellerTagihanList,
+  getResellerTransaksiList,
   simpanReseller,
   setujuiEmailReseller,
   tolakEmailReseller,
@@ -67,6 +69,28 @@ export function useResellerStatistikDetail(id: MaybeRefOrGetter<number | string>
   return useQuery({
     queryKey: ['reseller', 'statistik', id],
     queryFn: () => getResellerStatistikDetail(toValue(id)).then((res) => res.data.data),
+  })
+}
+
+/**
+ * Daftar seluruh transaksi reseller. Filter (reseller, bulan, tahun) dibaca
+ * dari query-string supaya sinkron dengan FilterBar + Pagination.
+ */
+export function useResellerTransaksiList() {
+  const route = useRoute()
+
+  const params = computed(() => {
+    const p: Record<string, string> = {}
+    for (const [key, value] of Object.entries(route.query)) {
+      // 'semua' = opsi "Semua …" di FilterBar, bukan filter — jangan dikirim.
+      if (typeof value === 'string' && value !== 'semua') p[key] = value
+    }
+    return p
+  })
+
+  return useQuery({
+    queryKey: ['reseller', 'transaksi', params],
+    queryFn: () => getResellerTransaksiList(params.value).then((res) => res.data.data),
   })
 }
 

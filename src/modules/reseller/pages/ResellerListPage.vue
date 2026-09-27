@@ -4,7 +4,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { Store, UserPlus, FileDown, Users, UserCheck, Wifi, Wallet, MailCheck, MailX } from 'lucide-vue-next'
+import { Store, UserPlus, FileDown, Users, UserCheck, Wifi, Wallet, MailCheck, MailX, ReceiptText } from 'lucide-vue-next'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { useResellerList, useResellerStatistikGlobal, useSimpanReseller, useSetujuiEmailReseller, useTolakEmailReseller } from '../composables/useReseller'
 import { simpanResellerSchema } from '@/schemas/reseller.schema'
@@ -186,7 +186,7 @@ const onSubmit = handleSubmit((formValues) => {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       <DashboardStatCard
         :icon="Store"
         label="Total Reseller"
@@ -213,6 +213,20 @@ const onSubmit = handleSubmit((formValues) => {
         subtitle="pembayaran berhasil"
         :loading="statistikLoading"
       />
+      <DashboardStatCard
+        :icon="Wifi"
+        label="Total Paket"
+        :value="statistik?.stats.total_paket ?? 0"
+        subtitle="dibuat seluruh reseller"
+        :loading="statistikLoading"
+      />
+      <DashboardStatCard
+        :icon="ReceiptText"
+        label="Total Tagihan"
+        :value="statistik?.stats.total_tagihan ?? 0"
+        subtitle="diterbitkan reseller"
+        :loading="statistikLoading"
+      />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -229,28 +243,11 @@ const onSubmit = handleSubmit((formValues) => {
       />
     </div>
 
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <ResellerTransaksiTable
-        :data="statistik?.transaksi_terbaru ?? []"
-        :loading="statistikLoading"
-      />
-      <div class="grid grid-cols-2 gap-3">
-        <DashboardStatCard
-          :icon="Wifi"
-          label="Total Paket"
-          :value="statistik?.stats.total_paket ?? 0"
-          :loading="statistikLoading"
-          class="h-fit"
-        />
-        <DashboardStatCard
-          :icon="FileDown"
-          label="Total Tagihan"
-          :value="statistik?.stats.total_tagihan ?? 0"
-          :loading="statistikLoading"
-          class="h-fit"
-        />
-      </div>
-    </div>
+    <ResellerTransaksiTable
+      :data="statistik?.transaksi_terbaru ?? []"
+      :loading="statistikLoading"
+      :limit="3"
+    />
 
     <ResellerExportDialog :open="showExport" @update:open="(v) => (showExport = v)" />
 
