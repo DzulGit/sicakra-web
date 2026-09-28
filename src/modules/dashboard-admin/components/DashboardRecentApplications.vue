@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h } from 'vue'
+import { computed, h } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import DataTable from '@/components/data/DataTable.vue'
@@ -43,10 +43,19 @@ const columns: ColumnDef<PermohonanLayanan, unknown>[] = [
   },
 ]
 
-defineProps<{
+/**
+ * Card ini pratinjau, bukan daftar. Backend sudah membatasi `permohonan_terbaru`
+ * jadi 5 baris, tapi dipotong lagi di sini supaya card tidak pernah jadi halaman
+ * panjang kalau API yang menjawab mengembalikan lebih dari itu.
+ */
+const MAX_BARIS = 5
+
+const props = defineProps<{
   data?: PermohonanLayanan[]
   loading?: boolean
 }>()
+
+const baris = computed(() => (props.data ?? []).slice(0, MAX_BARIS))
 </script>
 
 <template>
@@ -63,7 +72,7 @@ defineProps<{
     <CardContent class="p-0">
       <DataTable
         :columns="columns"
-        :data="data ?? []"
+        :data="baris"
         :loading="loading"
         empty-judul="Belum ada permohonan"
         empty-deskripsi="Permohonan baru akan muncul di sini."
