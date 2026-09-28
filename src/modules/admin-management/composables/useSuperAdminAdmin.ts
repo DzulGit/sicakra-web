@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import {
+  aktifkanAdmin,
   getAdminList,
   nonaktifkanAdmin,
   simpanAdmin,
@@ -49,7 +50,17 @@ export function useUbahAdmin() {
 export function useNonaktifkanAdmin() {
   const invalidasi = useInvalidasiAdmin()
   return useMutation({
-    mutationFn: (id: number | string) => nonaktifkanAdmin(id),
+    mutationFn: ({ id, password_superadmin }: { id: number | string; password_superadmin: string }) =>
+      nonaktifkanAdmin(id, { password_superadmin }),
+    onSuccess: invalidasi,
+  })
+}
+
+export function useAktifkanAdmin() {
+  const invalidasi = useInvalidasiAdmin()
+  return useMutation({
+    mutationFn: ({ id, password_superadmin }: { id: number | string; password_superadmin: string }) =>
+      aktifkanAdmin(id, { password_superadmin }),
     onSuccess: invalidasi,
   })
 }

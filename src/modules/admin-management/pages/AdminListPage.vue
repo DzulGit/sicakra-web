@@ -5,7 +5,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { toast } from 'vue-sonner'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import { useAdminList, useNonaktifkanAdmin, useSimpanAdmin, useUbahAdmin } from '../composables/useSuperAdminAdmin'
+import { useAdminList, useAktifkanAdmin, useNonaktifkanAdmin, useSimpanAdmin, useUbahAdmin } from '../composables/useSuperAdminAdmin'
 import { simpanAdminSchema, ubahAdminSchema, validasiPasswordSuperAdminSchema } from '@/schemas/admin.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { peranAdminEnum } from '@/lib/enums'
@@ -14,7 +14,7 @@ import DataTable from '@/components/data/DataTable.vue'
 import FilterBar from '@/components/data/FilterBar.vue'
 import Pagination from '@/components/data/Pagination.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
-import ConfirmDialog from '@/components/feedback/ConfirmDialog.vue'
+import SuperAdminOverview from '../components/SuperAdminOverview.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -31,14 +31,15 @@ const filterFields: FilterFieldConfig[] = [
   { key: 'peran', label: 'Peran', options: Object.entries(peranAdminEnum).map(([value, meta]) => ({ value, label: meta.label })) },
   { key: 'status_aktif', label: 'Status', options: [{ value: '1', label: 'Aktif' }, { value: '0', label: 'Nonaktif' }] },
 ]
-const adminDikonfirmasi = ref<AdminLengkap | null>(null)
+type AksiAdmin = { admin: AdminLengkap; tindakan: 'nonaktifkan' | 'aktifkan' }
+const aksiAdmin = ref<AksiAdmin | null>(null)
 const { mutate: nonaktifkan, isPending: isPendingNonaktifkan } = useNonaktifkanAdmin()
-function handleNonaktifkan() {
-  if (!adminDikonfirmasi.value) return
-  nonaktifkan(adminDikonfirmasi.value.id, {
-    onSuccess: () => { toast.success('Admin berhasil dinonaktifkan.'); adminDikonfirmasi.value = null },
-    onError: () => toast.error('Gagal menonaktifkan admin.'),
-  })
+const { mutate: aktifkan, isPending: isPendingAktifkan } = useAktifkanAdmin()
+function bukaDialogAksi(admin: AdminLengkap, tindakan: AksiAdmin['tindakan']) {
+  aksiAdmin.value = { admin, tindakan }
+  draftUbah.value = null
+  resetFormValidasi()
+  dialogValidasiBuka.value = true
 }
 const columns: ColumnDef<AdminLengkap, unknown>[] = [
   { accessorKey: 'nama_lengkap', header: 'Nama Lengkap' },
@@ -47,7 +48,10 @@ const columns: ColumnDef<AdminLengkap, unknown>[] = [
   { accessorKey: 'status_aktif', header: 'Status', cell: ({ row }) => h(Badge, { variant: row.original.status_aktif ? 'success' : 'secondary' }, () => row.original.status_aktif ? 'Aktif' : 'Nonaktif') },
   { id: 'aksi', header: '', cell: ({ row }) => h('div', { class: 'flex justify-end gap-2' }, [
     h(Button, { variant: 'outline', size: 'sm', onClick: () => bukaDialogUbah(row.original) }, () => 'Ubah'),
-    row.original.status_aktif && row.original.id !== authStore.pengguna?.id ? h(Button, { variant: 'destructive', size: 'sm', onClick: () => (adminDikonfirmasi.value = row.original) }, () => 'Nonaktifkan') : null,
+    row.original.status_aktif && row.original.id !== authStore.pengguna?.id
+      ? h(Button, { variant: 'destructive', size: 'sm', onClick: () => bukaDialogAksi(row.original, 'nonaktifkan') }, () => 'Nonaktifkan')
+      : null,
+    !row.original.status_aktif ? h(Button, { variant: 'outline', size: 'sm', onClick: () => bukaDialogAksi(row.original, 'aktifkan') }, () => 'Aktifkan') : null,
   ]) },
 ]
 
@@ -108,27 +112,50 @@ const { mutate: simpanUbah, isPending: isPendingValidasi } = useUbahAdmin()
 const onSubmitUbah = handleSubmitUbah((values) => {
   if (!adminDiubah.value) return
   draftUbah.value = values
+  aksiAdmin.value = null
   resetFormValidasi()
   dialogValidasiBuka.value = true
 })
 const onSubmitValidasi = handleSubmitValidasi((values) => {
-  if (!adminDiubah.value || !draftUbah.value) return
-  simpanUbah({ id: adminDiubah.value.id, payload: { ...draftUbah.value, password_superadmin: values.password_superadmin } }, {
-    onSuccess: () => {
-      toast.success('Data admin berhasil diperbarui.')
-      adminDiubah.value = null
-      dialogValidasiBuka.value = false
-    },
-    onError: (error) => {
-      const fieldErrors = mapValidationErrors(error)
-      if (fieldErrors) setErrorsValidasi(fieldErrors)
-      else toast.error('Terjadi kesalahan, coba lagi.')
-    },
-  })
+  const password = values.password_superadmin
+  if (draftUbah.value && adminDiubah.value) {
+    simpanUbah({ id: adminDiubah.value.id, payload: { ...draftUbah.value, password_superadmin: password } }, {
+      onSuccess: () => {
+        toast.success('Data admin berhasil diperbarui.')
+        adminDiubah.value = null
+        draftUbah.value = null
+        dialogValidasiBuka.value = false
+      },
+      onError: (error) => {
+        const fieldErrors = mapValidationErrors(error)
+        if (fieldErrors) setErrorsValidasi(fieldErrors)
+        else toast.error('Terjadi kesalahan, coba lagi.')
+      },
+    })
+    return
+  }
+  if (aksiAdmin.value) {
+    const { admin, tindakan } = aksiAdmin.value
+    const mutateAksi = tindakan === 'nonaktifkan' ? nonaktifkan : aktifkan
+    const isNonaktifkan = tindakan === 'nonaktifkan'
+    mutateAksi({ id: admin.id, password_superadmin: password }, {
+      onSuccess: () => {
+        toast.success(isNonaktifkan ? 'Admin berhasil dinonaktifkan.' : 'Admin berhasil diaktifkan kembali.')
+        aksiAdmin.value = null
+        dialogValidasiBuka.value = false
+      },
+      onError: (error) => {
+        const fieldErrors = mapValidationErrors(error)
+        if (fieldErrors) setErrorsValidasi(fieldErrors)
+        else toast.error('Terjadi kesalahan, coba lagi.')
+      },
+    })
+  }
 })
 </script>
 <template>
   <div class="space-y-4">
+    <SuperAdminOverview />
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">Kelola Admin</h1>
       <Button @click="bukaDialog">Tambah Admin</Button>
@@ -136,7 +163,6 @@ const onSubmitValidasi = handleSubmitValidasi((values) => {
     <FilterBar :fields="filterFields" />
     <DataTable :columns="columns" :data="hasil?.data ?? []" :loading="isLoading" empty-judul="Belum ada admin" />
     <Pagination v-if="hasil" :meta="hasil" />
-    <ConfirmDialog :open="!!adminDikonfirmasi" judul="Nonaktifkan admin ini?" :deskripsi="`${adminDikonfirmasi?.nama_lengkap} tidak akan bisa login lagi.`" label-konfirmasi="Nonaktifkan" variant-konfirmasi="destructive" :loading="isPendingNonaktifkan" @update:open="(v) => !v && (adminDikonfirmasi = null)" @confirm="handleNonaktifkan" />
     <Dialog :open="dialogBuka" @update:open="dialogBuka = $event">
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
@@ -178,7 +204,7 @@ const onSubmitValidasi = handleSubmitValidasi((values) => {
         </form>
       </DialogContent>
     </Dialog>
-    <Dialog :open="!!adminDiubah" @update:open="(v) => !v && (adminDiubah = null)">
+    <Dialog :open="!!adminDiubah" @update:open="(v) => !v && (adminDiubah = null, draftUbah = null)">
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Ubah Admin</DialogTitle>
@@ -219,11 +245,12 @@ const onSubmitValidasi = handleSubmitValidasi((values) => {
         </form>
       </DialogContent>
     </Dialog>
-    <Dialog :open="dialogValidasiBuka" @update:open="dialogValidasiBuka = $event">
+    <Dialog :open="dialogValidasiBuka" @update:open="(v) => !v && (dialogValidasiBuka = false, aksiAdmin = null)">
       <DialogContent class="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Konfirmasi Password</DialogTitle>
-          <DialogDescription>Masukkan password super admin untuk menyimpan perubahan {{ adminDiubah?.nama_lengkap }}.</DialogDescription>
+          <DialogDescription v-if="aksiAdmin" v-html="`Masukkan password super admin untuk ${aksiAdmin.tindakan === 'nonaktifkan' ? 'menonaktifkan' : 'mengaktifkan kembali'} ${aksiAdmin.admin.nama_lengkap}.`" />
+          <DialogDescription v-else>Masukkan password super admin untuk menyimpan perubahan {{ adminDiubah?.nama_lengkap }}.</DialogDescription>
         </DialogHeader>
         <form class="space-y-4" novalidate @submit="onSubmitValidasi">
           <div class="space-y-2">
@@ -232,8 +259,8 @@ const onSubmitValidasi = handleSubmitValidasi((values) => {
             <p v-if="errorsValidasi.password_superadmin" class="text-xs text-destructive">{{ errorsValidasi.password_superadmin }}</p>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" :disabled="isPendingValidasi" @click="dialogValidasiBuka = false">Batal</Button>
-            <Button type="submit" :disabled="isPendingValidasi">{{ isPendingValidasi ? 'Menyimpan...' : 'Simpan' }}</Button>
+            <Button type="button" variant="outline" :disabled="isPendingValidasi" @click="dialogValidasiBuka = false; aksiAdmin = null">Batal</Button>
+            <Button type="submit" :disabled="isPendingValidasi || isPendingNonaktifkan || isPendingAktifkan">{{ isPendingValidasi || isPendingNonaktifkan || isPendingAktifkan ? 'Menyimpan...' : aksiAdmin ? 'Konfirmasi' : 'Simpan' }}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

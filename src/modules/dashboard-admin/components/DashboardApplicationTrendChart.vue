@@ -24,15 +24,15 @@ const WARNA_PRIMARY = '#0d6d68'
 const WARNA_PRIMARY_MUTED = 'rgba(13,109,104,0.08)'
 
 const props = withDefaults(
-  defineProps<{ data?: DashboardTrendPoint[]; loading?: boolean; title?: string }>(),
-  { data: () => [], loading: false, title: 'Tren Permohonan' },
+  defineProps<{ data?: DashboardTrendPoint[]; loading?: boolean; title?: string; label?: string }>(),
+  { data: () => [], loading: false, title: 'Tren Permohonan', label: 'Permohonan' },
 )
 
 const chartData = computed(() => ({
   labels: props.data.map((d) => d.bulan),
   datasets: [
     {
-      label: 'Permohonan',
+      label: props.label,
       data: props.data.map((d) => d.jumlah),
       borderColor: WARNA_PRIMARY,
       backgroundColor: WARNA_PRIMARY_MUTED,

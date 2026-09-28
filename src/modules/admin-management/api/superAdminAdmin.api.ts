@@ -17,6 +17,10 @@ export function ubahAdmin(id: number | string, payload: UbahAdminForm) {
   return httpClient.patch<ApiResponse<AdminLengkap>>(`${BASE}/${id}`, payload)
 }
 
-export function nonaktifkanAdmin(id: number | string) {
-  return httpClient.patch<ApiResponse<AdminLengkap>>(`${BASE}/${id}/nonaktifkan`)
+export function nonaktifkanAdmin(id: number | string, payload: { password_superadmin: string }) {
+  return httpClient.patch<ApiResponse<AdminLengkap>>(`${BASE}/${id}/nonaktifkan`, payload)
+}
+
+export function aktifkanAdmin(id: number | string, payload: { password_superadmin: string }) {
+  return httpClient.patch<ApiResponse<AdminLengkap>>(`${BASE}/${id}/aktifkan`, payload)
 }
