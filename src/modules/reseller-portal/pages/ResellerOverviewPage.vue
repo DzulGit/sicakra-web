@@ -3,6 +3,8 @@ import { RouterLink } from 'vue-router'
 import { Contact, Wifi, AlertTriangle, Receipt, Wallet } from 'lucide-vue-next'
 import DashboardSection from '@/modules/dashboard-admin/components/DashboardSection.vue'
 import DashboardStatCard from '@/modules/dashboard-admin/components/DashboardStatCard.vue'
+import ResellerBarChart from '@/modules/reseller/components/ResellerBarChart.vue'
+import ResellerPieChart from '@/modules/reseller/components/ResellerPieChart.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useResellerDashboard } from '../composables/useResellerPortal'
@@ -39,6 +41,20 @@ const formatRupiah = (value: number) => {
           :loading="isLoading" />
       </div>
     </DashboardSection>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <ResellerBarChart
+        :data="(data?.trend_pendapatan ?? []).map((d) => ({ label: d.bulan, jumlah: d.jumlah }))"
+        :loading="isLoading"
+        title="Tren Pendapatan 12 Bulan"
+        :format-value="(v) => formatRupiah(v)"
+      />
+      <ResellerPieChart
+        :data="data?.distribusi_paket ?? []"
+        :loading="isLoading"
+        title="Distribusi Paket Pelanggan"
+      />
+    </div>
 
     <Card>
       <CardHeader class="flex flex-row items-center justify-between py-3">

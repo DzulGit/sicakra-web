@@ -2,7 +2,7 @@ import { httpClient } from '@/app/providers/httpClient'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
 import type { LoginAdminForm } from '@/schemas/auth.schema'
 import type { PeranAdmin } from '@/stores/auth.store'
-import type { Pelanggan } from '@/types/models'
+import type { DashboardTrendPoint, Pelanggan, ResellerDistribusiItem } from '@/types/models'
 import type { DaftarkanPelangganForm } from '@/schemas/reseller-portal.schema'
 
 const BASE = '/reseller'
@@ -27,6 +27,8 @@ export interface ResellerDashboardData {
     tagihan_belum_bayar: number
     pendapatan: number
   }
+  trend_pendapatan: DashboardTrendPoint[]
+  distribusi_paket: ResellerDistribusiItem[]
   pelanggan_terbaru: Pelanggan[]
 }
 
