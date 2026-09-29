@@ -6,6 +6,7 @@ import type {
   Pelanggan,
   ResellerStatistikDetail,
   ResellerStatistikGlobal,
+  ResellerTransaksi,
   Tagihan,
 } from '@/types/models'
 import type { SimpanResellerForm } from '@/schemas/reseller.schema'
@@ -53,6 +54,10 @@ export function getResellerStatistikGlobal() {
 
 export function getResellerStatistikDetail(id: number | string) {
   return httpClient.get<ApiResponse<ResellerStatistikDetail>>(`${BASE}/${id}/statistik`)
+}
+
+export function getResellerTransaksiList(params: Record<string, string>) {
+  return httpClient.get<PaginatedResponse<ResellerTransaksi>>(`${BASE}/transaksi`, { params })
 }
 
 export function getLaporanResellerPdf(params: LaporanResellerParams) {

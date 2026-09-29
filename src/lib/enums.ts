@@ -64,6 +64,17 @@ export const hasilKerjaEnum: EnumMap = {
   kendala: { label: 'Kendala', badgeVariant: 'warning' },
 }
 
+/**
+ * Variasi hasil kerja untuk LAYAR TEKNISI: menambah state "belum diisi"
+ * karena `jadwal_kerja.hasil` yang null belum punya padanan di backend.
+ * JANGAN dipakai untuk filter — dropdown filter Jadwal Kerja dibangun dari
+ * `hasilKerjaEnum` saja dan backend tidak menerima `belum_diisi`.
+ */
+export const statusHasilKunjunganEnum: EnumMap = {
+  ...hasilKerjaEnum,
+  belum_diisi: { label: 'Belum diisi', badgeVariant: 'secondary' },
+}
+
 export const statusPerangkatEnum: EnumMap = {
   terpasang: { label: 'Terpasang', badgeVariant: 'success' },
   dilepas: { label: 'Dilepas', badgeVariant: 'secondary' },

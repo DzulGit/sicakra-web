@@ -7,6 +7,7 @@ import { usePelangganDetail } from '../composables/usePelanggan'
 import EditSiklusDialog from '../components/EditSiklusDialog.vue'
 import GenerateTagihanDialog from '../components/GenerateTagihanDialog.vue'
 import ResetPasswordDialog from '../components/ResetPasswordDialog.vue'
+import FotoKtpPreview from '@/components/data/FotoKtpPreview.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +15,13 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import DataTable from '@/components/data/DataTable.vue'
 import StatusBadge from '@/components/data/StatusBadge.vue'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { statusLayananEnum, statusTagihanFinanceEnum } from '@/lib/enums'
 import { formatRupiah, formatRupiahBertanda } from '@/lib/currency'
 import type { LayananInternetDetail, Tagihan } from '@/types/models'
@@ -33,6 +41,11 @@ const bolehResetPassword = authStore.peranAdmin === 'operasional' || authStore.p
 const generateDialogTerbuka = ref(false)
 const resetPasswordTerbuka = ref(false)
 const editSiklusLayanan = ref<LayananInternetDetail | null>(null)
+
+/** URL object foto KTP yang dibuka pada popup preview diperbesar (in-app, bukan tab baru). */
+const urlKtpPreview = ref<string | null>(null)
+
+const ktpTersedia = computed(() => !!pelanggan.value?.id && !!pelanggan.value?.foto_ktp)
 
 const layananList = computed<LayananInternetDetail[]>(() => pelanggan.value?.layanan_internet ?? [])
 
@@ -153,28 +166,51 @@ function formatTanggal(iso?: string | null) {
             <CardTitle class="flex items-center gap-2"><UserRound class="size-4" /> Profil Pelanggan</CardTitle>
           </CardHeader>
           <CardContent>
-            <div class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-              <div>
-                <p class="text-xs text-muted-foreground">Nomor Pelanggan</p>
-                <p class="font-medium">{{ pelanggan.nomor_pelanggan ?? '-' }}</p>
+            <div class="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,240px)]">
+              <!-- KIRI: field pelanggan — Nama, WhatsApp, NIK, Email, dll -->
+              <div class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                <div>
+                  <p class="text-xs text-muted-foreground">Nomor Pelanggan</p>
+                  <p class="font-medium">{{ pelanggan.nomor_pelanggan ?? '-' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">Nama</p>
+                  <p class="font-medium">{{ pelanggan.nama_lengkap }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">WhatsApp</p>
+                  <p class="font-medium">{{ pelanggan.nomor_hp }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">NIK</p>
+                  <p class="font-medium">{{ pelanggan.nik }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">Email</p>
+                  <p class="font-medium break-all">{{ pelanggan.email ?? '-' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">Status Akun</p>
+                  <Badge :variant="pelanggan.password_sudah_dibuat ? 'success' : 'secondary'">
+                    {{ pelanggan.password_sudah_dibuat ? 'Password dibuat' : 'Belum buat password' }}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <p class="text-xs text-muted-foreground">NIK</p>
-                <p class="font-medium">{{ pelanggan.nik }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-muted-foreground">No. HP</p>
-                <p class="font-medium">{{ pelanggan.nomor_hp }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-muted-foreground">Email</p>
-                <p class="font-medium break-all">{{ pelanggan.email ?? '-' }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-muted-foreground">Status Akun</p>
-                <Badge :variant="pelanggan.password_sudah_dibuat ? 'success' : 'secondary'">
-                  {{ pelanggan.password_sudah_dibuat ? 'Password dibuat' : 'Belum buat password' }}
-                </Badge>
+
+              <!-- KANAN: foto KTP — klik membuka popup preview diperbesar (in-app) -->
+              <div class="flex min-w-0 flex-col items-center justify-center gap-1.5">
+                <template v-if="ktpTersedia">
+                  <FotoKtpPreview
+                    :pelanggan-id="pelangganId"
+                    kategori="admin"
+                    popup
+                    image-class="h-[150px] w-[220px] max-w-full min-w-0 rounded-md object-contain"
+                    hide-caption
+                    @buka="urlKtpPreview = $event"
+                  />
+                  <p class="text-xs text-muted-foreground">Klik untuk memperbesar</p>
+                </template>
+                <p v-else class="text-xs text-muted-foreground">Foto KTP tidak tersedia.</p>
               </div>
             </div>
           </CardContent>
@@ -306,5 +342,25 @@ function formatTanggal(iso?: string | null) {
       :pelanggan="pelanggan ?? null"
       @update:open="(v) => (resetPasswordTerbuka = v)"
     />
+
+    <!-- ===== POPUP PREVIEW FOTO KTP DI PERBESAR (in-app, bukan tab baru) ===== -->
+    <Dialog :open="Boolean(urlKtpPreview)" @update:open="urlKtpPreview = $event ? urlKtpPreview : null">
+      <DialogContent class="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Foto KTP Pelanggan</DialogTitle>
+          <DialogDescription>Klik tombol tutup atau tekan Esc untuk menutup.</DialogDescription>
+        </DialogHeader>
+        <div
+          v-if="urlKtpPreview"
+          class="flex items-center justify-center overflow-hidden rounded-lg border bg-muted/40 p-2"
+        >
+          <img
+            :src="urlKtpPreview"
+            alt="Foto KTP pelanggan"
+            class="max-h-[70vh] w-auto rounded object-contain"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

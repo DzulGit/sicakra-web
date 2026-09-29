@@ -175,3 +175,27 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Scrollbar tipis & subtle untuk area scroll INTERNAL pada layout dashboard
+ * (mis. Riwayat Status / Ringkasan yang kontennya lebih banyak dari area tetap
+ * card). Hanya dipakai di area kartu dengan height tetap — tidak mengganti
+ * scrollbar alami halaman.
+ */
+.scrollarea-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.45) transparent;
+}
+.scrollarea-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollarea-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollarea-thin::-webkit-scrollbar-thumb {
+  background: rgb(148 163 184 / 0.45);
+  border-radius: 9999px;
+}
+.scrollarea-thin::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184 / 0.7);
+}

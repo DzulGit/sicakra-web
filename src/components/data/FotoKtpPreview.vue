@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { cn } from '@/lib/utils'
 import { httpClient } from '@/app/providers/httpClient'
 
 /**
@@ -8,13 +9,27 @@ import { httpClient } from '@/app/providers/httpClient'
  *   menyimpannya sebagai object URL sementara (bukan URL public permanen).
  * - Object URL di-revoke saat komponen di-unmount.
  * - Tidak pernah memakai <img src="/storage/..."> atau Storage::url().
+ * - `imageClass` & `hideCaption` hanya menyesuaikan presentasi (mis. thumb
+ *   compact pada layout dashboard height-tetap), default tetap seperti semula.
  */
 const props = defineProps<{
   /** Id pelanggan pemilik KTP. Path selalu berasal dari record ini. */
   pelangganId: number
   /** Kategori user yang sedang login — menentukan endpoint API ber-authorize. */
   kategori: 'admin' | 'reseller'
+  /** Class tambahan untuk <img> (digabung dengan default). */
+  imageClass?: string
+  /** Sembunyikan caption "Foto KTP" di bawah thumb (layout compact). */
+  hideCaption?: boolean
+  /**
+   * Mode popup/dialog: klik thumb meng-emit `buka` (url) agar parent membuka
+   * preview diperbesar di dalam aplikasi. Bila false (default) tetap membuka
+   * gambar di tab baru seperti sebelumnya.
+   */
+  popup?: boolean
 }>()
+
+const emit = defineEmits<{ buka: [url: string] }>()
 
 const objectUrl = ref<string | null>(null)
 const gagal = ref(false)
@@ -52,16 +67,26 @@ onBeforeUnmount(() => {
 })
 
 function bukaGambar(): void {
-  if (objectUrl.value) window.open(objectUrl.value, '_blank', 'noopener,noreferrer')
+  if (!objectUrl.value) return
+  if (props.popup) {
+    emit('buka', objectUrl.value)
+  } else {
+    window.open(objectUrl.value, '_blank', 'noopener,noreferrer')
+  }
 }
 </script>
 
 <template>
   <div v-if="objectUrl" class="flex flex-wrap gap-3">
     <button type="button" class="group text-left" @click="bukaGambar">
-      <img :src="objectUrl" alt="Foto KTP"
-        class="h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80" />
-      <p class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">Foto KTP</p>
+      <img
+        :src="objectUrl"
+        alt="Foto KTP"
+        :class="cn('h-36 w-60 rounded-md border object-cover transition-opacity group-hover:opacity-80', props.imageClass)"
+      />
+      <p v-if="!props.hideCaption" class="mt-1 text-xs text-muted-foreground underline-offset-2 group-hover:underline">
+        Foto KTP
+      </p>
     </button>
   </div>
   <p v-else-if="memuat" class="text-xs text-muted-foreground">Memuat foto KTP…</p>

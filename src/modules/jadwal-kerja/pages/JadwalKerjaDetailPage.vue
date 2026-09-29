@@ -16,11 +16,13 @@ import {
   Mail,
   Wifi,
   ExternalLink,
+  AlertTriangle,
+  Clock,
 } from 'lucide-vue-next'
 import { hasilKerjaSchema } from '@/schemas/jadwal-kerja.schema'
 import { mapValidationErrors } from '@/lib/errors'
 import { useIsiHasilKerja, useJadwalKerjaDetail } from '@/modules/jadwal-kerja/composables/useJadwalKerja'
-import { hasilKerjaEnum } from '@/lib/enums'
+import { statusHasilKunjunganEnum } from '@/lib/enums'
 import StatusBadge from '@/components/data/StatusBadge.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -156,6 +158,20 @@ const permohonan = computed(() => jadwal.value?.permohonan_layanan)
 const pelanggan = computed(() => permohonan.value?.pelanggan)
 const koordinatHasil = computed(() => jadwal.value?.latitude_hasil && jadwal.value?.longitude_hasil)
 
+/** Badge selalu tampil walau hasil belum diisi, jadi nilainya dinormalisasi. */
+const statusHasil = computed(() => jadwal.value?.hasil ?? 'belum_diisi')
+const statusForm = computed(() => hasilField.value || 'belum_diisi')
+
+/** Ikon mengikuti nilai status: selesai = centang, kendala = peringatan, belum = jam. */
+function ikonStatus(hasil: string) {
+  if (hasil === 'selesai') return CheckCircle2
+  if (hasil === 'kendala') return AlertTriangle
+  return Clock
+}
+
+const ikonStatusHasil = computed(() => ikonStatus(statusHasil.value))
+const ikonStatusForm = computed(() => ikonStatus(statusForm.value))
+
 function formatTanggal(iso: string) {
   return new Date(iso).toLocaleDateString('id-ID', { dateStyle: 'long' })
 }
@@ -211,194 +227,223 @@ function formatTanggal(iso: string) {
     </Button>
   </div>
 
-  <div v-else-if="jadwal" class="max-w-xl space-y-6">
-    <Card>
-      <CardHeader>
-        <div class="flex items-center gap-2">
+  <div v-else-if="jadwal" class="space-y-6">
+    <!-- Info pelanggan 2/5 lebar, card hasil kunjungan 3/5: formnya isi lebih
+         banyak (select, upload, koordinat) dan sekarang memenuhi lebar halaman.
+         items-stretch menyamakan tinggi card — info pelanggan ikut memanjang,
+         lalu email + status didorong ke dasar card supaya ruang kosongnya terisi. -->
+    <div class="grid items-stretch gap-6 lg:grid-cols-5">
+      <Card class="flex flex-col lg:col-span-2">
+        <CardHeader>
           <CardTitle>{{ permohonan?.nomor_permohonan }}</CardTitle>
-          <StatusBadge v-if="jadwal.hasil" :value="jadwal.hasil" :map="hasilKerjaEnum" />
-        </div>
-        <p class="text-sm text-muted-foreground">{{ formatTanggal(jadwal.tanggal_kerja) }}</p>
-      </CardHeader>
-      <CardContent class="space-y-4 text-sm">
-        <div>
-          <p class="flex items-center gap-1.5 text-muted-foreground">
-            <User class="size-4" /> Info Pelanggan
-          </p>
-          <div class="mt-1.5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
-            <p class="font-medium">{{ pelanggan?.nama_lengkap ?? '-' }}</p>
-            <p>{{ pelanggan?.nomor_pelanggan ?? '—' }}</p>
-            <p class="flex items-center gap-1.5">
-              <Phone class="size-3.5 text-muted-foreground" /> {{ pelanggan?.nomor_hp ?? '-' }}
+          <p class="text-sm text-muted-foreground">{{ formatTanggal(jadwal.tanggal_kerja) }}</p>
+        </CardHeader>
+        <CardContent class="flex flex-1 flex-col gap-4 text-sm">
+          <div>
+            <p class="flex items-center gap-1.5 text-muted-foreground">
+              <User class="size-4" /> Info Pelanggan
             </p>
-            <p class="flex items-center gap-1.5">
-              <Mail class="size-3.5 text-muted-foreground" /> {{ pelanggan?.email ?? '-' }}
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <p class="flex items-center gap-1.5 text-muted-foreground">
-            <MapPin class="size-4" /> Alamat Pemasangan
-          </p>
-          <p class="mt-1">{{ permohonan?.alamat_pemasangan }}, RT {{ permohonan?.rt }}/RW {{ permohonan?.rw }}, {{ permohonan?.kode_pos }}</p>
-          <p v-if="permohonan?.detail_alamat" class="text-muted-foreground">Detail: {{ permohonan.detail_alamat }}</p>
-        </div>
-
-        <div>
-          <p class="flex items-center gap-1.5 text-muted-foreground">
-            <Wifi class="size-4" /> Paket
-          </p>
-          <p v-if="permohonan?.paket_internet" class="mt-1">
-            {{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps)
-          </p>
-          <p v-else-if="permohonan?.tipe_paket === 'custom'" class="mt-1">
-            {{ permohonan.nama_paket_custom }} ({{ permohonan.kecepatan_custom_mbps }} Mbps)
-          </p>
-        </div>
-
-        <div>
-          <p class="text-muted-foreground">Rekan Satu Tim</p>
-          <p>{{ (jadwal.teknisi ?? []).map((t) => t.nama_lengkap).join(', ') || '-' }}</p>
-        </div>
-      </CardContent>
-    </Card>
-
-    <Card v-if="jadwal.hasil">
-      <CardHeader>
-        <CardTitle class="text-base">Hasil Kunjungan</CardTitle>
-      </CardHeader>
-      <CardContent class="space-y-3 text-sm">
-        <StatusBadge :value="jadwal.hasil" :map="hasilKerjaEnum" />
-        <p v-if="jadwal.catatan_kendala" class="text-muted-foreground">{{ jadwal.catatan_kendala }}</p>
-        <div v-if="jadwal.foto_dokumentasi?.length" class="flex flex-wrap gap-3">
-          <img
-            v-for="(foto, i) in jadwal.foto_dokumentasi"
-            :key="i"
-            :src="urlFoto(foto) ?? ''"
-            alt="Dokumentasi pekerjaan"
-            class="h-28 w-28 cursor-pointer rounded-md border object-cover hover:opacity-80"
-            @click="bukaGambar(urlFoto(foto)!)"
-          />
-        </div>
-        <div v-if="koordinatHasil" class="flex items-center gap-2">
-          <Crosshair class="size-4 text-muted-foreground" />
-          <p>{{ jadwal.latitude_hasil }}, {{ jadwal.longitude_hasil }}</p>
-          <Button variant="ghost" size="sm" class="gap-1 px-2" @click="bukaMaps(jadwal.latitude_hasil!, jadwal.longitude_hasil!)">
-            <ExternalLink class="size-3.5" /> Maps
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-
-    <Card v-else>
-      <CardHeader>
-        <CardTitle class="text-base">Isi Hasil Kunjungan</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form class="space-y-4" novalidate @submit="onSubmit">
-          <div class="space-y-2">
-            <Label>Hasil</Label>
-            <Select v-model="hasilField" v-bind="hasilFieldAttrs">
-              <SelectTrigger><SelectValue placeholder="Pilih hasil" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="selesai">Selesai — Pasang Berhasil</SelectItem>
-                <SelectItem value="kendala">Ada Kendala</SelectItem>
-              </SelectContent>
-            </Select>
-            <p v-if="errors.hasil" class="text-xs text-destructive">{{ errors.hasil }}</p>
-          </div>
-
-          <div v-if="hasilField === 'selesai'" class="space-y-2">
-            <Label>Dokumentasi Pekerjaan <span class="text-muted-foreground">(1–3 foto)</span></Label>
-            <p class="text-xs text-muted-foreground">
-              Wajib minimal 1 foto hasil pemasangan yang sudah selesai.
-            </p>
-            <div class="flex flex-wrap gap-3">
-              <div v-for="(url, index) in previewUrls" :key="index" class="relative w-fit">
-                <img
-                  :src="url"
-                  alt="Preview dokumentasi"
-                  class="h-28 w-28 cursor-pointer rounded-lg border object-cover hover:opacity-80"
-                  @click="bukaGambar(url)"
-                />
-                <button
-                  type="button"
-                  class="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
-                  aria-label="Hapus foto"
-                  @click="hapusFoto(index)"
-                >
-                  <X class="size-3.5" />
-                </button>
-              </div>
-              <label
-                for="foto_dokumentasi"
-                class="flex h-28 w-28 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed text-xs text-muted-foreground hover:bg-muted/50"
-              >
-                <ImagePlus class="size-6" />
-                Tambah Foto
-              </label>
+            <div class="mt-1.5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
+              <p class="font-medium">{{ pelanggan?.nama_lengkap ?? '-' }}</p>
+              <p>{{ pelanggan?.nomor_pelanggan ?? '—' }}</p>
+              <p class="flex items-center gap-1.5">
+                <Phone class="size-3.5 text-muted-foreground" /> {{ pelanggan?.nomor_hp ?? '-' }}
+              </p>
             </div>
-            <input
-              id="foto_dokumentasi"
-              ref="fotoInputRef"
-              type="file"
-              multiple
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              class="hidden"
-              @change="onPilihFoto"
+          </div>
+
+          <div>
+            <p class="flex items-center gap-1.5 text-muted-foreground">
+              <MapPin class="size-4" /> Alamat Pemasangan
+            </p>
+            <p class="mt-1">{{ permohonan?.alamat_pemasangan }}, RT {{ permohonan?.rt }}/RW {{ permohonan?.rw }}, {{ permohonan?.kode_pos }}</p>
+            <p v-if="permohonan?.detail_alamat" class="text-muted-foreground">Detail: {{ permohonan.detail_alamat }}</p>
+          </div>
+
+          <div>
+            <p class="flex items-center gap-1.5 text-muted-foreground">
+              <Wifi class="size-4" /> Paket
+            </p>
+            <p v-if="permohonan?.paket_internet" class="mt-1">
+              {{ permohonan.paket_internet.nama_paket }} ({{ permohonan.paket_internet.kecepatan_mbps }} Mbps)
+            </p>
+            <p v-else-if="permohonan?.tipe_paket === 'custom'" class="mt-1">
+              {{ permohonan.nama_paket_custom }} ({{ permohonan.kecepatan_custom_mbps }} Mbps)
+            </p>
+          </div>
+
+          <div>
+            <p class="text-muted-foreground">Rekan Satu Tim</p>
+            <p>{{ (jadwal.teknisi ?? []).map((t) => t.nama_lengkap).join(', ') || '-' }}</p>
+          </div>
+
+          <!-- mt-auto: email + status menempel dasar card, jadi ruang kosong yang
+               muncul saat card sebelah lebih tinggi tetap terisi, bukan di tengah. -->
+          <div class="mt-auto space-y-3 border-t pt-4">
+            <div>
+              <p class="flex items-center gap-1.5 text-muted-foreground">
+                <Mail class="size-3.5" /> Email
+              </p>
+              <p class="mt-0.5">{{ pelanggan?.email ?? '-' }}</p>
+            </div>
+            <div>
+              <p class="flex items-center gap-1.5 text-muted-foreground">
+                <component :is="ikonStatusHasil" class="size-3.5" /> Status Kunjungan
+              </p>
+              <div class="mt-0.5">
+                <StatusBadge :value="statusHasil" :map="statusHasilKunjunganEnum" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card v-if="jadwal.hasil" class="lg:col-span-3">
+        <CardHeader>
+          <div class="flex items-center justify-between gap-3">
+            <CardTitle class="text-base">Hasil Kunjungan</CardTitle>
+            <StatusBadge :value="statusHasil" :map="statusHasilKunjunganEnum" />
+          </div>
+        </CardHeader>
+        <CardContent class="space-y-3 text-sm">
+          <p v-if="jadwal.catatan_kendala" class="text-muted-foreground">{{ jadwal.catatan_kendala }}</p>
+          <div v-if="jadwal.foto_dokumentasi?.length" class="flex flex-wrap gap-3">
+            <img
+              v-for="(foto, i) in jadwal.foto_dokumentasi"
+              :key="i"
+              :src="urlFoto(foto) ?? ''"
+              alt="Dokumentasi pekerjaan"
+              class="h-28 w-28 cursor-pointer rounded-md border object-cover hover:opacity-80"
+              @click="bukaGambar(urlFoto(foto)!)"
             />
-            <p v-if="errors.foto_dokumentasi" class="text-xs text-destructive">{{ errors.foto_dokumentasi }}</p>
           </div>
-
-          <div v-if="hasilField === 'selesai'" class="space-y-2">
-            <Label>Titik Koordinat Hasil Pekerjaan</Label>
-            <p class="text-xs text-muted-foreground">
-              Lokasi akurat tempat pekerjaan selesai — dipakai sebagai koordinat layanan pelanggan.
-            </p>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <Label for="latitude_hasil" class="text-xs text-muted-foreground">Latitude</Label>
-                <Input
-                  id="latitude_hasil"
-                  v-model="latitudeHasil"
-                  v-bind="latitudeHasilAttrs"
-                  placeholder="-7.2500000"
-                />
-              </div>
-              <div class="space-y-1.5">
-                <Label for="longitude_hasil" class="text-xs text-muted-foreground">Longitude</Label>
-                <Input
-                  id="longitude_hasil"
-                  v-model="longitudeHasil"
-                  v-bind="longitudeHasilAttrs"
-                  placeholder="112.7500000"
-                />
-              </div>
-            </div>
-            <Button type="button" variant="outline" size="sm" class="gap-1.5" :disabled="cariKoordinat" @click="gunakanLokasiSaya">
-              <Crosshair class="size-4" /> {{ cariKoordinat ? 'Mencari lokasi...' : 'Gunakan Lokasi Saya' }}
+          <div v-if="koordinatHasil" class="flex items-center gap-2">
+            <Crosshair class="size-4 text-muted-foreground" />
+            <p>{{ jadwal.latitude_hasil }}, {{ jadwal.longitude_hasil }}</p>
+            <Button variant="ghost" size="sm" class="gap-1 px-2" @click="bukaMaps(jadwal.latitude_hasil!, jadwal.longitude_hasil!)">
+              <ExternalLink class="size-3.5" /> Maps
             </Button>
-            <p v-if="errors.latitude_hasil" class="text-xs text-destructive">{{ errors.latitude_hasil }}</p>
           </div>
+        </CardContent>
+      </Card>
 
-          <div class="space-y-2">
-            <Label for="catatan_kendala">Catatan</Label>
-            <Textarea
-              id="catatan_kendala"
-              v-model="catatanKendala"
-              v-bind="catatanKendalaAttrs"
-              placeholder="Wajib diisi kalau ada kendala — mis. akses rumah, tiang penuh, pelanggan tidak di tempat"
-            />
-            <p v-if="errors.catatan_kendala" class="text-xs text-destructive">{{ errors.catatan_kendala }}</p>
+      <Card v-else class="lg:col-span-3">
+        <CardHeader>
+          <div class="flex items-center justify-between gap-3">
+            <CardTitle class="text-base">Isi Hasil Kunjungan</CardTitle>
+            <!-- Status hidup: nama + ikon ikut berubah begitu teknisi memilih
+                 hasil di form, jadi tidak perlu menebak status sebelum disimpan. -->
+            <span class="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+              <component :is="ikonStatusForm" class="size-3.5" />
+              {{ statusHasilKunjunganEnum[statusForm]?.label ?? statusForm }}
+            </span>
           </div>
+        </CardHeader>
+        <CardContent>
+          <form class="space-y-4" novalidate @submit="onSubmit">
+            <div class="space-y-2">
+              <Label>Hasil</Label>
+              <Select v-model="hasilField" v-bind="hasilFieldAttrs">
+                <SelectTrigger><SelectValue placeholder="Pilih hasil" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="selesai">Selesai — Pasang Berhasil</SelectItem>
+                  <SelectItem value="kendala">Ada Kendala</SelectItem>
+                </SelectContent>
+              </Select>
+              <p v-if="errors.hasil" class="text-xs text-destructive">{{ errors.hasil }}</p>
+            </div>
 
-          <Button type="submit" class="w-full" :disabled="isPending">
-            {{ isPending ? 'Menyimpan...' : 'Simpan Hasil' }}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <div v-if="hasilField === 'selesai'" class="space-y-2">
+              <Label>Dokumentasi Pekerjaan <span class="text-muted-foreground">(1–3 foto)</span></Label>
+              <p class="text-xs text-muted-foreground">
+                Wajib minimal 1 foto hasil pemasangan yang sudah selesai.
+              </p>
+              <div class="flex flex-wrap gap-3">
+                <div v-for="(url, index) in previewUrls" :key="index" class="relative w-fit">
+                  <img
+                    :src="url"
+                    alt="Preview dokumentasi"
+                    class="h-28 w-28 cursor-pointer rounded-lg border object-cover hover:opacity-80"
+                    @click="bukaGambar(url)"
+                  />
+                  <button
+                    type="button"
+                    class="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+                    aria-label="Hapus foto"
+                    @click="hapusFoto(index)"
+                  >
+                    <X class="size-3.5" />
+                  </button>
+                </div>
+                <label
+                  for="foto_dokumentasi"
+                  class="flex h-28 w-28 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed text-xs text-muted-foreground hover:bg-muted/50"
+                >
+                  <ImagePlus class="size-6" />
+                  Tambah Foto
+                </label>
+              </div>
+              <input
+                id="foto_dokumentasi"
+                ref="fotoInputRef"
+                type="file"
+                multiple
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                class="hidden"
+                @change="onPilihFoto"
+              />
+              <p v-if="errors.foto_dokumentasi" class="text-xs text-destructive">{{ errors.foto_dokumentasi }}</p>
+            </div>
+
+            <div v-if="hasilField === 'selesai'" class="space-y-2">
+              <Label>Titik Koordinat Hasil Pekerjaan</Label>
+              <p class="text-xs text-muted-foreground">
+                Lokasi akurat tempat pekerjaan selesai — dipakai sebagai koordinat layanan pelanggan.
+              </p>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <Label for="latitude_hasil" class="text-xs text-muted-foreground">Latitude</Label>
+                  <Input
+                    id="latitude_hasil"
+                    v-model="latitudeHasil"
+                    v-bind="latitudeHasilAttrs"
+                    placeholder="-7.2500000"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <Label for="longitude_hasil" class="text-xs text-muted-foreground">Longitude</Label>
+                  <Input
+                    id="longitude_hasil"
+                    v-model="longitudeHasil"
+                    v-bind="longitudeHasilAttrs"
+                    placeholder="112.7500000"
+                  />
+                </div>
+              </div>
+              <Button type="button" variant="outline" size="sm" class="gap-1.5" :disabled="cariKoordinat" @click="gunakanLokasiSaya">
+                <Crosshair class="size-4" /> {{ cariKoordinat ? 'Mencari lokasi...' : 'Gunakan Lokasi Saya' }}
+              </Button>
+              <p v-if="errors.latitude_hasil" class="text-xs text-destructive">{{ errors.latitude_hasil }}</p>
+            </div>
+
+            <div class="space-y-2">
+              <Label for="catatan_kendala">Catatan</Label>
+              <Textarea
+                id="catatan_kendala"
+                v-model="catatanKendala"
+                v-bind="catatanKendalaAttrs"
+                placeholder="Wajib diisi kalau ada kendala — mis. akses rumah, tiang penuh, pelanggan tidak di tempat"
+              />
+              <p v-if="errors.catatan_kendala" class="text-xs text-destructive">{{ errors.catatan_kendala }}</p>
+            </div>
+
+            <Button type="submit" class="w-full" :disabled="isPending">
+              {{ isPending ? 'Menyimpan...' : 'Simpan Hasil' }}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
 
     <!-- Popup Modal Gambar -->
     <div

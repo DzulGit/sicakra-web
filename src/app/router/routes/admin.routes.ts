@@ -26,6 +26,7 @@ const PelangganDetailPage = () => import('@/modules/pelanggan/pages/PelangganDet
 const BuatPelangganPage = () => import('@/modules/buat-pelanggan/pages/BuatPelangganPage.vue')
 const BuatTagihanPertamaAdminPage = () => import('@/modules/tagihan/pages/admin/BuatTagihanPertamaPage.vue')
 const ResellerListPage = () => import('@/modules/reseller/pages/ResellerListPage.vue')
+const ResellerTransaksiListPage = () => import('@/modules/reseller/pages/ResellerTransaksiListPage.vue')
 const ResellerPelangganListPage = () => import('@/modules/reseller/pages/ResellerPelangganListPage.vue')
 const ResellerPaketListPage = () => import('@/modules/reseller/pages/ResellerPaketListPage.vue')
 const ResellerTagihanListPage = () => import('@/modules/reseller/pages/ResellerTagihanListPage.vue')
@@ -209,6 +210,34 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: {
       layout: 'dashboard',
       judul: 'Reseller',
+      requiresAuth: true,
+      guard: 'admin',
+      peran: ['operasional', 'super_admin'],
+    },
+  },
+  {
+    path: '/admin/operasional/reseller/transaksi',
+    name: 'admin.operasional.reseller.transaksi',
+    component: ResellerTransaksiListPage,
+    // dibuka dengan periode bulan & tahun berjalan, tapi periodenya tetap
+    // disimpan di query-string supaya bisa di-share dan filter tidak mereset
+    // saat pindah halaman (Pagination/PageSizeSelect).
+    beforeEnter: (to) => {
+      if (to.query.bulan && to.query.tahun) return true
+
+      const sekarang = new Date()
+      return {
+        ...to,
+        query: {
+          ...to.query,
+          bulan: String(sekarang.getMonth() + 1),
+          tahun: String(sekarang.getFullYear()),
+        },
+      }
+    },
+    meta: {
+      layout: 'dashboard',
+      judul: 'Transaksi Reseller',
       requiresAuth: true,
       guard: 'admin',
       peran: ['operasional', 'super_admin'],
