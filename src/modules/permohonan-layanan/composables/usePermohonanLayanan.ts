@@ -83,7 +83,10 @@ export function useJadwalkanKerja() {
   })
 }
 
-export function generateWaMessage(permohonan: PermohonanLayanan): { text: string; waUrl: string } {
+export function generateWaMessage(
+  permohonan: PermohonanLayanan,
+  pengirim = 'Tim Operasional Sicakra',
+): { text: string; waUrl: string } {
   const pelanggan = permohonan.pelanggan
   const namaPelanggan = pelanggan?.nama_lengkap ?? '(nama belum tersedia)'
   const nomorWa = pelanggan?.nomor_hp ?? ''
@@ -158,7 +161,7 @@ export function generateWaMessage(permohonan: PermohonanLayanan): { text: string
   const text = [
     `Yth. Bapak/Ibu *${namaPelanggan}*,`,
     '',
-    `Perkenalkan kami dari *Tim Operasional Sicakra*. Saat ini kami menerima permohonan dengan nomor *${nomorPermohonan}* atas nama Bapak/Ibu.`,
+    `Perkenalkan kami dari *${pengirim}*. Saat ini kami menerima permohonan dengan nomor *${nomorPermohonan}* atas nama Bapak/Ibu.`,
     '',
     'Berikut rincian permohonan yang kami terima:',
     '',
@@ -170,7 +173,7 @@ export function generateWaMessage(permohonan: PermohonanLayanan): { text: string
     '',
     'Terima kasih.',
     '',
-    '*— Tim Operasional Sicakra*',
+    `*— ${pengirim}*`,
   ].join('\n')
 
   const waUrl =

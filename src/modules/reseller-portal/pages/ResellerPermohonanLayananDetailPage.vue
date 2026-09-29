@@ -11,6 +11,8 @@ import {
   useResellerPermohonanLayananDetail,
   useVerifikasiResellerPermohonan,
 } from '../composables/useResellerPermohonanLayanan'
+import { generateWaMessage } from '@/modules/permohonan-layanan/composables/usePermohonanLayanan'
+import { useAuthStore } from '@/stores/auth.store'
 import { verifikasiResellerSchema } from '@/schemas/reseller-portal.schema'
 import { statusPermohonanEnum, jenisPermohonanEnum, tipePaketEnum } from '@/lib/enums'
 import { mapValidationErrors } from '@/lib/errors'
@@ -56,7 +58,33 @@ function bukaMaps(lat: string, lng: string) {
   window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank', 'noopener,noreferrer')
 }
 
-// ===== Dialog Verifikasi =====
+// ===== Dialog Verifikasi via WhatsApp =====
+const authStore = useAuthStore()
+const langkah = ref<'wa' | 'form'>('wa')
+const pengirim = computed(() =>
+  authStore.pengguna?.nama_lengkap
+    ? `Tim Reseller ${authStore.pengguna.nama_lengkap}`
+    : 'Tim Reseller Sicakra',
+)
+const waMessage = computed(() =>
+  permohonan.value
+    ? generateWaMessage(permohonan.value, pengirim.value)
+    : { text: '', waUrl: '' },
+)
+
+function bukaWhatsApp() {
+  if (waMessage.value.waUrl) window.open(waMessage.value.waUrl, '_blank', 'noopener,noreferrer')
+}
+
+function salinPesan() {
+  if (navigator?.clipboard) {
+    navigator.clipboard.writeText(waMessage.value.text)
+    toast.success('Pesan disalin')
+  } else {
+    toast.error('Gagal menyalin pesan')
+  }
+}
+
 const dialogVerifikasi = ref(false)
 const verifikasiMutation = useVerifikasiResellerPermohonan()
 const { handleSubmit: verifikasiSubmit, errors: verifikasiErrors, values: verifikasiValues, setFieldValue: setVerifikasiField, resetForm: verifikasiReset } = useForm({
@@ -231,7 +259,7 @@ const prosesVerifikasi = verifikasiSubmit(async (form) => {
         </CardHeader>
         <CardContent class="space-y-2">
           <Button v-if="bisaVerifikasi" class="w-full" @click="dialogVerifikasi = true">
-            Buat Keputusan
+            Verifikasi via WhatsApp
           </Button>
 
           <p v-if="!bisaVerifikasi" class="text-sm text-muted-foreground">
@@ -245,14 +273,81 @@ const prosesVerifikasi = verifikasiSubmit(async (form) => {
       </Button>
     </div>
 
-    <!-- Dialog Verifikasi -->
-    <Dialog :open="dialogVerifikasi" @update:open="(v) => { dialogVerifikasi = v; if (!v) verifikasiReset() }">
-      <DialogContent>
+    <!-- Dialog Verifikasi via WhatsApp -->
+    <Dialog
+      :open="dialogVerifikasi"
+      @update:open="
+        (v) => {
+          dialogVerifikasi = v
+          if (!v) {
+            langkah = 'wa'
+            verifikasiReset()
+          }
+        }
+      "
+    >
+      <DialogContent class="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Verifikasi Permohonan</DialogTitle>
-          <DialogDescription>Terima, tolak, atau minta revisi permohonan ini.</DialogDescription>
+          <DialogTitle>Verifikasi via WhatsApp</DialogTitle>
+          <DialogDescription>
+            Hubungi pelanggan melalui WhatsApp untuk verifikasi data, lalu buat keputusan.
+          </DialogDescription>
         </DialogHeader>
-        <form @submit.prevent="prosesVerifikasi" class="space-y-4">
+
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <span :class="langkah === 'wa' ? 'font-semibold text-foreground' : ''">1. Kirim WhatsApp</span>
+          <span class="text-xs">→</span>
+          <span :class="langkah === 'form' ? 'font-semibold text-foreground' : ''">2. Buat Keputusan</span>
+        </div>
+
+        <template v-if="langkah === 'wa'">
+          <Card>
+            <CardHeader>
+              <CardTitle class="text-base">Pesan WhatsApp</CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-4">
+              <div class="grid grid-cols-2 gap-4 rounded-lg bg-muted p-4 text-sm">
+                <div>
+                  <p class="text-xs text-muted-foreground">Pelanggan</p>
+                  <p class="font-medium">{{ permohonan.pelanggan?.nama_lengkap }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">No. WhatsApp</p>
+                  <p class="font-medium">{{ permohonan.pelanggan?.nomor_hp }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">Paket</p>
+                  <p class="font-medium">
+                    {{ permohonan.tipe_paket === 'reguler' ? permohonan.paket_internet?.nama_paket :
+                      permohonan.nama_paket_custom }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">No. Permohonan</p>
+                  <p class="font-medium">{{ permohonan.nomor_permohonan }}</p>
+                </div>
+              </div>
+
+              <Textarea :model-value="waMessage.text" rows="12" class="font-mono text-xs" readonly />
+
+              <div class="flex gap-2">
+                <Button variant="outline" @click="bukaWhatsApp">
+                  Buka WhatsApp
+                </Button>
+                <Button @click="salinPesan">
+                  Salin Pesan
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div class="flex justify-end gap-2">
+            <Button variant="ghost" @click="dialogVerifikasi = false">Batal</Button>
+            <Button @click="langkah = 'form'">Pelanggan sudah dihubungi — Lanjutkan</Button>
+          </div>
+        </template>
+
+        <form v-else @submit.prevent="prosesVerifikasi" class="space-y-4">
           <div class="space-y-2">
             <Label>Keputusan</Label>
             <Select :model-value="verifikasiValues.status"
@@ -284,7 +379,8 @@ const prosesVerifikasi = verifikasiSubmit(async (form) => {
             <p v-if="verifikasiErrors.catatan" class="text-xs text-destructive">{{ verifikasiErrors.catatan }}</p>
           </div>
 
-          <DialogFooter>
+          <DialogFooter class="gap-2">
+            <Button type="button" variant="outline" @click="langkah = 'wa'">Kembali</Button>
             <Button type="submit">Kirim Verifikasi</Button>
           </DialogFooter>
         </form>
